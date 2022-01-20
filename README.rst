@@ -1,9 +1,6 @@
-Template for the Read the Docs tutorial
+PPG-beats: A toolbox for identifying heartbeats in photoplethysmography signals
 =======================================
 
-This GitHub template includes fictional Python library
-with some basic Sphinx docs.
+Read the documentation here:
 
-Read the tutorial here:
-
-https://docs.readthedocs.io/en/stable/tutorial/
+https://ppg-beats.readthedocs.io/
