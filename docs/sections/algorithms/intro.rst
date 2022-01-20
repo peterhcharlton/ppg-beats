@@ -1,1 +1,9 @@
-Here is the start of the algorithms info
+Algorithms
+==========
+
+This page provides details of ...
+
+**Introduction**
+----------------------
+
+**PPG-beats** contains several algorithms ...

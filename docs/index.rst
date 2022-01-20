@@ -9,15 +9,12 @@ PPG-beats documentation
    :caption: Tutorials
    
    sections/tutorials/beat_detection.rst
-
-   :caption: Algorithms
-   
    sections/algorithms/intro.rst
 
    :caption: Datasets
    
    sections/datasets/intro.rst
-   
+
    :caption: Using the toolbox
 
    usage/intro.md
