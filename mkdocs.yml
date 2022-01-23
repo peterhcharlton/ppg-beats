@@ -6,9 +6,8 @@ nav:
     - 'Getting Started': './getting_started/index.md'
     - 'Algorithms': './algorithms/index.md'
     - 'Assessing Performance':
-      - 'Overview': './assessing_performance/index.md'
       - 'Datasets': './assessing_performance/datasets/index.md'
+      - 'Code': './assessing_performance/code/index.md'
     - 'Tutorials':
-      - 'Overview': './tutorials/index.md'
       - 'Beat Detection': './tutorials/beat_detection/index.md'
       - 'Performance Assessment': './tutorials/performance_assessment/index.md'
