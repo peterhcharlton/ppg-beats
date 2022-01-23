@@ -4,9 +4,7 @@ repo_url: https://github.com/peterhcharlton/ppg-beats
 nav:
     - 'Home': 'index.md'
     - 'Getting Started': './getting_started/index.md'
-    - 'Algorithms':
-      - 'Overview': './algorithms/index.md'
-      - 'Algorithm one': './algorithms/algorithm_one.md'
+    - 'Algorithms': './algorithms/index.md'
     - 'Assessing Performance':
       - 'Overview': './assessing_performance/index.md'
       - 'Datasets': './assessing_performance/datasets/index.md'
