@@ -1,4 +1,4 @@
-# Algorithms
+# PPG Beat Detection Algorithms
 
 Beat detection algorithms
 
@@ -16,7 +16,9 @@ Beat detection algorithms
 
 ## Automatic Multiscale-based Peak Detection
 
-**Original publication:** F. Scholkmann et al., 'An efficient algorithm forautomatic peak detection in noisy periodic and quasi-periodic signals,'_Algorithms_, vol. 5, no. 4, pp. 588-603, 2012. DOI: [10.3390/a5040588](https://doi.org/10.3390/a5040588)
+**Original publication:** F. Scholkmann et al., 'An efficient algorithm for
+automatic peak detection in noisy periodic and quasi-periodic signals,'
+_Algorithms_, vol. 5, no. 4, pp. 588-603, 2012. DOI: [10.3390/a5040588](https://doi.org/10.3390/a5040588)
 
 **Description:** 
 
@@ -32,7 +34,9 @@ Beat detection algorithms
 
 ## Event-Related Moving Averages
 
-**Original publication:** M. Elgendi et al., 'Systolic peak detection in accelerationphotoplethysmograms measured from emergency responders in tropicalconditions,' _PLoS ONE_, vol. 8, no. 10, pp. 1-11, 2013. DOI: [10.1371/journal.pone.0076585](https://doi.org/10.1371/journal.pone.0076585)
+**Original publication:** M. Elgendi et al., 'Systolic peak detection in acceleration
+photoplethysmograms measured from emergency responders in tropical
+conditions,' _PLoS ONE_, vol. 8, no. 10, pp. 1-11, 2013. DOI: [10.1371/journal.pone.0076585](https://doi.org/10.1371/journal.pone.0076585)
 
 **Description:** 
 
@@ -40,7 +44,9 @@ Beat detection algorithms
 
 ## HeartPy
 
-**Original publication:** P. van Gent et al., 'HeartPy: A novel heart rate algorithm for theanalysis of noisy signals,' _Transportation Research Part F: TrafficPsychology and Behaviour_, vol. 66, pp. 368-378, 2019. DOI: [10.1016/j.trf.2019.09.015](https://doi.org/10.1016/j.trf.2019.09.015)
+**Original publication:** P. van Gent et al., 'HeartPy: A novel heart rate algorithm for the
+analysis of noisy signals,' _Transportation Research Part F: Traffic
+Psychology and Behaviour_, vol. 66, pp. 368-378, 2019. DOI: [10.1016/j.trf.2019.09.015](https://doi.org/10.1016/j.trf.2019.09.015)
 
 **Description:** 
 
@@ -64,7 +70,8 @@ Beat detection algorithms
 
 ## Peak Detection Algorithm
 
-**Original publication:** E. J. Arguello Prada and R. D. Serna Maldonado, 'A novel andlow-complexity peak detection algorithm for heart rate estimation from low-amplitude photoplethysmographic (PPG) signals,' _Journal of Medical Engineering and Technology_, vol. 42, no. 8, pp. 569-577, 2018. DOI: [10.1080/03091902.2019.1572237](https://doi.org/10.1080/03091902.2019.1572237)
+**Original publication:** E. J. Arguello Prada and R. D. Serna Maldonado, 'A novel and
+low-complexity peak detection algorithm for heart rate estimation from low-amplitude photoplethysmographic (PPG) signals,' _Journal of Medical Engineering and Technology_, vol. 42, no. 8, pp. 569-577, 2018. DOI: [10.1080/03091902.2019.1572237](https://doi.org/10.1080/03091902.2019.1572237)
 
 **Description:** 
 
@@ -80,7 +87,8 @@ Beat detection algorithms
 
 ## PPG Pulses Detector
 
-**Original publication:** J. Lazaro et al., 'Pulse rate variability analysis for discrimination of sleep-apnea-related decreases in the amplitude fluctuations of pulsephotoplethysmographic signal in children,' _IEEE Journal of Biomedical and Health Informatics_, vol. 18, no. 1, pp. 240-246, 2014. DOI: [10.1109/JBHI.2013.2267096](https://doi.org/10.1109/JBHI.2013.2267096)
+**Original publication:** J. Lazaro et al., 'Pulse rate variability analysis for discrimination of sleep-apnea-related decreases in the amplitude fluctuations of pulse
+photoplethysmographic signal in children,' _IEEE Journal of Biomedical and Health Informatics_, vol. 18, no. 1, pp. 240-246, 2014. DOI: [10.1109/JBHI.2013.2267096](https://doi.org/10.1109/JBHI.2013.2267096)
 
 **Description:** 
 
