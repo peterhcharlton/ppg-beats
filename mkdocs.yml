@@ -13,6 +13,7 @@ nav:
         - 'assess_multiple_datasets': './functions/assess_multiple_datasets.md'
         - 'assess_beat_detectors': './functions/assess_beat_detectors.md'
         - 'preprocess_ppg_signal': './functions/preprocess_ppg_signal.md'
+        - 'detect_ppg_beats': './functions/detect_ppg_beats.md'
     - 'Tutorials':
       - 'PPG Beat Detection': './tutorials/ppg_beat_detection.md'
       - 'ECG Beat Detection': './tutorials/ecg_beat_detection.md'
