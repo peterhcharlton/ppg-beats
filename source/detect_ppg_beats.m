@@ -1,4 +1,4 @@
-function [peaks, onsets, mid_amps] = detect_ppg_beats(s, options)
+function [peaks, onsets, mid_amps] = detect_ppg_beats(s, beat_detector)
 % DETECT_PPG_BEATS  detects beats in PPG.
 %   DETECT_PPG_BEATS detects beats in a photoplethysmogram (PPG) signal
 %   using a specified beat detector
@@ -9,8 +9,7 @@ function [peaks, onsets, mid_amps] = detect_ppg_beats(s, options)
 %    - v : a vector of PPG values
 %    - fs : the sampling frequency of the PPG in Hz
 %    
-%   * options - A structure containing the settings used for the processing:
-%    - options.beat_detector  - The beat detector to be used
+%   * beat_detector  - a string specifying the beat detector to be used
 %   
 %   # Outputs
 %   * peaks : ...TBC...
@@ -33,58 +32,37 @@ function [peaks, onsets, mid_amps] = detect_ppg_beats(s, options)
 %      You should have received a copy of the GNU General Public License along with PPG-beats. If not, see <https://www.gnu.org/licenses/>.
 
 %% Detect peaks in pulse signal
-switch options.beat_detector
-    case 'AMPD'
-        peaks = ampd_peak_detector(s.v,s.fs,up);
-    case 'IMS'
-        [peaks, onsets, ~] = adaptPulseSegment(s.v,s.fs);
-        for wave_no = 1 : length(peaks)-1
-            [~, temp] = max(s.v(onsets(wave_no):onsets(wave_no+1)));
-            peaks(wave_no) = temp+onsets(wave_no)-1;
-        end
+switch beat_detector
     case 'ABD'
-        peaks = abd_algorithm(s);
+        peaks = abd_beat_detector(s.v,s.fs);
+    case 'AMPD'
+        peaks = ampd_beat_detector(s.v,s.fs);
+    case 'IMS'
+        [peaks, onsets] = ims_beat_detector(s.v,s.fs);
     case 'MSPTD'
-        [peaks, onsets] = bishop_peak_detector(s);
+        [peaks, onsets] = msptd_beat_detector(s.v,s.fs);
     case 'Pulses'
-        [peaks, ~, peaks_filt, ~] = PPG_pulses_detector(s.v, s.fs);
+        peaks = ppgpulses_beat_detector(s.v, s.fs);
         peaks = peaks(:);
         % note that I haven't used peaks_filt
     case 'qppg'
-        [onsets] = qppg(s.v,s.fs);
-        onsets = onsets(:);
+        [peaks, onsets] = qppg_beat_detector(s.v,s.fs);
+    case 'qppgfast'
+        [peaks, onsets] = qppgfast_beat_detector(s.v,s.fs);
     case 'HeartPy'
-        peaks = heartpy_pc(s);
+        peaks = heartpypc_beat_detector(s.v,s.fs);
     case 'COppg'
-        [peaks, onsets] = COppg_peak_detector(s.v, s.fs);
-    case 'SPAR3'
-        % uses external file
-        N = 3;
-        [beat_indices_all,cycle_times_all] = SPARcycleTimesPPG(s.v,s.fs,N);
-        peaks = nan(length(beat_indices_all)-1,1);
-        for beat_no = 1 : length(beat_indices_all)-1
-            curr_ind = beat_indices_all(beat_no);
-            [~, temp] = max(s.v(curr_ind:beat_indices_all(beat_no+1)));
-            peaks(beat_no) = curr_ind+temp-1;
-        end
-    case 'SPAR7'
-        % uses external file
-        N = 7;
-        [beat_indices_all,cycle_times_all] = SPARcycleTimesPPG(s.v,s.fs,N);        
-        peaks = nan(length(beat_indices_all)-1,1);
-        for beat_no = 1 : length(beat_indices_all)-1
-            curr_ind = beat_indices_all(beat_no);
-            [~, temp] = max(s.v(curr_ind:beat_indices_all(beat_no+1)));
-            peaks(beat_no) = curr_ind+temp-1;
-        end
+        [peaks, onsets] = coppg_beat_detector(s.v, s.fs);
+    case 'SPAR'
+        peaks = spar_beat_detector(s.v,s.fs);
     case 'ERMA'
-        peaks = erma(s);
+        peaks = erma_beat_detector(s.v,s.fs);
     case 'PWD'
-        [onsets, peaks] = pwd(s);
+        [peaks, onsets] = pwd_beat_detector(s.v,s.fs);
     case 'PDA'
-        peaks = pda(s);
+        peaks = pda_beat_detector(s.v,s.fs);
     case 'WFD'
-        peaks = wfd(s);
+        peaks = wfd_beat_detector(s.v,s.fs);
 end
 
 % tidy up peaks and onsets
@@ -156,7 +134,7 @@ end
 % Add mid-amplitude point if required
 if ~exist('mid_amps','var')
     mid_amps = nan(length(onsets),1);
-    for wave_no = 1 : length(onsets)
+    for wave_no = 1 : min([length(onsets), length(peaks)])
         desired_ht = mean(s.v([onsets(wave_no), peaks(wave_no)]));
         [~, temp] = min(abs(s.v(onsets(wave_no):peaks(wave_no)) - desired_ht));
         mid_amps(wave_no,1) = temp + onsets(wave_no) - 1;

@@ -1496,7 +1496,7 @@ for beat_detector_no = 1 : length(beat_detectors_remaining)
             rel_S.v = S.v(rel_els);
             rel_S.fs = S.fs;
             %[~, ~, pulses, ~] = PulseAnalyse(rel_S, options);
-            [peaks, onsets, mid_amps] = detect_ppg_beats(rel_S, options);
+            [peaks, onsets, mid_amps] = detect_ppg_beats(rel_S, curr_beat_detector);
             
             % store beats
             if strcmp(uParams.analysis.ppg_fid_pt, 'pk')

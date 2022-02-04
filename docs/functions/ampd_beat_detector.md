@@ -1,27 +1,27 @@
-# `DETECT_PPG_BEATS` - detects beats in PPG.
-DETECT_PPG_BEATS detects beats in a photoplethysmogram (PPG) signal
-using a specified beat detector
+# `AMPD_BEAT_DETECTOR` - AMPD PPG beat detector.
+AMPD_BEAT_DETECTOR detects beats in a photoplethysmogram (PPG) signal
+using the 'Automatic Multiscale-based Peak Detection' beat detector
 
 ##  Inputs
-+   s : a structure containing the following fields:
++   sig : a vector of PPG values
     
-     - v : a vector of PPG values
-     - fs : the sampling frequency of the PPG in Hz
++   fs  : the sampling frequency of the PPG in Hz
     
-+   beat_detector  - a string specifying the beat detector to be used
++   lpf_freq : (optional) the frequency (in Hz) of low-pass filtering applied to the PPG
     
 ##  Outputs
-+   peaks : ...TBC...
++   peaks : indices of detected pulse peaks
     
-+   onsets : ...TBC...
++   onsets : indices of detected pulse onsets
     
-+   mid_amps : ...TBC...
-    
-##  Documentation
-<https://ppg-beats.readthedocs.io/>
+##  Reference
+F. Scholkmann et al., 'An efficient algorithm for automatic peak detection in noisy periodic and quasi-periodic signals,' Algorithms, vol. 5, no. 4, pp. 588-603, 2012. <https://doi.org/10.3390/a5040588>
 
 ##  Author
 Peter H. Charlton, University of Cambridge, February 2022.
+
+##  Documentation
+<https://ppg-beats.readthedocs.io/>
 
 ##  Version
 0.1, and is still in development.

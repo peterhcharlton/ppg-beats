@@ -1,27 +1,24 @@
-# `DETECT_PPG_BEATS` - detects beats in PPG.
-DETECT_PPG_BEATS detects beats in a photoplethysmogram (PPG) signal
-using a specified beat detector
+# `WFD_BEAT_DETECTOR` - WFD PPG beat detector.
+WFD_BEAT_DETECTOR detects beats in a photoplethysmogram (PPG) signal
+using the 'Wavelet Foot Delineation' beat detector
 
 ##  Inputs
-+   s : a structure containing the following fields:
++   sig : a vector of PPG values
     
-     - v : a vector of PPG values
-     - fs : the sampling frequency of the PPG in Hz
-    
-+   beat_detector  - a string specifying the beat detector to be used
++   fs  : the sampling frequency of the PPG in Hz
     
 ##  Outputs
-+   peaks : ...TBC...
++   peaks : indices of detected pulse peaks
     
-+   onsets : ...TBC...
-    
-+   mid_amps : ...TBC...
-    
-##  Documentation
-<https://ppg-beats.readthedocs.io/>
+##  Reference
+N. J. Conn and D. A. Borkholder, 'Wavelet based photoplethysmogram foot delineation for heart rate variability applications,' in IEEE Signal Processing in Medicine and Biology Symposium. IEEE, 2013. <https://doi.org/10.1109/SPMB.2013.6736782>
 
 ##  Author
-Peter H. Charlton, University of Cambridge, February 2022.
+Elisa Mejía Mejía - wrote the code: 'wavelet'
+Peter H. Charlton - did very little, just wrote this wrapper and made slight edits (see 'erma')
+
+##  Documentation
+<https://ppg-beats.readthedocs.io/>
 
 ##  Version
 0.1, and is still in development.

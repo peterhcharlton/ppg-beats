@@ -1,27 +1,26 @@
-# `DETECT_PPG_BEATS` - detects beats in PPG.
-DETECT_PPG_BEATS detects beats in a photoplethysmogram (PPG) signal
-using a specified beat detector
+# `IMS_BEAT_DETECTOR` - IMS PPG beat detector.
+IMS_BEAT_DETECTOR detects beats in a photoplethysmogram (PPG) signal
+using the 'Incremental Merge Segmentation' beat detector
 
 ##  Inputs
-+   s : a structure containing the following fields:
++   sig : a vector of PPG values
     
-     - v : a vector of PPG values
-     - fs : the sampling frequency of the PPG in Hz
-    
-+   beat_detector  - a string specifying the beat detector to be used
++   fs  : the sampling frequency of the PPG in Hz
     
 ##  Outputs
-+   peaks : ...TBC...
++   peaks : detected pulse peaks
     
-+   onsets : ...TBC...
++   onsets : detected pulse onsets
     
-+   mid_amps : ...TBC...
-    
-##  Documentation
-<https://ppg-beats.readthedocs.io/>
+##  Reference
+W. Karlen et al., 'Adaptive pulse segmentation and artifact detection in photoplethysmography for mobile applications,' in Proc. IEEE EMBS. IEEE, 2012, pp. 3131-4. <https://doi.org/10.1109/EMBC.2012.6346628>
 
 ##  Author
-Peter H. Charlton, University of Cambridge, February 2022.
+Marco A. Pimentel - wrote the code: 'adaptPulseSegment'
+Peter H. Charlton - did very little, just wrote this wrapper
+
+##  Documentation
+<https://ppg-beats.readthedocs.io/>
 
 ##  Version
 0.1, and is still in development.
