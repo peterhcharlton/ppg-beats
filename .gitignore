@@ -156,3 +156,5 @@ cython_debug/
 # End of https://www.toptal.com/developers/gitignore/api/python,jupyternotebooks
 
 **/.DS_Store
+.DS_Store
+Docs/.DS_Store

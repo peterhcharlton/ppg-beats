@@ -3,15 +3,18 @@ repo_url: https://github.com/peterhcharlton/ppg-beats
 
 nav:
     - 'Home': 'index.md'
-    - 'Getting Started': './getting_started/index.md'
-    - 'Algorithms':
-      - 'PPG Beat Detection': './algorithms/ppg_beat_detection_algs.md'
-      - 'ECG Beat Detection': './algorithms/ecg_beat_detection_algs.md'
-    - 'Assessing Performance':
-      - 'Datasets': './assessing_performance/datasets/index.md'
-      - 'Code': './assessing_performance/code/index.md'
+    - 'Getting Started': './getting_started.md'
+    - 'Toolbox':
+      - 'Datasets': './datasets.md'
+      - 'Performance Assessment': './code.md'
+      - 'PPG Beat Detection': './ppg_beat_detection_algs.md'
+      - 'ECG Beat Detection': './ecg_beat_detection_algs.md'
+      - 'Functions':
+        - 'assess_multiple_datasets': './functions/assess_multiple_datasets.md'
+        - 'assess_beat_detectors': './functions/assess_beat_detectors.md'
     - 'Tutorials':
-      - 'PPG Beat Detection': './tutorials/beat_detection/ppg_beat_detection.md'
-      - 'ECG Beat Detection': './tutorials/beat_detection/ecg_beat_detection.md'
-      - 'Performance Assessment': './tutorials/performance_assessment/index.md'
-      - 'Time Alignment': './tutorials/misc/time_alignment.md'
+      - 'PPG Beat Detection': './tutorials/ppg_beat_detection.md'
+      - 'ECG Beat Detection': './tutorials/ecg_beat_detection.md'
+      - 'Performance Assessment': './tutorials/performance_assessment.md'
+      - 'Time Alignment': './tutorials/time_alignment.md'
+      

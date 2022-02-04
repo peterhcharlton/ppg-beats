@@ -1,45 +1,51 @@
-function ppg_beat_detector_assessment(dataset, options)
-% PPG_BEAT_DETECTOR_ASSESSMENT  Assesses the performance of photoplethysmogram 
-% (PPG) beat detectors. Performance can be assessed across a range of datasets.
+function assess_beat_detectors(dataset, options)
+% ASSESS_BEAT_DETECTORS  Assess beat detectors.
+%   ASSESS_BEAT_DETECTORS assesses the performance of multiple
+%   photoplethysmogram (PPG) beat detectors on a dataset.
 %   
-%  Inputs:
-%
-%     dataset - The name of the dataset with which to assess performance, e.g.
-%                   'ppg_dalia_working'
-%                   'ppg_dalia_walking'
-%                   'ppg_dalia_sitting'
-%                   'capnobase'
-%                   'mimic_af'
-%                   'mimic_non_af'
-%                   'wesad_baseline'
-%               You must have downloaded and collated the dataset in order
-%               to use it. Instructions on how to download and collate datasets
-%               are provided here:
-%                   https://peterhcharlton.github.io/info/datasets
-%
-%     options - (optional) a structure of options which determine the settings used for the analysis:
-%                   options.dataset_file    - a string containing the path of the Matlab file containing the collated dataset.
-%                   options.beat_detectors  - a cell array containing strings corresponding to the names of the beat detectors to be used.
-%                   options.do_downsample   - (1 or 0, default value of 0) A logical indicating whether or not to downsample the PPG signals prior to analysis.
-%                   options.downsample_freq - the frequency at which to downsample PPG signals (Hz). Only used if downsampling is enabled by options.do_downsample.
-%                   options.redo_analysis   - A logical indicating whether or not to overwrite existing analysis files in order to redo the analysis
-%
-%  Outputs:
-%
-%
-%  Exemplary usage:
-%
-%       ppg_beat_detection_assessment('mimic_non_af')      % assesses the performance of beat detectors on the 'mimic_non_af' dataset using default analysis options
-%
-%  Further Information:
-%       Please see the accompanying manual at: ...
-%
-%  Licence: 
-%       Available under the GNU public license - please see the accompanying
-%       file named "LICENSE"
-%
-% Author: Peter H. Charlton, University of Cambridge, July 2021.
-% Version: 0.1, and is still in development.
+%   # Inputs
+%   
+%   * dataset - The name of the dataset with which to assess performance, e.g.
+%        'ppg_dalia_working'
+%        'ppg_dalia_walking'
+%        'ppg_dalia_sitting'
+%        'capnobase'
+%        'mimic_af'
+%        'mimic_non_af'
+%        'wesad_baseline'
+%     You must have downloaded and collated the dataset in order
+%     to use it. Instructions on how to download and collate datasets
+%     are provided here: <https://peterhcharlton.github.io/info/datasets>
+%   
+%   * options - (optional) A structure of options which determine the settings used for the analysis:
+%        options.dataset_file    - a string containing the path of the Matlab file containing the collated dataset.
+%        options.beat_detectors  - a cell array containing strings corresponding to the names of the beat detectors to be used.
+%        options.do_downsample   - (1 or 0, default value of 0) A logical indicating whether or not to downsample the PPG signals prior to analysis.
+%        options.downsample_freq - the frequency at which to downsample PPG signals (Hz). Only used if downsampling is enabled by options.do_downsample.
+%        options.redo_analysis   - A logical indicating whether or not to overwrite existing analysis files in order to redo the analysis
+%   
+%   # Outputs
+%   * ...
+%   
+%   # Exemplary usage
+%   
+%       assess_beat_detectors('mimic_non_af')      % assesses the performance of beat detectors on the 'mimic_non_af' dataset using default analysis options
+%   
+%   # Documentation
+%   <https://ppg-beats.readthedocs.io/>
+%   
+%   # Author
+%   Peter H. Charlton, University of Cambridge, February 2022.
+%   
+%   # Version
+%   0.1, and is still in development.
+%   
+%   # Licence
+%      This file is part of PPG-beats.
+%      PPG-beats is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+%      PPG-beats is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+%      You should have received a copy of the GNU General Public License along with PPG-beats. If not, see <https://www.gnu.org/licenses/>.
+
 
 %% Setup
 
@@ -50,7 +56,8 @@ if nargin < 2, options = struct; end
 % Setup universal parameters
 uParams = setup_up(dataset, options);
 
-uParams.analysis.redo_analysis = 0;
+% Manual switch allowing you to redo the analysis
+uParams.analysis.redo_analysis = 1;
 
 %% Detect beats in PPG signals
 detect_beats_in_ppg_signals(uParams);
@@ -1348,7 +1355,7 @@ fprintf('\n--- Detecting beats in PPG signals')
 
 % cycle through each subject
 for subj_no = 1 : uParams.dataset_details.no_subjs
-    fprintf('\n - Identifying beats in subj %d: ', subj_no);
+    fprintf('\n - Detecting beats in subj %d: ', subj_no);
     
     %% See if there are any remaining beat detectors to be applied
     % - create filepath
@@ -1410,41 +1417,170 @@ end
 function S = preprocess_ppg_signal(S, uParams)
 % Downsample and filter PPG signal prior to beat detection
 
-% - setup PulseAnalyse options for downsampling
-if uParams.analysis.do_downsample
-    options.downsample = 1;
-    options.downsample_freq = uParams.analysis.downsample_freq;
-else
-    options.downsample = 0;
-end
-
 % Downsample 'no_signal'
-if options.downsample
-    if rem(S.fs, options.downsample_freq) == 0
+if uParams.analysis.do_downsample
+    if rem(S.fs, uParams.analysis.downsample_freq) == 0
         % Downsample
-        ds_factor = S.fs/options.downsample_freq;
+        ds_factor = S.fs/uParams.analysis.downsample_freq;
         S.no_signal = downsample(S.no_signal, ds_factor);
     else
         % Resample
-        S.no_signal = resample(double(S.no_signal), options.downsample_freq, S.fs);
+        S.no_signal = resample(double(S.no_signal), uParams.analysis.downsample_freq, S.fs);
         S.no_signal = logical(S.no_signal);
     end
 end
 
-% - setup PulseAnalyse options for filtering
-options.elim_high_freqs = uParams.analysis.filtering.elim_high_freqs;
-options.elim_low_freqs = uParams.analysis.filtering.elim_low_freqs;
-options.calc_pw_inds = 0;
-options.do_plot = 0;
-options.do_beats = 0;
-options.do_quality = 0;
+% Downsample PPG signal
+if uParams.analysis.do_downsample
+    S = do_downsample(S, uParams.analysis.downsample_freq);
+end
 
-% Downsample and filter PPG signal
-[~, ~, ~, sigs] = PulseAnalyse(S, options);
+% Filter PPG signal
+sigs = filter_signal(S, uParams);
 S.v = sigs.filt;
 S.fs = sigs.fs;
 clear options
 
+end
+
+function S = do_downsample(S, downsample_freq)
+
+%% Downsample
+
+% Work out whether to downsample or interpolate
+if rem(S.fs, downsample_freq) == 0
+    % Downsample
+    ds_factor = S.fs/downsample_freq;
+    S.v = downsample(S.v, ds_factor);
+    S.fs = downsample_freq;
+else
+    use_resampling = 1;
+    if use_resampling
+        % Resample
+        S.v(isnan(S.v)) = median(S.v(~isnan(S.v)));
+        S.v = resample(S.v, downsample_freq, S.fs);
+    else
+        % Interpolate
+        t = 1:length(S.v);
+        t_new = 1:(S.fs/downsample_freq):t(end);
+        S.v = interp1(t, S.v, t_new);
+    end
+    S.fs = downsample_freq;
+end
+
+end
+
+function sigs = filter_signal(S, uParams)
+
+%% Make output variable
+sigs.fs = S.fs;
+sigs.orig = S.v;
+
+%% Filter to remove high frequencies
+filt_characteristics = uParams.analysis.filtering.elim_high_freqs;
+s_filt = elim_vhfs3(S, filt_characteristics);
+
+%% Filter to remove low frequencies
+filt_characteristics = uParams.analysis.filtering.elim_low_freqs;
+s_filt = elim_vlfs(s_filt, filt_characteristics, uParams);
+
+%% Output
+sigs.filt = s_filt.v;
+sigs.curr = sigs.filt;
+
+end
+
+function s_filt = elim_vhfs3(s, filt_characteristics)
+%% Filter signal to remove VHFs
+% Adapted from RRest
+
+s_filt.fs = s.fs;
+
+%% Eliminate nans
+s.v(isnan(s.v)) = mean(s.v(~isnan(s.v)));
+
+%% Check to see if sampling freq is at least twice the freq of interest
+if (filt_characteristics.Fpass/(s.fs/2)) >= 1
+    % then the fs is too low to perform this filtering
+    s_filt.v = s.v;
+    return
+end
+
+%% Create filter
+% parameters for the low-pass filter to be used
+AMfilter = create_lpf(filt_characteristics, s);
+
+%% Re-make filter if it requires too many samples for this signal
+% check to see if it requires too many samples
+req_sig_length = 3*(length(AMfilter.numerator)-1);
+no_attempts = 0;
+while no_attempts<4 && length(s.v)<=req_sig_length
+    % change Fpass (i.e. the high frequency end of the filter band)
+    filt_characteristics.Fpass = filt_characteristics.Fpass+0.75*(filt_characteristics.Fpass-filt_characteristics.Fstop);
+    % re-make filter
+    AMfilter = create_lpf(filt_characteristics, s);
+    % update criterion
+    req_sig_length = 3*(length(AMfilter.numerator)-1);
+    % increment number of attempts
+    no_attempts = no_attempts+1;
+end
+if length(s.v)<=req_sig_length
+    fprintf('\n - Couldn''t perform high frequency filtering')
+end
+
+%% Check frequency response
+% Gives a -3 dB cutoff at cutoff_freq Hz, using:
+% freqz(AMfilter.Numerator)
+% norm_cutoff_freq = 0.0512;    % insert freq here from plot
+% cutoff_freq = norm_cutoff_freq*(s.fs/2);
+
+%% Remove VHFs
+if length(s.v)>req_sig_length
+    s_filt.v = filtfilt(AMfilter.numerator, 1, s.v);
+else
+    s_filt.v = s.v;
+end
+
+end
+
+function AMfilter = create_lpf(filt_characteristics, s)
+
+[N,Wn,BETA,TYPE] = kaiserord([filt_characteristics.Fstop filt_characteristics.Fpass]/(s.fs/2), [1 0], [filt_characteristics.Dstop filt_characteristics.Dpass]);
+b  = fir1(N, Wn, TYPE, kaiser(N+1, BETA), 'scale');
+AMfilter = dfilt.dffir(b);
+
+end
+
+function s_filt = elim_vlfs(s, filt_characteristics, up)
+%% Filter pre-processed signal to remove frequencies below resp
+% Adapted from RRest
+
+%% Eliminate nans
+s.v(isnan(s.v)) = mean(s.v(~isnan(s.v)));
+
+%% Make filter
+flag  = 'scale';
+[N,Wn,BETA,TYPE] = kaiserord([filt_characteristics.Fstop filt_characteristics.Fpass]/(s.fs/2), [1 0], [filt_characteristics.Dstop filt_characteristics.Dpass]);
+b  = fir1(N, Wn, TYPE, kaiser(N+1, BETA), flag);
+AMfilter = dfilt.dffir(b);
+
+%% Check frequency response
+% % Gives a -3 dB cutoff at ? Hz, using:
+% freqz(AMfilter.Numerator)
+% norm_cutoff_freq = 4.435e-3;    % insert freq here from plot
+% cutoff_freq = norm_cutoff_freq*(s.fs/2);
+
+if length(s.v) > (length(AMfilter.numerator)-1)*3
+    % - Tukey Window to avoid edge effects
+    win_edge_durn = 0.5; % in secs
+    prop_win = win_edge_durn*2/((length(s.v)-1)/s.fs);
+    tw = tukeywin(length(s.v),prop_win); 
+    s_filt.v = filtfilt(AMfilter.numerator, 1, s.v.*tw);
+    s_filt.v = s.v-s_filt.v;
+else
+    s_filt.v = s.v;
+end
+s_filt.fs = s.fs;
 end
 
 function S = identify_periods_of_no_signal(S, uParams)
@@ -1847,126 +1983,14 @@ if sum(strcmp(fieldnames(S), 'rpeaks'))
 end
 
 %% if not, then identify R-peaks
-
-do_orig = false;
-
-if do_orig
-    if ~uParams.analysis.do_wins
-        % Without windowing
-        [~, ecg_beats_inds, ~]  = rpeakdetect_pc(S.v,S.fs);
-    else
-        % With windowing
-        win_starts = 0:(uParams.analysis.win_durn-uParams.analysis.win_overlap):(((length(S.v)-1)/S.fs)-uParams.analysis.win_durn);
-        t = 0:(1/S.fs):((length(S.v)-1)/S.fs);
-        ecg_beats_inds = [];
-        for win_no = 1 : length(win_starts)
-            
-            % identify elements corresponding to this window
-            curr_start = win_starts(win_no);
-            curr_end = curr_start+uParams.analysis.win_durn;
-            rel_els = t>= curr_start & t<= curr_end;
-            
-            % skip this window if any of it didn't contain a signal
-            if sum(S.no_signal(rel_els))
-                ecg_exc_log(rel_els) = true;
-                continue
-            end
-            
-            % identify beats in this window
-            rel_S.v = S.v(rel_els);
-            rel_S.fs = S.fs;
-            [~, curr_ecg_beat_inds, ~]  = rpeakdetect_pc(rel_S.v,rel_S.fs);
-            
-            % store beats
-            ecg_beats_inds = [ecg_beats_inds; curr_ecg_beat_inds+find(rel_els,1)-1];
-            clear curr_ecg_beat_inds curr_start curr_end rel_els rel_S
-        end
-        clear win_no t win_starts
-        
-        % remove repeated beat detections
-        ecg_beats_inds = sort(ecg_beats_inds);
-        repeated_beats = [0; diff(ecg_beats_inds)< round(uParams.analysis.tol_window*S.fs)];
-        ecg_beats_inds = ecg_beats_inds(~repeated_beats);
-        clear repeated_beats win_no t win_starts
-    end
-    clear do_wins
-else
     
-    % Detect heartbeats in an ECG signal, and assess the quality of the beat detections.
-    options.verbose = false;
-    options.win_durn = uParams.analysis.win_durn;
-    options.win_overlap = uParams.analysis.win_overlap;
-    options.qrs_tol_window = uParams.analysis.qrs_tol_window;
-    [ecg_beats_inds, qual] = ecg_beat_detector(S.v, S.fs, options, S.no_signal);
-    ecg_exc_log = 1-qual;
-    
-%     %% GQRS detector
-%     % - write this signal to a WFDB file
-%     temp_diffs = diff(sort(S.v));
-%     temp_sig = round(S.v/(min(temp_diffs(temp_diffs>0))));
-%     tm = (0:(length(S.v)-1))/S.fs;
-%     wrsamp(tm(:),temp_sig,'temp',S.fs);
-%     
-%     % - run gqrs to identify beats, and save to a qrs annotation file
-%     gqrs('temp');
-%     
-%     % - load qrs annotations
-%     [ann]=rdann('temp', 'qrs');
-%     
-%     % - display message about temporary files
-%     fprintf('\n temporary files created in current directory')
-%     
-%     %% JQRS detector
-%     HRVparams = InitializeHRVparams(''); HRVparams.Fs = S.fs;
-%     QRS = run_qrsdet_by_seg(S.v,HRVparams);
-%     QRS = QRS(:);
-%     
-%     %% Assess quality
-%     % - here ann is the reference
-%     diff_matrix = repmat(QRS, [1, length(ann)]) - ann';
-%     % - Find minimum differences
-%     min_abs_diff = min(abs(diff_matrix), [], 2);
-%     % - Identify correctly identified beats
-%     beat_correct_log = min_abs_diff<(uParams.analysis.qrs_tol_window*S.fs);
-%     ecg_beats_inds = QRS(beat_correct_log);
-%     % remove any repeated beat detections
-%     ecg_beats_inds = sort(ecg_beats_inds);
-%     repeated_beats = [0; diff(ecg_beats_inds)< round(uParams.analysis.tol_window*S.fs)];
-%     ecg_beats_inds = ecg_beats_inds(~repeated_beats);
-%     clear repeated_beats
-%         
-%     if uParams.analysis.do_wins
-%         
-%         % Perform quality assessment with windowing
-%         win_starts = 0:(uParams.analysis.win_durn-uParams.analysis.win_overlap):(((length(S.v)-1)/S.fs)-uParams.analysis.win_durn);
-%         t = 0:(1/S.fs):((length(S.v)-1)/S.fs);
-%         t_disagree_beats = t(QRS(~beat_correct_log));
-%         for win_no = 1 : length(win_starts)
-%             
-%             % identify elements corresponding to this window
-%             curr_start = win_starts(win_no);
-%             curr_end = curr_start+uParams.analysis.win_durn;
-%             
-%             % skip this window if any of it didn't contain a signal
-%             rel_els = t>= curr_start & t<= curr_end;
-%             if sum(S.no_signal(rel_els))
-%                 ecg_exc_log(rel_els) = true;
-%                 continue
-%             end
-%             
-%             % skip this window if it contained any disagreements
-%             curr_win_disagree_inds = t_disagree_beats >= curr_start & t_disagree_beats <= curr_end;
-%             if sum(curr_win_disagree_inds)
-%                 ecg_exc_log(rel_els) = true;
-%                 continue
-%             end
-%             
-%             clear curr_start curr_end rel_els curr_win_disagree_inds
-%         end
-%         clear win_no t win_starts t_disagree_beats
-%         
-%     end
-end
+% Detect heartbeats in an ECG signal, and assess the quality of the beat detections.
+options.verbose = true;
+options.win_durn = uParams.analysis.win_durn;
+options.win_overlap = uParams.analysis.win_overlap;
+options.qrs_tol_window = uParams.analysis.qrs_tol_window;
+[ecg_beats_inds, qual] = ecg_beat_detector(S.v, S.fs, options, S.no_signal);
+ecg_exc_log = 1-qual;
 
 end
 
@@ -2146,141 +2170,4 @@ qual_ts.t = round(qual_ts.t*100)/100; % assumes a max sampling freq of 100 Hz
 % make into column vectors
 qual_ts.t = qual_ts.t(:);
 qual_ts.v = qual_ts.v(:);
-end
-
-function [R_amp, R_index, S_amp]  = rpeakdetect_pc(data,samp_freq,thresh)
-
-% [R_amp, R_index, S_amp]  = rpeakdetect(data, samp_freq, thresh); 
-% R_amp == amplitude of R peak in bpf data & S_amp == amplitude of following minmum.
-% samp_freq == sampling frequency in Hz 
-% The 'triggering' threshold 'thresh' for the peaks in the 'integrated'  
-% waveform is 0.2 by default.
-%
-% A batch QRS detector based upon that of Pan, Hamilton and Tompkins:
-% J. Pan \& W. Tompkins - A real-time QRS detection algorithm 
-% IEEE Transactions on Biomedical Engineering, vol. BME-32 NO. 3. 1985.
-% P. Hamilton \& W. Tompkins. Quantitative Investigation of QRS 
-% Detection  Rules Using the MIT/BIH Arrythmia Database. 
-% IEEE Transactions on Biomedical Engineering, vol. BME-33, NO. 12.1986.
-% 
-% Similar results reported by the authors above were achieved, without
-% having to tune the thresholds on the MIT DB. An online version in C
-% has also been written.
-%
-% Written by G. Clifford gari@ieee.org and made available under the 
-% GNU general public license. If you have not received a copy of this 
-% license, please download a copy from http://www.gnu.org/
-%
-% Please distribute (and modify) freely, commenting
-% where you have added modifications. 
-% The author would appreciate correspondence regarding
-% corrections, modifications, improvements etc.
-%
-% gari@ieee.org
-%
-% --- 28th Feb 2019, Peter H Charlton ---
-% Made the following changes:
-%  - Added further comments (an adjusted original ones) to help me understand the code
-%  - Split the integration step into two parts: integrating, and taking the
-%  median filter of the integrated signal.
-%  - Removed time axis and plotting function (including testmode and time outputs)
-%  - Removed default sampling frequency
-%  - Removed HRV and resp variables
-% --- 13th July 2021, Peter H Charlton ---
-%  - Made maxval, minval, maxloc, minloc into column vectors
-% ---------------------------------------
-
-%% Setup
-
-% --- Threshold ---
-
-%- make threshold default 0.2 -> this was 0.15 on MIT data 
-if nargin < 3
-   thresh = 0.2;
-end
-
-% --- Data Format ---
-
-% - Make into column vector
-x = data(:);
-
-% eliminate nans
-t = 0:length(x);
-x(isnan(x)) = interp1(t(~isnan(x)),x(~isnan(x)),t(isnan(x)));
-
-%% Filter signal
-
-% --- Remove mean ---
-
-x = x-nanmean(x);  % there may still be some nans at the start or end
- 
-% --- FIR Bandpass filter (if filter exists) ---
-
-% - no filter
-bpf=x; % use if there is no filter bank available
-% - FS = 128 Hz
-if( (samp_freq==128) & (exist('filterECG128Hz')~=0) )
-        bpf = filterECG128Hz(x); 
-end
-% - FS = 256 Hz
-if( (samp_freq==256) & (exist('filterECG256Hz')~=0) )
-        bpf = filterECG256Hz(x); 
-end
-
-%% Process signal
-
-% --- Differentiate ---
-dff = diff(bpf);  % now it's one datum shorter than before
-
-% --- Square ---
-sqr = dff.*dff;   %
-len = length(x)-1; % how long is the new vector now?
-
-% --- Integrate data over window 'd' ---
-% - setup window size
-d=[1 1 1 1 1 1 1]; % intialise
-if (samp_freq>=256) % adapt for higher sampling rates
-    d = [ones(1,round(7*samp_freq/256))];
-end
-% - integrate
-integ = filter(d,1,sqr);
-% - take median filter over window of 10 samples
-mdfint = medfilt1(integ,10);
-% - remove filter delay for scanning back through ECG
-delay = ceil(length(d)/2);
-mdfint = mdfint(delay:length(mdfint));
-
-%% Search
-
-% - Maximum value in middle half of processed signal
-max_h = max (mdfint(round(len/4):round(3*len/4)));
-
-% - Identify indices of processed signal which are greater than the threshold proportion of this maximum value
-poss_reg = mdfint>(thresh*max_h);
-
-% - Find regions of processed signal which are above this threshold
-left  = find(diff([0 poss_reg'])==1); % left boundary, remembering to zero pad at start
-right = find(diff([poss_reg' 0])==-1); % right boundary, remembering to zero pad at end
-
-% - identify maximum and minimum values in each region in BPF signal
-for(i=1:length(left))
-    [maxval(i,1), maxloc(i,1)] = max( bpf(left(i):right(i)) );
-    [minval(i,1), minloc(i,1)] = min( bpf(left(i):right(i)) );
-    maxloc(i,1) = maxloc(i)-1+left(i); % add offset of present location
-    minloc(i,1) = minloc(i)-1+left(i); % add offset of present location
-end
-
-% - Assume R-peaks are at maximum values of BPF signal
-R_index = maxloc;
-R_amp = maxval;
-
-% - Assume S-troughs are at minimum values of BPF signal
-S_amp = minval;   %%%% Assuming the S-wave is the lowest amp in the given window
-
-% - check for lead inversion (i.e. do minima precede maxima?)
-if (minloc(length(minloc))<maxloc(length(minloc)))      % considering the final beat only
-    R_amp = minval;
-    S_amp = maxval;
-end
-
 end
