@@ -10,6 +10,8 @@ using the 'Event-Related Moving Averages' beat detector
 ##  Outputs
 +   peaks : indices of detected pulse peaks
     
++   onsets : indices of detected pulse onsets
+    
 ##  Reference
 M. Elgendi et al., 'Systolic peak detection in acceleration photoplethysmograms measured from emergency responders in tropical conditions,' PLoS ONE, vol. 8, no. 10, pp. 1-11, 2013. <https://doi.org/10.1371/journal.pone.0076585>
 

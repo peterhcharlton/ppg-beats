@@ -1,23 +1,17 @@
-# `SPAR_BEAT_DETECTOR` - SPAR PPG beat detector.
-SPAR_BEAT_DETECTOR detects beats in a photoplethysmogram (PPG) signal
-using the 'Symmetric Projection Attractor Reconstruction' beat detector
+# `PULSE_ONSETS_FROM_PEAKS` - Identifies pulse onsets.
+PULSE_ONSETS_FROM_PEAKS detects pulse onsets in a photoplethysmogram 
+(PPG) signal from the locations of the pulse peaks
 
 ##  Inputs
 +   sig : a vector of PPG values
     
-+   fs  : the sampling frequency of the PPG in Hz
-    
-##  Outputs
 +   peaks : indices of detected pulse peaks
     
+##  Outputs
 +   onsets : indices of detected pulse onsets
     
-##  Reference
-none
-
 ##  Author
-Callum Pettit and Philip Aston - wrote the code: 'SPARcycleTimesPPG'
-Peter H. Charlton - modified the code slightly (as indicated), but mainly just wrote this wrapper
+Peter H. Charlton, University of Cambridge, February 2022
 
 ##  Documentation
 <https://ppg-beats.readthedocs.io/>

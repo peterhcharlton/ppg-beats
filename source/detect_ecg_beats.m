@@ -1,57 +1,58 @@
-function [beats_inds, qual] = ecg_beat_detector(ecg, fs, options, no_signal_vector)
-% ECG_BEAT_DETECTOR  Detects heartbeats in an ECG signal, and assesses the
-% quality of the beat detections.
+function [beats_inds, qual] = detect_ecg_beats(ecg, fs, options, no_signal_vector)
+% DETECT_ECG_BEATS  detects beats in ECG.
+%   DETECT_ECG_BEATS detects beats in an electrocardiogram (ECG) signal
+%   using two beat detectors, and uses the agreement between beat detectors to
+%   assess the quality of beat detections.
 %   
-%  Inputs:
+%   # Inputs
+%   
+%   * ecg : a vector of ECG values
+%   * fs : the sampling frequency of the ECG in Hz
+%   * options : (optional) a structure of options which determine the settings used for the analysis:
+%    - options.win_durn       - The duration of windows over which to perform quality assessment (in secs)
+%    - options.win_overlap    - The overlap of windows (in secs)
+%    - options.verbose        - A logical indicating whether (1) or not (0) to display text in the Command Window
+%    - options.qrs_tol_window - The acceptable tolerance window around QRS spikes (in secs)
 %
-%     ecg - A vector of ECG values
-%
-%     fs - The sampling frequency of the ECG signal (in Hz)
-%
-%     options - (optional) a structure of options which determine the settings used for the analysis:
-%
-%                   options.win_durn       - The duration of windows over which to perform quality assessment (in secs)
-%                   options.win_overlap    - The overlap of windows (in secs)
-%                   options.verbose        - A logical indicating whether (1) or not (0) to display text in the Command Window
-%                   options.qrs_tol_window - The acceptable tolerance window around QRS spikes (in secs)
-%
-%     no_signal_vector - (optional) a vector of the same length as the ECG vector, which indicates whether (1) or not (0) there was a signal at each sample
-%
-%  Outputs:
-%
-%     beat_inds - indices of detected beats
-%
-%     qual - quality of each detected beat
-%
-%     temporary file - this script creates a temporary file in the current directory
-%
-%  Requirements:
-%
-%     Waveform Database Software Package (WFDB) for MATLAB and Octave, available from:
-%           https://doi.org/10.13026/6zcz-e163
-%
-%  Acknowledgment:
-%
-%     This script uses scripts from the PhysioNet Cardiovascular Signal Toolbox (under the GNU public licence):
-%           - Scripts: InitializeHRVparams.m, ExportHRVparams.m, run_qrsdet_by_seg.m, jqrs.m
-%           - Link: https://github.com/cliffordlab/PhysioNet-Cardiovascular-Signal-Toolbox
-%           - Reference: Vest et al. 'An open source benchmarked toolbox for cardiovascular waveform and interval analysis'. Physiol Meas, 39, 2018. https://doi.org/10.1088/1361-6579/aae021 
-%
-%  Exemplary usage:
+%   * no_signal_vector : (optional) a vector of the same length as the ECG vector, which indicates whether (1) or not (0) there was a signal at each sample
+%   
+%   # Outputs
+%   
+%   * beat_inds : the indices of detected beats
+%   * qual : a logical indicating whether (1) or not (0) beats agreed between beat detectors for each ECG sample 
+%   * temporary file - this script creates a temporary file in the current directory
+%   
+%   # Exemplary usage:
 %
 %       options.win_durn = 20;
-%       [beat_inds, qual] = ecg_beat_detector(ecg, fs, options)
+%       [beat_inds, qual] = detect_ecg_beats(ecg, fs, options)
+%   
+%   # Requirements:
+%   
+%   Waveform Database Software Package (WFDB) for MATLAB and Octave, available from:
+%   <https://doi.org/10.13026/6zcz-e163>
+%   
+%   # Documentation
+%   <https://ppg-beats.readthedocs.io/>
+%   
+%   # Author
+%   Peter H. Charlton, University of Cambridge, February 2022.
 %
-%  Further Information:
-%       This is part of the PPG-beats toolbox.
-%       Please see the accompanying manual at: https://ppg-beats.readthedocs.io/
-%
-%  Licence: 
-%       Available under the GNU public license - please see the accompanying
-%       file named "LICENSE"
-%
-% Author: Peter H. Charlton, University of Cambridge, January 2022.
-% Version: 0.1, and is still in development.
+%   # Acknowledgment:
+%   This script uses scripts from the PhysioNet Cardiovascular Signal Toolbox (under the GNU public licence):
+%   - Scripts: ExportHRVparams.m, run_qrsdet_by_seg.m, jqrs.m
+%   - Some of the parameters included in this script are taken from InitializeHRVparams.m
+%   - Link: <https://github.com/cliffordlab/PhysioNet-Cardiovascular-Signal-Toolbox>
+%   - Reference: Vest et al. 'An open source benchmarked toolbox for cardiovascular waveform and interval analysis'. Physiol Meas, 39, 2018. <https://doi.org/10.1088/1361-6579/aae021> 
+%   
+%   # Version
+%   0.1, and is still in development.
+%   
+%   # Licence
+%      This file is part of PPG-beats.
+%      PPG-beats is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+%      PPG-beats is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+%      You should have received a copy of the GNU General Public License along with PPG-beats. If not, see <https://www.gnu.org/licenses/>.
 
 %% Setup
 
@@ -65,7 +66,7 @@ end
 options = setup_options(options);
 
 % - Display startup message
-display_startup_message(options);
+if options.start_up_message, display_startup_message(options); end
 
 % - WFDB toolbox
 check_WFDB_installation;
@@ -99,8 +100,16 @@ end
 
 if options.verbose, fprintf('\n - Detecting beats using the jqrs beat detector: '), end
 
-HRVparams = InitializeHRVparams('');
+% - Set parameters
+HRVparams.PeakDetect.REF_PERIOD = 0.250; 
+HRVparams.PeakDetect.THRES = .6; 
 HRVparams.Fs = fs;
+HRVparams.PeakDetect.fid_vec = [];
+HRVparams.PeakDetect.SIGN_FORCE = [];
+HRVparams.PeakDetect.debug = 0;
+HRVparams.PeakDetect.windows = 15;
+HRVparams.PeakDetect.ecgType = 'MECG';
+
 jqrs_beat_inds = run_qrsdet_by_seg(ecg,HRVparams);
 jqrs_beat_inds = jqrs_beat_inds(:);
 if options.verbose, fprintf('%d beats detected', length(jqrs_beat_inds)), end
@@ -165,7 +174,7 @@ end
 function options = setup_options(options)
 
 specified_options = fieldnames(options);
-possible_options = {'win_durn', 'win_overlap', 'verbose', 'qrs_tol_window'};
+possible_options = {'win_durn', 'win_overlap', 'verbose', 'qrs_tol_window', 'start_up_message'};
 
 for option_no = 1 : length(possible_options)
     curr_option = possible_options{option_no};
@@ -184,6 +193,8 @@ for option_no = 1 : length(possible_options)
                default_val = true;
            case 'qrs_tol_window'
                default_val = 0.2;  % in secs
+           case 'start_up_message'
+               default_val = 1;    % i.e. display the start-up message
        end
        % store the default value for this option
         eval(['options.' curr_option ' = default_val;']);
@@ -205,7 +216,7 @@ end
 function display_startup_message(options)
 % Displays a starup message, including details of the licence
 
-licence_details = ['\n\n ECG_BEAT_DETECTOR  Copyright (C) 2022  Peter H. Charlton',...
+licence_details = ['\n\n DETECT_ECG_BEATS  Copyright (C) 2022  Peter H. Charlton',...
     '\n This program comes with ABSOLUTELY NO WARRANTY', ... 
     '\n and is available under the GNU public license.', ...
     '\n For details see the accompanying LICENSE.txt file.\n\n'];

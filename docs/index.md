@@ -10,7 +10,7 @@ This library provides three key items:
 2. **[Datasets](./assessing_performance/datasets/)** and **[Code](./assessing_performance/code/)** with which to assess the performance of beat detection algorithms.
 3. Tutorials on how to use the algorithms and code.
 
-![abc](./assets/images/ppg_and_beats.png)
+![PPG signal and detected beats](./assets/images/ppg_and_beats.png)
 
 Full details of the project are available at the [project website](https://peterhcharlton.github.io/project/ppg-beats/).
 

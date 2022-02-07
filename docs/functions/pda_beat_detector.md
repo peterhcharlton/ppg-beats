@@ -10,6 +10,8 @@ using the 'Peak Detection Algorithm' beat detector
 ##  Outputs
 +   peaks : indices of detected pulse peaks
     
++   onsets : indices of detected pulse onsets
+    
 ##  Reference
 E. J. Arguello Prada and R. D. Serna Maldonado, 'A novel and low-complexity peak detection algorithm for heart rate estimation from low-amplitude photoplethysmographic (PPG) signals,' Journal of Medical Engineering and Technology, vol. 42, no. 8, pp. 569-577, 2018. <https://doi.org/10.1080/03091902.2019.1572237>
 

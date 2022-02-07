@@ -1,6 +1,6 @@
-# `ABD_BEAT_DETECTOR` - ABD PPG beat detector.
-ABD_BEAT_DETECTOR detects beats in a photoplethysmogram (PPG) signal
-using the 'Automatic Beat Detection' beat detector
+# `HEARTPY_BEAT_DETECTOR` - HEARTPY PPG beat detector.
+HEARTPY_BEAT_DETECTOR detects beats in a photoplethysmogram (PPG) signal
+using the 'HeartPy' beat detector
 
 ##  Inputs
 +   sig : a vector of PPG values
@@ -13,10 +13,10 @@ using the 'Automatic Beat Detection' beat detector
 +   onsets : indices of detected pulse onsets
     
 ##  Reference
-Aboy M et al., An automatic beat detection algorithm for pressure signals. IEEE Trans Biomed Eng 2005; 52: 1662-70. <https://doi.org/10.1109/TBME.2005.855725>
+P. van Gent et al., 'HeartPy: A novel heart rate algorithm for the analysis of noisy signals,' Transportation Research Part F: Traffic Psychology and Behaviour, vol. 66, pp. 368-378, 2019. https://doi.org/10.1016/j.trf.2019.09.015>
 
 ##  Author
-Peter H. Charlton: King's College London (August 2017), University of Cambridge (February 2022)
+Peter H. Charlton, University of Cambridge, February 2022.
 
 ##  Documentation
 <https://ppg-beats.readthedocs.io/>
@@ -25,8 +25,10 @@ Peter H. Charlton: King's College London (August 2017), University of Cambridge 
 0.1, and is still in development.
 
 ##  Source
-This script contains items either copied or modified from the RRest
-toolbox which is covered by the GNU public licence (<http://github.com/peterhcharlton/RRest/>).
+This is a Matlab implementation of the original Python algorithm, described in:
+van Gent P. et al., Analysing noisy driver physiology real-time using off-the-shelf sensors: Heart rate analysis software from the taking the fast lane project. J. Open Res. Softw. 2019, 7, <https://doi.org/10.5334/jors.241>
+It was created based on v.1.2.5 of HeartPy downloaded on 7-June-2021 from: <https://github.com/paulvangentcom/heartrate_analysis_python> 
+NB: The original HeartPy algorithm contains several extra features (such as artifact detection), which are not included in this code.
 
 ##  Licence
        This file is part of PPG-beats.

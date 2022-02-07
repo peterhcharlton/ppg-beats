@@ -10,10 +10,12 @@ nav:
       - 'PPG Beat Detection': './ppg_beat_detection_algs.md'
       - 'ECG Beat Detection': './ecg_beat_detection_algs.md'
       - 'Functions':
+        - 'align_ppg_ecg_beats': './functions/align_ppg_ecg_beats.md'
         - 'assess_multiple_datasets': './functions/assess_multiple_datasets.md'
         - 'assess_beat_detectors': './functions/assess_beat_detectors.md'
         - 'preprocess_ppg_signal': './functions/preprocess_ppg_signal.md'
         - 'detect_ppg_beats': './functions/detect_ppg_beats.md'
+        - 'detect_ecg_beats': './functions/detect_ecg_beats.md'
         - 'abd_beat_detector': './functions/abd_beat_detector.md'
         - 'ampd_beat_detector': './functions/ampd_beat_detector.md'
         - 'coppg_beat_detector': './functions/coppg_beat_detector.md'

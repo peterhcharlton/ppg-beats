@@ -10,6 +10,8 @@ using the 'PPG Pulses' beat detector
 ##  Outputs
 +   peaks : indices of detected pulse peaks
     
++   onsets : indices of detected pulse onsets
+    
 ##  Reference
 J. Lazaro et al., 'Pulse rate variability analysis for discrimination of sleep-apnea-related decreases in the amplitude fluctuations of pulse photoplethysmographic signal in children,' IEEE Journal of Biomedical and Health Informatics, vol. 18, no. 1, pp. 240-246, 2014. <https://doi.org/10.1109/JBHI.2013.2267096>
 

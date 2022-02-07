@@ -10,6 +10,8 @@ using the 'Wavelet Foot Delineation' beat detector
 ##  Outputs
 +   peaks : indices of detected pulse peaks
     
++   onsets : indices of detected pulse onsets
+    
 ##  Reference
 N. J. Conn and D. A. Borkholder, 'Wavelet based photoplethysmogram foot delineation for heart rate variability applications,' in IEEE Signal Processing in Medicine and Biology Symposium. IEEE, 2013. <https://doi.org/10.1109/SPMB.2013.6736782>
 

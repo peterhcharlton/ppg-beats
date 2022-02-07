@@ -57,7 +57,7 @@ if nargin < 2, options = struct; end
 uParams = setup_up(dataset, options);
 
 % Manual switch allowing you to redo the analysis
-uParams.analysis.redo_analysis = 0;
+uParams.analysis.redo_analysis = 1;
 
 %% Detect beats in PPG signals
 detect_beats_in_ppg_signals(uParams);
@@ -145,7 +145,7 @@ uParams.analysis.max_lag = 10; % max permissible lag between ECG and PPG in secs
 uParams.analysis.lag_int = 0.02;
 uParams.analysis.hr_tol = 5; % tolerance in bpm of HR estimates (to be classified as accurate)
 uParams.analysis.durn_flat_line = 0.1; % threshold duration in secs, above which a flat line is considered to indicate no signal (below this it might just be due to a temporarily steady PPG value).
-uParams.analysis.sig_qual_tools = {'accel'; 'comb_beat_detectors'};  %{}; % {'accel'; 'comb_beat_detectors'};  % a list of signal quality assessment tools to use
+uParams.analysis.sig_qual_tools = {}; % {'accel'; 'comb_beat_detectors'};  % a list of signal quality assessment tools to use
 uParams.analysis.sig_qual_tools = add_in_comb_beat_detectors(uParams.analysis.sig_qual_tools, uParams);
 uParams.analysis.hr_win_durn = 8; % Duration of window (in secs) over which to estimate HRs.
 
@@ -615,7 +615,7 @@ function ppg_strategy_perf = assess_beat_detection_strategies(ppg_qual, ppg_beat
 
 %% insert nans if there are no suitable data for analysis:
 if unique(ppg_exc_log) == 1  % i.e. all the PPG data are excluded from the analysis
-    perf_metrics = {'durn_total', 'durn_ppg', 'durn_ecg', 'durn_both', 'sens'; 'ppv'; 'f1_score'; 'no_beats'; 'acc_hr'; 'durn_hr'; 'prop_hr'; 'bias_hr'; 'loa_hr'; 'mae_hr'; 'acc_ibi'; 'durn_ibi'; 'prop_ibi'; 'bias_ibi'; 'loa_ibi'; 'mae_ibi'};
+    perf_metrics = {'sens'; 'ppv'; 'f1_score'; 'no_beats'; 'acc_hr'; 'durn_hr'; 'prop_hr'; 'bias_hr'; 'loa_hr'; 'mae_hr'; 'acc_ibi'; 'durn_ibi'; 'prop_ibi'; 'bias_ibi'; 'loa_ibi'; 'mae_ibi'};
     % cycle through each strategy
     for strategy_no = 1 : length(strategies_remaining)
         curr_strategy = strategies_remaining{strategy_no};
@@ -690,13 +690,13 @@ for strategy_no = 1 : length(strategies_remaining)
     clear diff_matrix min_abs_diff
     
     % - Calculate performance statistics
-    curr_ppg_strategy_perf.durn_ppg = sum(curr_ppg_beats.ibi(curr_ppg_beats.inc_ppg_log(1:end-1))); % Duration of PPG available for inclusion in analysis (including low and high qual). NB: removed last IBI as it is hard-coded as a nan (see above)
-    curr_ppg_strategy_perf.durn_ecg = sum(curr_ecg_beats.ibi(curr_ecg_beats.inc_ecg_log(1:end-1))); % Duration of ECG available for inclusion in analysis
-    curr_ppg_strategy_perf.durn_both = sum(curr_ecg_beats_inc.ibi); % Duration of ECG available for inclusion in analysis
     curr_ppg_strategy_perf.sens = 100*sum(beat_correct_log)/length(curr_ecg_beats_inc.t);
     curr_ppg_strategy_perf.ppv = 100*sum(beat_correct_log)/length(hq_ppg_beats);
     curr_ppg_strategy_perf.f1_score = 2*curr_ppg_strategy_perf.ppv*curr_ppg_strategy_perf.sens/(curr_ppg_strategy_perf.ppv+curr_ppg_strategy_perf.sens);
     curr_ppg_strategy_perf.no_beats = length(curr_ecg_beats_inc.t); % No. ECG beats included in analysis
+    curr_ppg_strategy_perf.durn_ppg = sum(curr_ppg_beats.ibi(curr_ppg_beats.inc_ppg_log)); % Duration of PPG available for inclusion in analysis (including low and high qual)
+    curr_ppg_strategy_perf.durn_ecg = sum(curr_ecg_beats.ibi(curr_ecg_beats.inc_ecg_log)); % Duration of ECG available for inclusion in analysis
+    curr_ppg_strategy_perf.durn_both = sum(curr_ecg_beats_inc.ibi); % Duration of ECG available for inclusion in analysis
     clear beat_correct_log hq_ppg_beats curr_ecg_beats_inc curr_ppg_beats_inc
     
     %% HR estimation performance
@@ -1041,7 +1041,7 @@ function detect_beats_in_ppg_signals(uParams)
 fprintf('\n--- Detecting beats in PPG signals')
 
 % cycle through each subject
-for subj_no = 1 : uParams.dataset_details.no_subjs
+for subj_no = 2 : uParams.dataset_details.no_subjs %%%%%%%%%% CHANGE
     fprintf('\n - Detecting beats in subj %d: ', subj_no);
     
     %% See if there are any remaining beat detectors to be applied
@@ -1405,6 +1405,8 @@ qual_ts.t = qual_ts.t(:);
 qual_ts.v = qual_ts.v(:);
 end
 
+%%%%%%%%%%% Not used %%%%%%%%%%
+
 function assess_quality_of_ppg_signals(uParams)
 
 fprintf('\n--- Assessing quality of PPG signals')
@@ -1517,8 +1519,6 @@ end
 clear subj_no
 
 end
-
-%%%%%%%%%%% Not used %%%%%%%%%%
 
 function assess_quality_assessment_tools(uParams)
 
