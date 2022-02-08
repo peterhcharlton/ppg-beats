@@ -71,9 +71,6 @@ detect_beats_in_ecg_signals(uParams);
 %% Time align PPG beats
 time_align_ppg_beats(uParams);
 
-% %% Assess performance of quality assessment tools
-% assess_quality_assessment_tools(uParams);
-
 %% Assess performance of PPG beat detectors
 uParams.analysis.redo_analysis = 1;
 assess_ppg_beat_detector_performance(uParams);
@@ -145,7 +142,7 @@ uParams.analysis.max_lag = 10; % max permissible lag between ECG and PPG in secs
 uParams.analysis.lag_int = 0.02;
 uParams.analysis.hr_tol = 5; % tolerance in bpm of HR estimates (to be classified as accurate)
 uParams.analysis.durn_flat_line = 0.1; % threshold duration in secs, above which a flat line is considered to indicate no signal (below this it might just be due to a temporarily steady PPG value).
-uParams.analysis.sig_qual_tools = {'accel'; 'comb_beat_detectors'};  %{}; % {'accel'; 'comb_beat_detectors'};  % a list of signal quality assessment tools to use
+uParams.analysis.sig_qual_tools = {}; % {'accel'; 'comb_beat_detectors'};  % a list of signal quality assessment tools to use
 uParams.analysis.sig_qual_tools = add_in_comb_beat_detectors(uParams.analysis.sig_qual_tools, uParams);
 uParams.analysis.hr_win_durn = 8; % Duration of window (in secs) over which to estimate HRs.
 
@@ -590,11 +587,7 @@ for metric_no = 1 : length(perf_metrics)
     cols = [cols, perf_metrics{metric_no}, ', '];
 end
 cols = cols(1:end-2);
-try
-    eval(['res.' strategy_group_name '.txt = table(strategy, qual, ' cols ');']);
-catch
-    a = 1;
-end
+eval(['res.' strategy_group_name '.txt = table(strategy, qual, ' cols ');']);
 clear cols metric_no
 % Create numerical table
 cols = [];
@@ -615,7 +608,7 @@ function ppg_strategy_perf = assess_beat_detection_strategies(ppg_qual, ppg_beat
 
 %% insert nans if there are no suitable data for analysis:
 if unique(ppg_exc_log) == 1  % i.e. all the PPG data are excluded from the analysis
-    perf_metrics = {'durn_total', 'durn_ppg', 'durn_ecg', 'durn_both', 'sens'; 'ppv'; 'f1_score'; 'no_beats'; 'acc_hr'; 'durn_hr'; 'prop_hr'; 'bias_hr'; 'loa_hr'; 'mae_hr'; 'acc_ibi'; 'durn_ibi'; 'prop_ibi'; 'bias_ibi'; 'loa_ibi'; 'mae_ibi'};
+    perf_metrics = {'durn_total'; 'durn_ppg'; 'durn_ecg'; 'durn_both'; 'no_beats'; 'sens'; 'ppv'; 'f1_score'; 'acc_hr'; 'durn_hr'; 'prop_hr'; 'bias_hr'; 'loa_hr'; 'mae_hr'; 'acc_ibi'; 'durn_ibi'; 'prop_ibi'; 'bias_ibi'; 'loa_ibi'; 'mae_ibi'};
     % cycle through each strategy
     for strategy_no = 1 : length(strategies_remaining)
         curr_strategy = strategies_remaining{strategy_no};
@@ -674,6 +667,31 @@ for strategy_no = 1 : length(strategies_remaining)
     curr_ecg_beats_inc.t = curr_ecg_beats.t(curr_ecg_beats.inc_log);
     curr_ecg_beats_inc.ibi = curr_ecg_beats.ibi(curr_ecg_beats.inc_log);
     
+    % - store durations of each signal available for inclusion, and duration (and no. beats) actually included in analysis
+    curr_ppg_strategy_perf.durn_ppg = sum(curr_ppg_beats.ibi(curr_ppg_beats.inc_ppg_log(1:end-1))); % Duration of PPG available for inclusion in analysis (including low and high qual). NB: removed last IBI as it is hard-coded as a nan (see above)
+    curr_ppg_strategy_perf.durn_ecg = sum(curr_ecg_beats.ibi(curr_ecg_beats.inc_ecg_log(1:end-1))); % Duration of ECG available for inclusion in analysis
+    curr_ppg_strategy_perf.durn_both = sum(curr_ecg_beats_inc.ibi); % Duration of ECG available for inclusion in analysis
+    curr_ppg_strategy_perf.no_beats = length(curr_ecg_beats_inc.t); % No. ECG beats included in analysis
+    
+    %% Skip if there are no reference beats
+    if isempty(curr_ecg_beats_inc.t)
+        perf_metrics = {'sens'; 'ppv'; 'f1_score'; 'acc_hr'; 'durn_hr'; 'prop_hr'; 'bias_hr'; 'loa_hr'; 'mae_hr'; 'acc_ibi'; 'durn_ibi'; 'prop_ibi'; 'bias_ibi'; 'loa_ibi'; 'mae_ibi'};
+        for metric_no = 1 : length(perf_metrics)
+            curr_metric = perf_metrics{metric_no};
+            % insert nan for this strategy and this metric
+            eval(['curr_ppg_strategy_perf.' curr_metric ' = nan;']);
+        end
+        
+        % store performance of this beat detection strategy
+        perf_metrics = fieldnames(curr_ppg_strategy_perf);
+        for metric_no = 1 : length(perf_metrics)
+            curr_metric = perf_metrics{metric_no};
+            eval(['ppg_strategy_perf.' curr_strategy '.' curr_metric '(1,subj_no) = curr_ppg_strategy_perf.' curr_metric ';']);
+        end
+        clear metric_no perf_metrics curr_metric curr_ppg_strategy_perf
+        continue
+    end
+    
     %% Assess beat detection performance
     
     % - Calculate time differences between each pair of PPG and ECG beats
@@ -690,80 +708,83 @@ for strategy_no = 1 : length(strategies_remaining)
     clear diff_matrix min_abs_diff
     
     % - Calculate performance statistics
-    curr_ppg_strategy_perf.durn_ppg = sum(curr_ppg_beats.ibi(curr_ppg_beats.inc_ppg_log(1:end-1))); % Duration of PPG available for inclusion in analysis (including low and high qual). NB: removed last IBI as it is hard-coded as a nan (see above)
-    curr_ppg_strategy_perf.durn_ecg = sum(curr_ecg_beats.ibi(curr_ecg_beats.inc_ecg_log(1:end-1))); % Duration of ECG available for inclusion in analysis
-    curr_ppg_strategy_perf.durn_both = sum(curr_ecg_beats_inc.ibi); % Duration of ECG available for inclusion in analysis
     curr_ppg_strategy_perf.sens = 100*sum(beat_correct_log)/length(curr_ecg_beats_inc.t);
     curr_ppg_strategy_perf.ppv = 100*sum(beat_correct_log)/length(hq_ppg_beats);
     curr_ppg_strategy_perf.f1_score = 2*curr_ppg_strategy_perf.ppv*curr_ppg_strategy_perf.sens/(curr_ppg_strategy_perf.ppv+curr_ppg_strategy_perf.sens);
-    curr_ppg_strategy_perf.no_beats = length(curr_ecg_beats_inc.t); % No. ECG beats included in analysis
     clear beat_correct_log hq_ppg_beats curr_ecg_beats_inc curr_ppg_beats_inc
     
     %% HR estimation performance
     
-    % - Calculate HRs using windowing
-    signal_start_t = 0;
-    signal_end_t = max(curr_ppg_beats.t);
-    curr_ecg_beats.hr = calc_hrs_from_beat_timings(curr_ecg_beats.t, curr_ecg_beats.inc_log, signal_start_t, signal_end_t, uParams.analysis.hr_win_durn);
-    beat_qual = ppg_beat_qual_log & curr_ppg_beats.inc_log;
-    curr_ppg_beats.hr = calc_hrs_from_beat_timings(curr_ppg_beats.t, beat_qual, signal_start_t, signal_end_t, uParams.analysis.hr_win_durn);
-    clear beat_qual
-    % CHECK:   plot(curr_ecg_beats.t, curr_ecg_beats.hr), hold on, plot(curr_ppg_beats.t, curr_ppg_beats.hr)
-    
-    % - Generate time series of HRs
-    ppg_hr_ts = generate_hr_signal(curr_ppg_beats.t, curr_ppg_beats.hr, signal_start_t, signal_end_t, uParams);
-    ecg_hr_ts = generate_hr_signal(curr_ecg_beats.t, curr_ecg_beats.hr, signal_start_t, signal_end_t, uParams);
-    clear signal_start_t signal_end_t
-    
-    % - Generate PPG quality time series
-    ppg_qual_and_inc_ts = generate_qual_signal(curr_ppg_beats.t, ppg_beat_qual_log & curr_ppg_beats.inc_log, uParams);
-    
-    % - Generate moving window PPG quality time series
-    no_samps = ceil(uParams.analysis.hr_win_durn*uParams.analysis.interpolation_fs);  % no. PPG samples in the window duration for HR assessment
-    ppg_qual_and_inc_ts.v_win = movmin(ppg_qual_and_inc_ts.v,no_samps);
-    
-    % - truncate to shortest time series
-    min_t = max([ppg_qual_and_inc_ts.t(find(~isnan(ppg_qual_and_inc_ts.v_win), 1)), ppg_hr_ts.t(find(~isnan(ppg_hr_ts.v), 1)), ecg_hr_ts.t(find(~isnan(ecg_hr_ts.v), 1))]);
-    max_t = min([ppg_qual_and_inc_ts.t(find(~isnan(ppg_qual_and_inc_ts.v_win), 1, 'last')), ppg_hr_ts.t(find(~isnan(ppg_hr_ts.v), 1, 'last')), ecg_hr_ts.t(find(~isnan(ecg_hr_ts.v), 1, 'last'))]);
-    rel_els = ppg_hr_ts.t >= min_t & ppg_hr_ts.t<=max_t;
-    ppg_hr_ts.t = ppg_hr_ts.t(rel_els);
-    ppg_hr_ts.v = ppg_hr_ts.v(rel_els);
-    rel_els = ppg_qual_and_inc_ts.t >= min_t & ppg_qual_and_inc_ts.t<=max_t;
-    ppg_qual_and_inc_ts.t = ppg_qual_and_inc_ts.t(rel_els);
-    ppg_qual_and_inc_ts.v = ppg_qual_and_inc_ts.v(rel_els);
-    ppg_qual_and_inc_ts.v_win = ppg_qual_and_inc_ts.v_win(rel_els);
-    rel_els = ecg_hr_ts.t >= min_t & ecg_hr_ts.t <= max_t;
-    ecg_hr_ts.t = ecg_hr_ts.t(rel_els);
-    ecg_hr_ts.v = ecg_hr_ts.v(rel_els);
-    clear min_t max_t rel_els
-    
-    if isempty(ppg_hr_ts.t)
-        % - fill in results if there are no data available
+    if isempty(curr_ppg_beats.t)
         [a.acc_hr, a.durn_hr, a.prop_hr, a.bias_hr, a.loa_hr, a.mae_hr] = deal(nan);
         curr_ppg_strategy_perf = a; clear a
     else
-        % - eliminate times at which PPG qual was low
-        total_durn = (ppg_hr_ts.t(end)-ppg_hr_ts.t(1))/60; % in mins
-        rel_els = ppg_qual_and_inc_ts.v_win==1;
+        
+        % - Calculate HRs using windowing
+        signal_start_t = 0;
+        signal_end_t = max(curr_ppg_beats.t);
+        curr_ecg_beats.hr = calc_hrs_from_beat_timings(curr_ecg_beats.t, curr_ecg_beats.inc_log, signal_start_t, signal_end_t, uParams.analysis.hr_win_durn);
+        beat_qual = ppg_beat_qual_log & curr_ppg_beats.inc_log;
+        curr_ppg_beats.hr = calc_hrs_from_beat_timings(curr_ppg_beats.t, beat_qual, signal_start_t, signal_end_t, uParams.analysis.hr_win_durn);
+        clear beat_qual
+        % CHECK:   plot(curr_ecg_beats.t, curr_ecg_beats.hr), hold on, plot(curr_ppg_beats.t, curr_ppg_beats.hr)
+        
+        % - Generate time series of HRs
+        ppg_hr_ts = generate_hr_signal(curr_ppg_beats.t, curr_ppg_beats.hr, signal_start_t, signal_end_t, uParams);
+        ecg_hr_ts = generate_hr_signal(curr_ecg_beats.t, curr_ecg_beats.hr, signal_start_t, signal_end_t, uParams);
+        clear signal_start_t signal_end_t
+        
+        % - Generate PPG quality time series
+        ppg_qual_and_inc_ts = generate_qual_signal(curr_ppg_beats.t, ppg_beat_qual_log & curr_ppg_beats.inc_log, uParams);
+        
+        % - Generate moving window PPG quality time series
+        no_samps = ceil(uParams.analysis.hr_win_durn*uParams.analysis.interpolation_fs);  % no. PPG samples in the window duration for HR assessment
+        ppg_qual_and_inc_ts.v_win = movmin(ppg_qual_and_inc_ts.v,no_samps);
+        
+        % - truncate to shortest time series
+        min_t = max([ppg_qual_and_inc_ts.t(find(~isnan(ppg_qual_and_inc_ts.v_win), 1)), ppg_hr_ts.t(find(~isnan(ppg_hr_ts.v), 1)), ecg_hr_ts.t(find(~isnan(ecg_hr_ts.v), 1))]);
+        max_t = min([ppg_qual_and_inc_ts.t(find(~isnan(ppg_qual_and_inc_ts.v_win), 1, 'last')), ppg_hr_ts.t(find(~isnan(ppg_hr_ts.v), 1, 'last')), ecg_hr_ts.t(find(~isnan(ecg_hr_ts.v), 1, 'last'))]);
+        rel_els = ppg_hr_ts.t >= min_t & ppg_hr_ts.t<=max_t;
         ppg_hr_ts.t = ppg_hr_ts.t(rel_els);
         ppg_hr_ts.v = ppg_hr_ts.v(rel_els);
+        rel_els = ppg_qual_and_inc_ts.t >= min_t & ppg_qual_and_inc_ts.t<=max_t;
+        ppg_qual_and_inc_ts.t = ppg_qual_and_inc_ts.t(rel_els);
+        ppg_qual_and_inc_ts.v = ppg_qual_and_inc_ts.v(rel_els);
+        ppg_qual_and_inc_ts.v_win = ppg_qual_and_inc_ts.v_win(rel_els);
+        rel_els = ecg_hr_ts.t >= min_t & ecg_hr_ts.t <= max_t;
         ecg_hr_ts.t = ecg_hr_ts.t(rel_els);
         ecg_hr_ts.v = ecg_hr_ts.v(rel_els);
-        clear rel_els ppg_qual_and_inc_ts
+        clear min_t max_t rel_els
         
-        % - calculate the proportion of the time for which the PPG-dervied HR is within +/- 5bpm of the ECG-derived HR
-        hr_errors = ppg_hr_ts.v - ecg_hr_ts.v;
-        correct_hrs = ppg_hr_ts.v > (ecg_hr_ts.v-uParams.analysis.hr_tol) & ppg_hr_ts.v < (ecg_hr_ts.v+uParams.analysis.hr_tol);
-        curr_ppg_strategy_perf.acc_hr = 100*mean(correct_hrs);
-        curr_ppg_strategy_perf.durn_hr = (length(ppg_hr_ts.t)/uParams.analysis.interpolation_fs)/60; % in mins
-        curr_ppg_strategy_perf.prop_hr = 100*(curr_ppg_strategy_perf.durn_hr)/total_durn; % in percent
-        curr_ppg_strategy_perf.bias_hr = mean(hr_errors);
-        curr_ppg_strategy_perf.loa_hr = 1.96*std(hr_errors);
-        curr_ppg_strategy_perf.mae_hr = mean(abs(hr_errors));
+        if isempty(ppg_hr_ts.t)
+            % - fill in results if there are no data available
+            [a.acc_hr, a.durn_hr, a.prop_hr, a.bias_hr, a.loa_hr, a.mae_hr] = deal(nan);
+            curr_ppg_strategy_perf = a; clear a
+        else
+            % - eliminate times at which PPG qual was low
+            total_durn = (ppg_hr_ts.t(end)-ppg_hr_ts.t(1))/60; % in mins
+            rel_els = ppg_qual_and_inc_ts.v_win==1;
+            ppg_hr_ts.t = ppg_hr_ts.t(rel_els);
+            ppg_hr_ts.v = ppg_hr_ts.v(rel_els);
+            ecg_hr_ts.t = ecg_hr_ts.t(rel_els);
+            ecg_hr_ts.v = ecg_hr_ts.v(rel_els);
+            clear rel_els ppg_qual_and_inc_ts
+            
+            % - calculate the proportion of the time for which the PPG-dervied HR is within +/- 5bpm of the ECG-derived HR
+            hr_errors = ppg_hr_ts.v - ecg_hr_ts.v;
+            correct_hrs = ppg_hr_ts.v > (ecg_hr_ts.v-uParams.analysis.hr_tol) & ppg_hr_ts.v < (ecg_hr_ts.v+uParams.analysis.hr_tol);
+            curr_ppg_strategy_perf.acc_hr = 100*mean(correct_hrs);
+            curr_ppg_strategy_perf.durn_hr = (length(ppg_hr_ts.t)/uParams.analysis.interpolation_fs)/60; % in mins
+            curr_ppg_strategy_perf.prop_hr = 100*(curr_ppg_strategy_perf.durn_hr)/total_durn; % in percent
+            curr_ppg_strategy_perf.bias_hr = mean(hr_errors);
+            curr_ppg_strategy_perf.loa_hr = 1.96*std(hr_errors);
+            curr_ppg_strategy_perf.mae_hr = mean(abs(hr_errors));
+            
+        end
+        
+        clear correct_hrs ppg_hr_ts ecg_hr_ts total_durn hr_errors
         
     end
-    
-    clear correct_hrs ppg_hr_ts ecg_hr_ts total_durn hr_errors
     
     % store performance of this beat detection strategy
     perf_metrics = fieldnames(curr_ppg_strategy_perf);
@@ -776,51 +797,58 @@ for strategy_no = 1 : length(strategies_remaining)
     
     %% IBI measurement performance
     
-    % - Generate time series
-    ppg_int_ts = generate_beat_signal(curr_ppg_beats.t, uParams);
-    ecg_int_ts = generate_beat_signal(curr_ecg_beats.t, uParams);
-    
-    % - Generate PPG quality time series
-    ppg_qual_and_inc_ts = generate_qual_signal(curr_ppg_beats.t, ppg_beat_qual_log & curr_ppg_beats.inc_log, uParams);
-    
-    clear ppg_beats ecg_beats ppg_beat_qual_log curr_ecg_beats curr_ppg_beats
-    
-    % - truncate to shortest time series
-    min_t = max([ppg_qual_and_inc_ts.t(find(~isnan(ppg_qual_and_inc_ts.v), 1)), ppg_int_ts.t(find(~isnan(ppg_int_ts.v), 1)), ecg_int_ts.t(find(~isnan(ecg_int_ts.v), 1))]);
-    max_t = min([ppg_qual_and_inc_ts.t(find(~isnan(ppg_qual_and_inc_ts.v), 1, 'last')), ppg_int_ts.t(find(~isnan(ppg_int_ts.v), 1, 'last')), ecg_int_ts.t(find(~isnan(ecg_int_ts.v), 1, 'last'))]);
-    rel_els = ppg_int_ts.t >= min_t & ppg_int_ts.t<=max_t;
-    ppg_int_ts.t = ppg_int_ts.t(rel_els);
-    ppg_int_ts.v = ppg_int_ts.v(rel_els);
-    rel_els = ppg_qual_and_inc_ts.t >= min_t & ppg_qual_and_inc_ts.t<=max_t;
-    ppg_qual_and_inc_ts.t = ppg_qual_and_inc_ts.t(rel_els);
-    ppg_qual_and_inc_ts.v = ppg_qual_and_inc_ts.v(rel_els);
-    rel_els = ecg_int_ts.t >= min_t & ecg_int_ts.t<=max_t;
-    ecg_int_ts.t = ecg_int_ts.t(rel_els);
-    ecg_int_ts.v = ecg_int_ts.v(rel_els);
-    clear min_t max_t rel_els
-    
-    % - eliminate times at which PPG qual was low
-    total_durn = (ppg_int_ts.t(end)-ppg_int_ts.t(1))/60; % in mins
-    rel_els = ppg_qual_and_inc_ts.v==1;
-    ppg_int_ts.t = ppg_int_ts.t(rel_els);
-    ppg_int_ts.v = ppg_int_ts.v(rel_els);
-    ecg_int_ts.t = ecg_int_ts.t(rel_els);
-    ecg_int_ts.v = ecg_int_ts.v(rel_els);
-    clear rel_els ppg_qual_and_inc_ts
-    
-    % - calculate the proportion of the time for which the PPG-dervied HR is within +/- 5bpm of the ECG-derived HR
-    ppg_int_ts.hr = 60./ppg_int_ts.v;
-    ecg_int_ts.hr = 60./ecg_int_ts.v;
-    ibi_errors = 1000*(ppg_int_ts.v - ecg_int_ts.v);
-    correct_ibis = ppg_int_ts.hr > (ecg_int_ts.hr-uParams.analysis.hr_tol) & ppg_int_ts.hr < (ecg_int_ts.hr+uParams.analysis.hr_tol);
-    curr_ppg_strategy_perf.acc_ibi = 100*mean(correct_ibis);
-    curr_ppg_strategy_perf.durn_ibi = (length(ppg_int_ts.t)/uParams.analysis.interpolation_fs)/60; % in mins
-    curr_ppg_strategy_perf.prop_ibi = 100*(curr_ppg_strategy_perf.durn_ibi)/total_durn; % in percent
-    curr_ppg_strategy_perf.bias_ibi = mean(ibi_errors);
-    curr_ppg_strategy_perf.loa_ibi = 1.96*std(ibi_errors);
-    curr_ppg_strategy_perf.mae_ibi = mean(abs(ibi_errors));
-    
-    clear correct_ibis ppg_int_ts ecg_int_ts total_durn 
+    if isempty(curr_ppg_beats.t)
+        [a.acc_ibi, a.durn_ibi, a.prop_ibi, a.bias_ibi, a.loa_ibi, a.mae_ibi] = deal(nan);
+        curr_ppg_strategy_perf = a; clear a
+    else
+        
+        % - Generate time series
+        ppg_int_ts = generate_beat_signal(curr_ppg_beats.t, uParams);
+        ecg_int_ts = generate_beat_signal(curr_ecg_beats.t, uParams);
+        
+        % - Generate PPG quality time series
+        ppg_qual_and_inc_ts = generate_qual_signal(curr_ppg_beats.t, ppg_beat_qual_log & curr_ppg_beats.inc_log, uParams);
+        
+        clear ppg_beats ecg_beats ppg_beat_qual_log curr_ecg_beats curr_ppg_beats
+        
+        % - truncate to shortest time series
+        min_t = max([ppg_qual_and_inc_ts.t(find(~isnan(ppg_qual_and_inc_ts.v), 1)), ppg_int_ts.t(find(~isnan(ppg_int_ts.v), 1)), ecg_int_ts.t(find(~isnan(ecg_int_ts.v), 1))]);
+        max_t = min([ppg_qual_and_inc_ts.t(find(~isnan(ppg_qual_and_inc_ts.v), 1, 'last')), ppg_int_ts.t(find(~isnan(ppg_int_ts.v), 1, 'last')), ecg_int_ts.t(find(~isnan(ecg_int_ts.v), 1, 'last'))]);
+        rel_els = ppg_int_ts.t >= min_t & ppg_int_ts.t<=max_t;
+        ppg_int_ts.t = ppg_int_ts.t(rel_els);
+        ppg_int_ts.v = ppg_int_ts.v(rel_els);
+        rel_els = ppg_qual_and_inc_ts.t >= min_t & ppg_qual_and_inc_ts.t<=max_t;
+        ppg_qual_and_inc_ts.t = ppg_qual_and_inc_ts.t(rel_els);
+        ppg_qual_and_inc_ts.v = ppg_qual_and_inc_ts.v(rel_els);
+        rel_els = ecg_int_ts.t >= min_t & ecg_int_ts.t<=max_t;
+        ecg_int_ts.t = ecg_int_ts.t(rel_els);
+        ecg_int_ts.v = ecg_int_ts.v(rel_els);
+        clear min_t max_t rel_els
+        
+        % - eliminate times at which PPG qual was low
+        total_durn = (ppg_int_ts.t(end)-ppg_int_ts.t(1))/60; % in mins
+        rel_els = ppg_qual_and_inc_ts.v==1;
+        ppg_int_ts.t = ppg_int_ts.t(rel_els);
+        ppg_int_ts.v = ppg_int_ts.v(rel_els);
+        ecg_int_ts.t = ecg_int_ts.t(rel_els);
+        ecg_int_ts.v = ecg_int_ts.v(rel_els);
+        clear rel_els ppg_qual_and_inc_ts
+        
+        % - calculate the proportion of the time for which the PPG-dervied HR is within +/- 5bpm of the ECG-derived HR
+        ppg_int_ts.hr = 60./ppg_int_ts.v;
+        ecg_int_ts.hr = 60./ecg_int_ts.v;
+        ibi_errors = 1000*(ppg_int_ts.v - ecg_int_ts.v);
+        correct_ibis = ppg_int_ts.hr > (ecg_int_ts.hr-uParams.analysis.hr_tol) & ppg_int_ts.hr < (ecg_int_ts.hr+uParams.analysis.hr_tol);
+        curr_ppg_strategy_perf.acc_ibi = 100*mean(correct_ibis);
+        curr_ppg_strategy_perf.durn_ibi = (length(ppg_int_ts.t)/uParams.analysis.interpolation_fs)/60; % in mins
+        curr_ppg_strategy_perf.prop_ibi = 100*(curr_ppg_strategy_perf.durn_ibi)/total_durn; % in percent
+        curr_ppg_strategy_perf.bias_ibi = mean(ibi_errors);
+        curr_ppg_strategy_perf.loa_ibi = 1.96*std(ibi_errors);
+        curr_ppg_strategy_perf.mae_ibi = mean(abs(ibi_errors));
+        
+        clear correct_ibis ppg_int_ts ecg_int_ts total_durn
+        
+    end
     
     % store performance of this beat detection strategy
     perf_metrics = fieldnames(curr_ppg_strategy_perf);
@@ -904,7 +932,11 @@ end
 function ppg_beat_qual_log = create_ppg_beat_qual_log(curr_ppg_beat_inds, curr_ppg_qual)
 % create a logical indicating whether or not each ppg beat detection was during a period of high or low quality.
 
-ppg_beat_qual_log = curr_ppg_qual.v(curr_ppg_beat_inds);
+if isempty(curr_ppg_beat_inds)
+    ppg_beat_qual_log = false(0);
+else
+    ppg_beat_qual_log = curr_ppg_qual.v(curr_ppg_beat_inds);
+end
 
 end
 
@@ -1031,8 +1063,8 @@ if contains(uParams.dataset, 'mimic')
     clear s
 end
 
-% temporary
-data = data(1:5);
+% % temporary
+% data = data(1:5);
 
 end
 
@@ -1448,18 +1480,27 @@ for subj_no = 1 : uParams.dataset_details.no_subjs
             data = load_data(uParams);
         end
         
+        %% Determine sampling freq for PPG analysis
+        if ~uParams.analysis.do_downsample
+            ppg_details.fs = data(subj_no).ppg.fs;
+            ppg_details.no_samps = length(data(subj_no).ppg.v);
+        else
+            ppg_details.fs = uParams.analysis.downsample_freq;
+            ppg_details.no_samps = ceil(length(data(subj_no).ppg.v)*(uParams.analysis.downsample_freq/data(subj_no).ppg.fs));
+        end
+        
         %% use this tool to assess quality
         
         if strcmp(curr_tool, 'none')
             % - if no tool, then just label all samples as of high quality.
-            curr_qual.v = true(length(data(subj_no).ppg.v),1);
-            curr_qual.fs = data(subj_no).ppg.fs;
+            curr_qual.v = true(ppg_details.no_samps,1);
+            curr_qual.fs = ppg_details.fs;
             eval(['ppg_qual.' curr_tool ' = curr_qual;']);
             
         elseif strcmp(curr_tool, 'accel')
             % - use accelerometry signal at same site as PPG measurement
             fprintf('accel, ');
-            curr_qual = assess_qual_using_accel(data(subj_no).acc_ppg_site, data(subj_no).ppg, subj_no, curr_tool, uParams);
+            curr_qual = assess_qual_using_accel(data(subj_no).acc_ppg_site, ppg_details, subj_no, curr_tool, uParams);
             
             % store results
             eval(['ppg_qual.' curr_tool ' = curr_qual;']);
@@ -1481,7 +1522,7 @@ for subj_no = 1 : uParams.dataset_details.no_subjs
                 eval(['detector' num2str(detector_no) '_ppg_beats_inds = ppg_beats_inds.' eval(['detector', num2str(detector_no)]), ';']);
             end
             fprintf([curr_tool ', ']);
-            curr_qual = assess_qual_using_comb_beat_detectors(data(subj_no).ppg, detector1_ppg_beats_inds, detector2_ppg_beats_inds, uParams);
+            curr_qual = assess_qual_using_comb_beat_detectors(ppg_details, detector1_ppg_beats_inds, detector2_ppg_beats_inds, uParams);
             clear detector1 detector2 detector1_ppg_beats_inds detector2_ppg_beats_inds
             
             % store results
@@ -1517,8 +1558,6 @@ end
 clear subj_no
 
 end
-
-%%%%%%%%%%% Not used %%%%%%%%%%
 
 function assess_quality_assessment_tools(uParams)
 
@@ -1653,7 +1692,7 @@ end
 
 end
 
-function curr_qual = assess_qual_using_accel(acc_ppg_site, ppg, subj_no, curr_tool, uParams)
+function curr_qual = assess_qual_using_accel(acc_ppg_site, ppg_details, subj_no, curr_tool, uParams)
 
 %% Obtain mean absolute deviation (MAD) signal
 %  - create time vector
@@ -1676,15 +1715,15 @@ clear win_no deviations rel_els win_starts win_durn
 mad_sig.hq = mad_sig.v< 16.7; % threshold from p.68 of ﻿https://doi.org/10.1111/cpf.12127
 
 %% Create vector of qualities at PPG's original sampling freq
-curr_qual = create_vector_of_quals_at_ppg_freq(ppg, mad_sig);
+curr_qual = create_vector_of_quals_at_ppg_freq(ppg_details, mad_sig);
 
 end
 
-function curr_qual = assess_qual_using_comb_beat_detectors(ppg, detector1_ppg_beats_inds, detector2_ppg_beats_inds, uParams)
+function curr_qual = assess_qual_using_comb_beat_detectors(ppg_details, detector1_ppg_beats_inds, detector2_ppg_beats_inds, uParams)
 
 %% Convert beat indices to timings
 for detector_no = 1 :2
-    eval(['detector' num2str(detector_no) '_t = [detector' num2str(detector_no) '_ppg_beats_inds-1]./ppg.fs;']);
+    eval(['detector' num2str(detector_no) '_t = [detector' num2str(detector_no) '_ppg_beats_inds-1]./ppg_details.fs;']);
 end
 clear detector1_ppg_beats_inds detector2_ppg_beats_inds detector_no
 
@@ -1740,25 +1779,25 @@ agreed_beats.hq = high_qual_IBI_log & min_diff>uParams.analysis.window_durn_for_
 clear min_diff high_qual_IBI_log
 
 %% Create vector of qualities at PPG's original sampling freq
-curr_qual = create_vector_of_quals_at_ppg_freq(ppg, agreed_beats);
+curr_qual = create_vector_of_quals_at_ppg_freq(ppg_details, agreed_beats);
 
 end
 
-function curr_qual = create_vector_of_quals_at_ppg_freq(ppg, qual_vector)
+function curr_qual = create_vector_of_quals_at_ppg_freq(ppg_details, qual_vector)
 
 % - create time vector for ppg
 
 % - say all low quality if there are no entries in the qual vector
 if isempty(qual_vector.t)
-    curr_qual.fs = ppg.fs;
-    curr_qual.v = false(length(ppg.v),1);
+    curr_qual.fs = ppg_details.fs;
+    curr_qual.v = false(ppg_details.no_samps,1);
     return
 end
 
 % - resample at original sampling freq
-ppg.t = [0:length(ppg.v)-1]./ppg.fs; ppg.t = ppg.t(:);
+ppg.t = [0:ppg_details.no_samps-1]./ppg_details.fs; ppg.t = ppg.t(:);
 curr_qual.v = interp1(qual_vector.t, double(qual_vector.hq), ppg.t, 'previous');
-curr_qual.fs = ppg.fs;
+curr_qual.fs = ppg_details.fs;
 % - convert to logical
 curr_qual.v(isnan(curr_qual.v)) = 0;
 curr_qual.v = logical(curr_qual.v);
