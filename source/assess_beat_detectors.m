@@ -1333,19 +1333,19 @@ for subj_no = 1 : uParams.dataset_details.no_subjs
     file_type = 'ecg_beats_aligned';
     filepath = create_proc_filepath(uParams, subj_no, file_type);
     % - load file
-    if exist(filepath, 'file') && ~uParams.analysis.redo_analysis
-        load(filepath);  % loads 'ecg_beats_a_inds' variable
-        beat_detectors_used = fieldnames(ecg_beats_a_inds);
-        beat_detectors_remaining = setxor(beat_detectors_used, uParams.analysis.beat_detectors);
-        % - skip this subject if there are no more beat detectors to use
-        if isempty(beat_detectors_remaining)
-            fprintf('all done');
-            continue
-        end
-    else
+%     if exist(filepath, 'file') && ~uParams.analysis.redo_analysis
+%         load(filepath);  % loads 'ecg_beats_a_inds' variable
+%         beat_detectors_used = fieldnames(ecg_beats_a_inds);
+%         beat_detectors_remaining = setxor(beat_detectors_used, uParams.analysis.beat_detectors);
+%         % - skip this subject if there are no more beat detectors to use
+%         if isempty(beat_detectors_remaining)
+%             fprintf('all done');
+%             continue
+%         end
+%     else
         beat_detectors_remaining = uParams.analysis.beat_detectors;
         ecg_beats_a_inds = struct;
-    end
+%     end
         
     %% Load PPG Beats and ECG Beats files for analysis
     file_type = 'ppg_beats';

@@ -41,7 +41,7 @@ options = specify_options;
 
 do_analysis = 1;
 if do_analysis
-    for dataset_no = 1 : length(up.datasets) % start properly from 13
+    for dataset_no = 9 : length(up.datasets) % start properly from 13
         
         curr_dataset = up.datasets{dataset_no};
         
