@@ -1,6 +1,6 @@
-# PPG Beat Detection Algorithms
+# PPG Beat Detectors
 
-Beat detection algorithms
+Algorithms to detect beats in photoplethysmogram (PPG) signals.
 
 ---
 
@@ -12,7 +12,7 @@ Beat detection algorithms
 
 **Description:** 
 
-**Link:** 
+**Link:** [abd_beat_detector](../../functions/abd_beat_detector)
 
 ## Automatic Multiscale-based Peak Detection
 
@@ -22,7 +22,7 @@ _Algorithms_, vol. 5, no. 4, pp. 588-603, 2012. DOI: [10.3390/a5040588](https://
 
 **Description:** 
 
-**Link:** 
+**Link:** [ampd_beat_detector](../../functions/ampd_beat_detector)
 
 ## Percentile Peak Detector
 
@@ -30,7 +30,7 @@ _Algorithms_, vol. 5, no. 4, pp. 588-603, 2012. DOI: [10.3390/a5040588](https://
 
 **Description:** 
 
-**Link:** 
+**Link:** [coppg_beat_detector](../../functions/coppg_beat_detector)
 
 ## Event-Related Moving Averages
 
@@ -40,7 +40,7 @@ conditions,' _PLoS ONE_, vol. 8, no. 10, pp. 1-11, 2013. DOI: [10.1371/journal.p
 
 **Description:** 
 
-**Link:** 
+**Link:** [erma_beat_detector](../../functions/erma_beat_detector)
 
 ## HeartPy
 
@@ -50,7 +50,7 @@ Psychology and Behaviour_, vol. 66, pp. 368-378, 2019. DOI: [10.1016/j.trf.2019.
 
 **Description:** 
 
-**Link:** 
+**Link:** [heartpy_beat_detector](../../functions/heartpy_beat_detector)
 
 ## Incremental Merge Segmentation
 
@@ -58,7 +58,7 @@ Psychology and Behaviour_, vol. 66, pp. 368-378, 2019. DOI: [10.1016/j.trf.2019.
 
 **Description:** 
 
-**Link:** 
+**Link:** [ims_beat_detector](../../functions/ims_beat_detector)
 
 ## Multi-Scale Peak and Trough Detection
 
@@ -66,7 +66,7 @@ Psychology and Behaviour_, vol. 66, pp. 368-378, 2019. DOI: [10.1016/j.trf.2019.
 
 **Description:** 
 
-**Link:** 
+**Link:** [msptd_beat_detector](../../functions/msptd_beat_detector)
 
 ## Peak Detection Algorithm
 
@@ -75,7 +75,7 @@ low-complexity peak detection algorithm for heart rate estimation from low-ampli
 
 **Description:** 
 
-**Link:** 
+**Link:** [pda_beat_detector](../../functions/pda_beat_detector)
 
 ## Pulse Wave Delineator
 
@@ -83,7 +83,7 @@ low-complexity peak detection algorithm for heart rate estimation from low-ampli
 
 **Description:** 
 
-**Link:** 
+**Link:** [pwd_beat_detector](../../functions/pwd_beat_detector)
 
 ## PPG Pulses Detector
 
@@ -92,7 +92,7 @@ photoplethysmographic signal in children,' _IEEE Journal of Biomedical and Healt
 
 **Description:** 
 
-**Link:** 
+**Link:** [ppgpulses_beat_detector](../../functions/ppgpulses_beat_detector)
 
 ## Adapted Onset Detector
 
@@ -100,7 +100,7 @@ photoplethysmographic signal in children,' _IEEE Journal of Biomedical and Healt
 
 **Description:** 
 
-**Link:** 
+**Links:** [qppg_beat_detector](../../functions/qppg_beat_detector) (original version); [qppgfast_beat_detector](../../functions/qppgfast_beat_detector) (faster version);
 
 ## Symmetric Projection Attractor Reconstruction Detector
 
@@ -108,7 +108,7 @@ photoplethysmographic signal in children,' _IEEE Journal of Biomedical and Healt
 
 **Description:** 
 
-**Link:** 
+**Link:** [spar_beat_detector](../../functions/spar_beat_detector)
 
 ## Wavelet Foot Delineation
 
@@ -116,4 +116,4 @@ photoplethysmographic signal in children,' _IEEE Journal of Biomedical and Healt
 
 **Description:** 
 
-**Link:** 
+**Link:** [wfd_beat_detector](../../functions/wfd_beat_detector)

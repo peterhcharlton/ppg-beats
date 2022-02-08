@@ -1,4 +1,6 @@
-# ECG Beat Detection Algorithms
+# ECG Beat Detectors
+
+Algorithms to detect beats in electrocardiogram (ECG) signals, to act as a reference against which to compare beats detected in photoplethysmogram (PPG) signals.
 
 ---
 

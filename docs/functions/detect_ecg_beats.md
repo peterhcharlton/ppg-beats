@@ -18,7 +18,7 @@ assess the quality of beat detections.
 +   no_signal_vector : (optional) a vector of the same length as the ECG vector, which indicates whether (1) or not (0) there was a signal at each sample
     
 ##  Outputs
-+   beat_inds : the indices of detected beats
++   beat_inds : the indices of detected beats which both beat detectors agree on
     
 +   qual : a logical indicating whether (1) or not (0) beats agreed between beat detectors for each ECG sample 
     

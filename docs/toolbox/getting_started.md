@@ -1,5 +1,7 @@
 # Getting started with PPG-beats
 
+A few pointers on how to quickly start using the toolbox.
+
 ---
 
 ## Installation

@@ -18,7 +18,7 @@ function [beats_inds, qual] = detect_ecg_beats(ecg, fs, options, no_signal_vecto
 %   
 %   # Outputs
 %   
-%   * beat_inds : the indices of detected beats
+%   * beat_inds : the indices of detected beats which both beat detectors agree on
 %   * qual : a logical indicating whether (1) or not (0) beats agreed between beat detectors for each ECG sample 
 %   * temporary file - this script creates a temporary file in the current directory
 %   
@@ -58,6 +58,9 @@ function [beats_inds, qual] = detect_ecg_beats(ecg, fs, options, no_signal_vecto
 
 % - ECG vector
 ecg = ecg(:); % make into column vector
+
+% - replace any nans with median value of ECG
+ecg(isnan(ecg)) = median(ecg(~isnan(ecg)));
 
 % - options
 if ~exist('options', 'var')
@@ -118,18 +121,27 @@ if options.verbose, fprintf('%d beats detected', length(jqrs_beat_inds)), end
 
 if options.verbose, fprintf('\n - Identifying correct beat detections: '), end
 
-% - Calculate difference matrix using gqrs as the reference
-diff_matrix = repmat(jqrs_beat_inds, [1, length(gqrs_beat_inds)]) - gqrs_beat_inds';
-% - Find minimum differences
-min_abs_diff = min(abs(diff_matrix), [], 2);
-% - Identify correctly identified beats
-beat_correct_log = min_abs_diff<(options.qrs_tol_window*fs);
+if isempty(jqrs_beat_inds) || isempty(gqrs_beat_inds)
+    beat_correct_log = false(size(jqrs_beat_inds));
+else
+    % - Calculate difference matrix using gqrs as the reference
+    diff_matrix = repmat(jqrs_beat_inds, [1, length(gqrs_beat_inds)]) - gqrs_beat_inds';
+    % - Find minimum differences
+    min_abs_diff = min(abs(diff_matrix), [], 2);
+    % - Identify correctly identified beats
+    beat_correct_log = min_abs_diff<(options.qrs_tol_window*fs);
+end
+
+% identify beats as those which were agreed on by both beat detectors
 beats_inds = jqrs_beat_inds(beat_correct_log);
+
 % - Remove any repeated beat detections
 beats_inds = sort(beats_inds);
-repeated_beats = [0; diff(beats_inds)< round(options.qrs_tol_window*fs)];
-beats_inds = beats_inds(~repeated_beats);
-clear repeated_beats
+if ~isempty(beats_inds)
+    repeated_beats = [0; diff(beats_inds)< round(options.qrs_tol_window*fs)];
+    beats_inds = beats_inds(~repeated_beats);
+    clear repeated_beats
+end
 if options.verbose, fprintf('%d out of %d beats detected by gqrs deemed to be correct', length(beats_inds), length(gqrs_beat_inds)), end
 
 %% Assess quality of beat detections in windows
@@ -157,9 +169,10 @@ for win_no = 1 : length(win_starts)
         continue
     end
     
-    %  - deem this window to be of high quality if it didn't contain any disagreements between the beat detectors
+    %  - deem this window to be of high quality if there were beats detected, and there weren't any disagreements between the beat detectors
     curr_win_disagree_inds = t_disagree_beats >= curr_start & t_disagree_beats <= curr_end;
-    if sum(curr_win_disagree_inds) == 0
+    curr_win_beat_inds = t(jqrs_beat_inds) >= curr_start & t(jqrs_beat_inds) <= curr_end;
+    if sum(curr_win_disagree_inds) == 0 && sum(curr_win_beat_inds)
         qual(rel_els) = true;
         continue
     end

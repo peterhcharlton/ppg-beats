@@ -41,7 +41,7 @@ options = specify_options;
 
 do_analysis = 1;
 if do_analysis
-    for dataset_no = 1 : length(up.datasets)
+    for dataset_no = 13 : length(up.datasets)
         
         curr_dataset = up.datasets{dataset_no};
         
@@ -187,6 +187,7 @@ function up = setup_universal_params
 
 % - Datasets to be analysed
 up.training_datasets = {'capnobase', 'bidmc', 'mimic_train_all', 'mimic_test_all', 'wesad_meditation', 'wesad_amusement', 'wesad_baseline', 'wesad_stress', 'ppg_dalia_sitting', 'ppg_dalia_working', 'ppg_dalia_cycling', 'ppg_dalia_walking'}; 
+up.training_datasets = {'capnobase', 'bidmc', 'wesad_meditation', 'wesad_amusement', 'wesad_baseline', 'wesad_stress', 'ppg_dalia_sitting', 'ppg_dalia_working', 'ppg_dalia_cycling', 'ppg_dalia_walking', 'mimic_train_all', 'mimic_test_all'}; 
 % up.training_datasets = {'mimic_non_af', 'mimic_af', 'ppg_dalia_sitting', 'ppg_dalia_working', 'ppg_dalia_walking'}; 
 up.testing_datasets = {'mimic_B', 'mimic_W', 'mimic_test_a', 'mimic_test_n', 'mimic_non_af', 'mimic_af'};
 up.datasets = [up.testing_datasets, up.training_datasets];

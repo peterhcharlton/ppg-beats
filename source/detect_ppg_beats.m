@@ -96,6 +96,14 @@ if ~isempty(onsets) && ~isempty(peaks)
     end
 end
 
+% if no peaks (or onsets) were detected, then don't output any indices for either
+if isempty(peaks)
+    onsets = [];
+end
+if isempty(onsets)
+    peaks = [];
+end
+
 % Add mid-amplitude point if required
 if ~exist('mid_amps','var')
     mid_amps = nan(length(onsets),1);
