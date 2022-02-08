@@ -41,7 +41,7 @@ options = specify_options;
 
 do_analysis = 1;
 if do_analysis
-    for dataset_no = 13 : length(up.datasets)
+    for dataset_no = 1 : length(up.datasets) % start properly from 13
         
         curr_dataset = up.datasets{dataset_no};
         
@@ -66,14 +66,15 @@ for dataset_no = 1 : length(up.datasets)
     fprintf('\n%s', create_title_text(curr_dataset))
     
     % Specify options for this dataset
-    options = specify_options(curr_dataset);
+    options = specify_options;
+    options.dataset_file = specify_path_of_dataset_file(curr_dataset);
     
     % Specify processing folder for this dataset
     [folder_containing_raw_data_file, ~, ~] = fileparts(options.dataset_file);
-    eval(sprintf('uParams.paths.processing_folder = ''%s%s%s%s%s'';', folder_containing_raw_data_file, filesep, 'proc_data_', curr_dataset, filesep));
+    eval(sprintf('up.paths.processing_folder = ''%s%s%s%s%s'';', folder_containing_raw_data_file, filesep, 'proc_data_', curr_dataset, filesep));
     
     % Load all results for this dataset
-    res_file = [uParams.paths.processing_folder, 'ppg_detect_perf.mat'];
+    res_file = [up.paths.processing_folder, 'ppg_detect_perf.mat'];
     load(res_file, 'ppg_strategy_perf'); clear res_file
     
     % Extract raw stats for each relevant strategy
@@ -133,19 +134,22 @@ clear vars types
 %% Collate results tables for all datasets
 for dataset_no = 1 : length(up.datasets)
     
+    curr_dataset = up.datasets{dataset_no};
+    
     % Specify options for this dataset
-    options = specify_options(up.datasets{dataset_no});
+    options = specify_options;
+    options.dataset_file = specify_path_of_dataset_file(curr_dataset);
     
     % Specify processing folder for this dataset
     [folder_containing_raw_data_file, ~, ~] = fileparts(options.dataset_file);
-    eval(sprintf('uParams.paths.processing_folder = ''%s%s%s%s%s'';', folder_containing_raw_data_file, filesep, 'proc_data_', up.datasets{dataset_no}, filesep));
+    eval(sprintf('up.paths.processing_folder = ''%s%s%s%s%s'';', folder_containing_raw_data_file, filesep, 'proc_data_', up.datasets{dataset_no}, filesep));
     
     % Load summary results for this dataset
-    res_file = [uParams.paths.processing_folder, 'ppg_detect_stats.mat'];
+    res_file = [up.paths.processing_folder, 'ppg_detect_stats.mat'];
     dataset_res = load(res_file, 'res'); clear res_file
     
     % Create results tables
-    uParams.analysis.beat_detectors = options.beat_detectors;
+    up.analysis.beat_detectors = options.beat_detectors;
     dataset_res = dataset_res.res;
     
     % store results
@@ -156,8 +160,8 @@ end
 
 %% Generate comparison figures
 
-uParams.paths.plots_folder = [uParams.paths.plots_root_folder, 'other', filesep];  
-create_comparison_figures(up.datasets, raw_res, res, uParams);
+up.paths.plots_folder = [up.paths.plots_root_folder, 'other', filesep];  
+%create_comparison_figures(up.datasets, raw_res, res, up);
 
 %% Generate results figures
 
@@ -166,19 +170,19 @@ for do_training = [1,0]
     if do_training == 1
         fprintf('\n - Training datasets')
         curr_datasets = up.training_datasets;
-        uParams.paths.plots_folder = [uParams.paths.plots_root_folder, 'training', filesep];  
+        up.paths.plots_folder = [up.paths.plots_root_folder, 'training', filesep];  
     elseif do_training == 0
         fprintf('\n - Testing datasets')
-        curr_datasets = testing_datasets; 
-        uParams.paths.plots_folder = [uParams.paths.plots_root_folder, 'validation', filesep];  
+        curr_datasets = up.testing_datasets; 
+        up.paths.plots_folder = [up.paths.plots_root_folder, 'validation', filesep];  
     else
         curr_datasets = {'ppg_dalia_sitting', 'ppg_dalia_working', 'ppg_dalia_walking'};
-        uParams.paths.plots_folder = [uParams.paths.plots_root_folder, 'other', filesep];  
+        up.paths.plots_folder = [up.paths.plots_root_folder, 'other', filesep];  
     end
     
-    if ~exist(uParams.paths.plots_folder, 'dir'), mkdir(uParams.paths.plots_folder), end
+    if ~exist(up.paths.plots_folder, 'dir'), mkdir(up.paths.plots_folder), end
         
-    create_perf_box_plots(res, uParams, curr_datasets, do_training);
+    create_perf_box_plots(res, up, curr_datasets, do_training);
 end
 
 end
@@ -187,7 +191,6 @@ function up = setup_universal_params
 
 % - Datasets to be analysed
 up.training_datasets = {'capnobase', 'bidmc', 'mimic_train_all', 'mimic_test_all', 'wesad_meditation', 'wesad_amusement', 'wesad_baseline', 'wesad_stress', 'ppg_dalia_sitting', 'ppg_dalia_working', 'ppg_dalia_cycling', 'ppg_dalia_walking'}; 
-up.training_datasets = {'capnobase', 'bidmc', 'wesad_meditation', 'wesad_amusement', 'wesad_baseline', 'wesad_stress', 'ppg_dalia_sitting', 'ppg_dalia_working', 'ppg_dalia_cycling', 'ppg_dalia_walking', 'mimic_train_all', 'mimic_test_all'}; 
 % up.training_datasets = {'mimic_non_af', 'mimic_af', 'ppg_dalia_sitting', 'ppg_dalia_working', 'ppg_dalia_walking'}; 
 up.testing_datasets = {'mimic_B', 'mimic_W', 'mimic_test_a', 'mimic_test_n', 'mimic_non_af', 'mimic_af'};
 up.datasets = [up.testing_datasets, up.training_datasets];
@@ -310,10 +313,12 @@ for comparison_no = 1 : no_comparisons
         for j=1:length(h)
             % if the first box in a pair
             if rem(ceil(median(h(j).XData)),2) == 0
-                face_color = 0.4*ones(1,3);
+                face_color = 0.4*ones(1,3); % greyscale
+                face_color = [1,0,0];
                 hleg(1,1) = patch(get(h(j),'XData'),get(h(j),'YData'),face_color,'FaceAlpha',.5);
             else
-                face_color = 0.8*ones(1,3);
+                face_color = 0.8*ones(1,3); % greyscale
+                face_color = [0,0,1];
                 hleg(1,2) = patch(get(h(j),'XData'),get(h(j),'YData'),face_color,'FaceAlpha',.5);
             end
         end
@@ -949,7 +954,7 @@ for dataset_no = 1 : length(datasets)
     % add colour to boxes, based on: https://www.mathworks.com/matlabcentral/answers/392679-how-to-fill-boxes-in-boxplot-with-different-colors
     h = findobj(gca,'Tag','Box');
     for j=1:length(h)
-        patch(get(h(j),'XData'),get(h(j),'YData'),0.5*ones(1,3),'FaceAlpha',.5);
+        patch(get(h(j),'XData'),get(h(j),'YData'),[0,0,1],'FaceAlpha',.5);  % greyscale: 0.5*ones(1,3)
     end
     
     % change color of median target point

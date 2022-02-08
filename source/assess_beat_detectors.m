@@ -1170,6 +1170,12 @@ for beat_detector_no = 1 : length(beat_detectors_remaining)
     options.do_quality = 0;
     options.beat_detector = curr_beat_detector;
     
+    % - setup SPAR beat detector (which requires a global variable)
+    if strcmp(curr_beat_detector, 'SPAR')
+        global acl,
+        acl=0;
+    end    
+    
     % - detect beats in this subject's PPG signals using this peak detector
     if ~uParams.analysis.do_wins
         % Without windowing
@@ -1208,7 +1214,6 @@ for beat_detector_no = 1 : length(beat_detectors_remaining)
             % identify beats in this window
             rel_S.v = S.v(rel_els);
             rel_S.fs = S.fs;
-            %[~, ~, pulses, ~] = PulseAnalyse(rel_S, options);
             [peaks, onsets, mid_amps] = detect_ppg_beats(rel_S, curr_beat_detector);
             
             % store beats
