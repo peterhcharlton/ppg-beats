@@ -39,9 +39,9 @@ options = specify_options;
 
 %% Perform analysis on each dataset in turn
 
-do_analysis = 1;
+do_analysis = 0;
 if do_analysis
-    for dataset_no = 9 : length(up.datasets) % start properly from 13
+    for dataset_no = 1 : length(up.datasets)
         
         curr_dataset = up.datasets{dataset_no};
         
@@ -60,6 +60,7 @@ selected_strategy = 'MSPTD__none';
 vars = {'ppv', 'sens', 'f1_score', 'acc_ibi', 'prop_ibi', 'acc_hr', 'prop_hr'};
 types = {'med', 'lq', 'uq'};
 fprintf('\n - Performance of selected strategy: ')
+[total_pts, total_durn] = deal(0);
 for dataset_no = 1 : length(up.datasets)
     
     curr_dataset = up.datasets{dataset_no};
@@ -77,10 +78,17 @@ for dataset_no = 1 : length(up.datasets)
     res_file = [up.paths.processing_folder, 'ppg_detect_perf.mat'];
     load(res_file, 'ppg_strategy_perf'); clear res_file
     
+    % store total beats and total duration for this dataset
+    if ~strcmp(curr_dataset, 'mimic_test_n') && ~strcmp(curr_dataset, 'mimic_test_a')
+        eval(['temp = ppg_strategy_perf.raw.' selected_strategy '.durn_total;']);
+        total_pts = total_pts + length(temp);
+        total_durn = total_durn + sum(temp(~isnan(temp)));
+    end
+    
     % Extract raw stats for each relevant strategy
     rel_strategy_els = find(contains(ppg_strategy_perf.stats.strategies, '__none'));
     raw_res.rel_strategies = ppg_strategy_perf.stats.strategies(rel_strategy_els);
-    vars = {'f1_score', 'sens', 'ppv', 'durn_ibi', 'no_beats'};
+    vars = {'f1_score', 'sens', 'ppv', 'durn_both', 'no_beats'};
     for curr_var_no = 1 : length(vars)
         curr_var = vars{curr_var_no};
         for strategy_no = 1 : length(rel_strategy_els)
@@ -104,9 +112,13 @@ for dataset_no = 1 : length(up.datasets)
             if ~sum(strcmp(curr_var, {'no_beats'}))
                 for type_no = 1 : length(types)
                     curr_type = types{type_no};
-                    eval(['temp.' curr_type ' = ppg_strategy_perf.stats.' curr_var '.' curr_type '(strategy_el);']);
+                    eval(['curr_temp = ppg_strategy_perf.stats.' curr_var '.' curr_type '(strategy_el);']);
+                    if strcmp(curr_var, 'durn_both')
+                        curr_temp = curr_temp./60;
+                    end
+                    eval(['temp.' curr_type ' = curr_temp;']);
                 end
-                fprintf(' & %.1f \\newline (%.1f - %.1f)', temp.med, temp.lq, temp.uq)
+                fprintf(' & %.1f (%.1f - %.1f)', temp.med, temp.lq, temp.uq)
                 
                 % - variables requiring totalling
             else
@@ -128,7 +140,7 @@ for dataset_no = 1 : length(up.datasets)
     clear dataset_results ppg_strategy_perf options strategy_el var_no type_no curr_var curr_type
     
 end
-fprintf('\n')
+fprintf('\n\n - Total of %d subjects (although there is some overlap between datasets) and %.1f hrs of continuous recording\n\n', total_pts, total_durn/(60*60))
 clear vars types
 
 %% Collate results tables for all datasets
@@ -160,8 +172,11 @@ end
 
 %% Generate comparison figures
 
-up.paths.plots_folder = [up.paths.plots_root_folder, 'other', filesep];  
-%create_comparison_figures(up.datasets, raw_res, res, up);
+do_comparison_figs = 1;
+if do_comparison_figs
+    up.paths.plots_folder = [up.paths.plots_root_folder, 'other', filesep];
+    create_comparison_figures(up.datasets, raw_res, res, up);
+end
 
 %% Generate results figures
 
@@ -225,14 +240,18 @@ fprintf('\n ~~~ Making comparison figures ~~~')
 % setup
 ftsize = 22;
 
-% identify relevant beat detection strategies
-strategies_log = ~contains(raw_res.rel_strategies, 'SPAR3');
-temp = raw_res.rel_strategies(strategies_log);
-for s = 1 : sum(strategies_log)
-    temp2 = strfind(temp{s}, '_');
-    beat_detectors{s,1} = temp{s}(1:temp2-1);
+if sum(strcmp(datasets, 'ppg_dalia_working'))
+    primary_dataset = 'ppg_dalia_working';
+elseif sum(strcmp(datasets, 'wesad_baseline'))
+    primary_dataset = 'wesad_baseline';
+else
+    primary_dataset = datasets{1};
 end
-clear temp
+eval(['orig_beat_detector_names = res.' primary_dataset '.noQual.num.strategy;']);
+orig_beat_detector_names = orig_beat_detector_names(~strcmp(orig_beat_detector_names, 'qppg'));
+beat_detector_names = correct_beat_detector_names(orig_beat_detector_names);
+
+% identify relevant results set
 curr_strategy_set = 'noQual';
 
 % cycle through each comparison (i.e. pair of datasets)
@@ -243,7 +262,7 @@ for comparison_no = 1 : no_comparisons
     
     % cycle through each statistic
     eval(['vars = fieldnames(raw_res.' uParams.settings.comparisons{comparison_no,1} ');']);
-    vars = vars(~strcmp(vars, 'rel_strategies') & ~strcmp(vars, 'durn_ibi') & ~strcmp(vars, 'no_beats'));
+    vars = vars(~strcmp(vars, 'rel_strategies') & ~strcmp(vars, 'durn_ibi') & ~strcmp(vars, 'durn_both') & ~strcmp(vars, 'no_beats'));
     for var_no = 1 : length(vars)
         curr_var = vars{var_no};
         
@@ -253,32 +272,33 @@ for comparison_no = 1 : no_comparisons
         subplot('Position', [0.1,0.1,0.89,0.8])
 
         % extract subject-level results for each dataset
-        eval(['res1.raw = raw_res.' uParams.settings.comparisons{comparison_no,1} '.' curr_var '(strategies_log,:);']);
-        eval(['res2.raw = raw_res.' uParams.settings.comparisons{comparison_no,2} '.' curr_var '(strategies_log,:);']);
-        stats = {'med', 'pc10', 'lq', 'uq', 'pc90'};
-        for stat_no = 1 : length(stats)
-            curr_stat = stats{stat_no};
-            eval(['res1.' curr_stat ' = res.' uParams.settings.comparisons{comparison_no,1} '.' curr_strategy_set '.num.' curr_var '_' curr_stat '(strategies_log,:);']);
-            eval(['res2.' curr_stat ' = res.' uParams.settings.comparisons{comparison_no,2} '.' curr_strategy_set '.num.' curr_var '_' curr_stat '(strategies_log,:);']);
-        end
+        eval(['res1.raw.v = raw_res.' uParams.settings.comparisons{comparison_no,1} '.' curr_var ';']);
+        res1.raw.strategies = raw_res.rel_strategies;
+        eval(['res2.raw.v = raw_res.' uParams.settings.comparisons{comparison_no,2} '.' curr_var ';']);
+        res2.raw.strategies = raw_res.rel_strategies;
+        
+        strategies_log = ~contains(raw_res.rel_strategies, 'qppg_');
         
         % setup boxplot
         group_no = 0; [curr_res, groups, positions, box_nos, pc10s, pc90s, xticks] = deal([]);
         
         % cycle through each beat detection strategy
-        for strategy_no = 1 : size(res1.raw,1)
+        for beat_detector_no = 1 : length(beat_detector_names)
+            curr_beat_detector = orig_beat_detector_names{beat_detector_no};
+            res1_raw_strategy_no = find(strcmp(res1.raw.strategies, [curr_beat_detector, '__none']));
+            res2_raw_strategy_no = find(strcmp(res2.raw.strategies, [curr_beat_detector, '__none']));
             
             % Test whether the use of a particular beat detection strategy on these two datasets resulted in significantly different results.
-            temp_p(comparison_no,strategy_no,var_no) = ranksum(res1.raw(strategy_no,:), res2.raw(strategy_no,:));
+            temp_p(comparison_no,beat_detector_no,var_no) = ranksum(res1.raw.v(res1_raw_strategy_no,:), res2.raw.v(res2_raw_strategy_no,:));
             
             % Store results to make boxplot
-            curr_res = [curr_res, res1.raw(strategy_no,:), res2.raw(strategy_no,:)];
-            groups = [groups, group_no*ones(1,size(res1.raw,2)), (group_no+1)*ones(1,size(res2.raw,2))];
-            positions = [positions, group_no*ones(1,size(res1.raw,2)), (group_no+0.75)*ones(1,size(res2.raw,2))];
-            box_nos = [box_nos, (group_no+1)*ones(1,size(res1.raw,2)), (group_no+2)*ones(1,size(res2.raw,2))];
-            xticks = [xticks, (group_no+(0.75/2))*ones(1,size(res1.raw,2)), (group_no+(0.75/2))*ones(1,size(res2.raw,2))];
-            pc10s = [pc10s, res1.pc10(strategy_no)*ones(1,size(res1.raw,2)), res2.pc10(strategy_no)*ones(1,size(res2.raw,2))];
-            pc90s = [pc90s, res1.pc90(strategy_no)*ones(1,size(res1.raw,2)), res2.pc90(strategy_no)*ones(1,size(res2.raw,2))];
+            curr_res = [curr_res, res1.raw.v(res1_raw_strategy_no,:), res2.raw.v(res2_raw_strategy_no,:)];
+            groups = [groups, group_no*ones(1,size(res1.raw.v,2)), (group_no+1)*ones(1,size(res2.raw.v,2))];
+            positions = [positions, group_no, (group_no+0.75)];
+            box_nos = [box_nos, (group_no+1), (group_no+2)];
+            xticks = [xticks, (group_no+(0.75/2)), (group_no+(0.75/2))];
+            pc10s = [pc10s, quantile(res1.raw.v(res1_raw_strategy_no,:),0.1), quantile(res2.raw.v(res2_raw_strategy_no,:),0.1)];
+            pc90s = [pc90s, quantile(res1.raw.v(res1_raw_strategy_no,:),0.9), quantile(res2.raw.v(res2_raw_strategy_no,:),0.9)];
             group_no = group_no+2;
             
         end
@@ -290,7 +310,7 @@ for comparison_no = 1 : no_comparisons
         set(gca,'XGrid', 'on', 'YGrid', 'on')
         box off
         beat_detector_xticks = unique(xticks);
-        set(gca, 'XTick', beat_detector_xticks, 'XTickLabel', beat_detectors')
+        set(gca, 'XTick', beat_detector_xticks, 'XTickLabel', beat_detector_names') % used to be beat_detectors
         [ylims, ylab_txt] = get_ylabel_settings(curr_var);
         ylim([65,100]);
         ylabel(ylab_txt, 'FontSize', ftsize)
@@ -347,7 +367,7 @@ for comparison_no = 1 : no_comparisons
         % add significant differences
         pos = get(gca, 'Position');
         xlims = get(gca, 'XLim');
-        holm_sidak_alpha = 0.0015;
+        holm_sidak_alpha = 0.0014;
         no_sig = 0;
         for strategy_no = 1 :size(temp_p,2)
             if strcmp(vars{var_no}, 'f1_score') && temp_p(comparison_no,strategy_no,var_no) < holm_sidak_alpha
@@ -408,6 +428,11 @@ if ~isequal(curr_thresh, holm_sidak_alpha)
     warning('Alpha value needs updating')
 end
 
+end
+
+function beat_detectors = correct_beat_detector_names(beat_detectors)
+beat_detectors = strrep(beat_detectors, 'qppgfast', 'qppg');
+beat_detectors = strrep(beat_detectors, 'PPGPulses', 'Pulses');
 end
 
 function res = create_results_tables(ppg_strategy_perf, uParams)
@@ -684,7 +709,7 @@ if do_training ~= 0
         primary_dataset = datasets{1};
     end
     eval(['beat_detectors = res.' primary_dataset '.noQual.num.strategy;']);
-    curr_beat_detectors = beat_detectors(~strcmp(beat_detectors, 'SPAR3'));
+    curr_beat_detectors = beat_detectors(~strcmp(beat_detectors, 'qppg'));
     rel_metric = 'f1_score';
     rel_strategy_set = 'noQual';
     fig_name = 'beat_detector_f1_boxplot';
@@ -701,7 +726,7 @@ if do_training ~= 0
         primary_dataset = datasets{1};
     end
     eval(['beat_detectors = res.' primary_dataset '.noQual.num.strategy;']);
-    curr_beat_detectors = beat_detectors(~strcmp(beat_detectors, 'SPAR3'));
+    curr_beat_detectors = beat_detectors(~strcmp(beat_detectors, 'qppg'));
     rel_metric = 'ppv';
     rel_strategy_set = 'noQual';
     fig_name = 'beat_detector_ppv_boxplot';
@@ -718,7 +743,7 @@ if do_training ~= 0
         primary_dataset = datasets{1};
     end
     eval(['beat_detectors = res.' primary_dataset '.noQual.num.strategy;']);
-    curr_beat_detectors = beat_detectors(~strcmp(beat_detectors, 'SPAR3'));
+    curr_beat_detectors = beat_detectors(~strcmp(beat_detectors, 'qppg'));
     rel_metric = 'sens';
     rel_strategy_set = 'noQual';
     fig_name = 'beat_detector_sens_boxplot';
@@ -885,6 +910,7 @@ fprintf('\n - Making boxplot figure for: %s', rel_metric);
 
 eval(['beat_detectors = res.' primary_dataset '.noQual.num.strategy;']);
 beat_detectors = curr_beat_detectors;
+beat_detector_names = correct_beat_detector_names(beat_detectors);
 
 datasets = curr_datasets;
 no_y = ceil(length(datasets)/4);
@@ -925,7 +951,7 @@ for dataset_no = 1 : length(datasets)
     curr_x = rem(temp_dataset_no-1, no_x)+1;
     curr_y = no_y-floor((temp_dataset_no-1)/no_x);
     subplot('Position', [0.05+(0.95*(curr_x-1)/no_x), 0.08+((curr_y-1)/no_y), 0.85/no_x, 0.6/no_y])
-    boxplot(data', beat_detectors, 'Widths',0.8, 'MedianStyle', 'target', 'Symbol', 'r')
+    boxplot(data', beat_detector_names, 'Widths',0.8, 'MedianStyle', 'target', 'Symbol', 'r')
     set(gca, 'XTickLabelRotation', 90, 'FontSize', ftsize-2)
     ylim(ylims)
     if curr_x == 1

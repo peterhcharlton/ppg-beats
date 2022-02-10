@@ -643,11 +643,7 @@ for strategy_no = 1 : length(strategies_remaining)
     clear curr_qual_tool curr_beat_detector
     
     % - evaluate quality of each PPG beat detection
-    try
-        ppg_beat_qual_log = create_ppg_beat_qual_log(curr_ppg_beat_inds, curr_ppg_qual);
-    catch
-        a = 1;
-    end
+    ppg_beat_qual_log = create_ppg_beat_qual_log(curr_ppg_beat_inds, curr_ppg_qual);
     
     % - create vectors of PPG and ECG beat detection timings
     curr_ppg_beats.t = (curr_ppg_beat_inds-1)./uParams.dataset_details.ppg_fs_ds;
