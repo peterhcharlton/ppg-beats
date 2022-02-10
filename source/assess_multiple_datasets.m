@@ -39,7 +39,7 @@ options = specify_options;
 
 %% Perform analysis on each dataset in turn
 
-do_analysis = 0;
+do_analysis = 1;
 if do_analysis
     for dataset_no = 1 : length(up.datasets)
         
