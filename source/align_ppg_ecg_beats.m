@@ -1,4 +1,4 @@
-function [ecg_beats_a_inds, ecg_exc_a_log] = align_ppg_ecg_beats(ppg_beats_inds, ecg_beats_inds, ppg_fs, ecg_fs, options, ecg_exc_log)
+function [ecg_beats_a_inds, ecg_exc_a_log, lag_ecg_samps] = align_ppg_ecg_beats(ppg_beats_inds, ecg_beats_inds, ppg_fs, ecg_fs, options, ecg_exc_log)
 % ALIGN_PPG_ECG_BEATS  aligns PPG and ECG beats.
 %   ALIGN_PPG_ECG_BEATS aligns beats detected in an electrocardiogram (ECG)
 %   signal with those detected in a simultaneous photoplethysmogram (PPG) signal.
@@ -17,7 +17,8 @@ function [ecg_beats_a_inds, ecg_exc_a_log] = align_ppg_ecg_beats(ppg_beats_inds,
 %   
 %   # Outputs
 %   * ecg_beats_a_inds : the aligned indices of ECG beats
-%   * ecg_exc_a_log : the aligned ECG exclusion logical
+%   * ecg_exc_a_log :    the aligned ECG exclusion logical
+%   * lag_ecg_samps :    the number of samples by which the ECG is in front / behind the PPG
 %   
 %   # Documentation
 %   <https://ppg-beats.readthedocs.io/>
@@ -87,18 +88,18 @@ if ~do_windows
     rel_lag_t_els = find(curr_perf == temp);        % because more than one lag can result in this performance
     [~, temp2] = min(abs(lag_ts(rel_lag_t_els)));   % identify the index of the minimum absolute lag which results in this optimal performance
     rel_lag_t = lag_ts(rel_lag_t_els(temp2));       % identify the lag which results in the optimal performance
-    rel_lag_ecg_samps = round(rel_lag_t*ecg_fs);    % express the lag in terms of the number of ECG samples which corresponds to this lag
+    lag_ecg_samps = round(rel_lag_t*ecg_fs);    % express the lag in terms of the number of ECG samples which corresponds to this lag
     clear temp2 temp curr_perf rel_lag_t_els lag_ts
     
     %% calculate the aligned indices of ECG beats
-    ecg_beats_a_inds = ecg_beats_inds+rel_lag_ecg_samps;
+    ecg_beats_a_inds = ecg_beats_inds+lag_ecg_samps;
     
     %% calculate time-shifted ecg exclusion log
     if exist('ecg_exc_log', 'var')
-        if rel_lag_ecg_samps > 0
-            ecg_exc_a_log = [true(rel_lag_ecg_samps,1); ecg_exc_log(1:end-rel_lag_ecg_samps)];
-        elseif rel_lag_ecg_samps < 0
-            ecg_exc_a_log = [ecg_exc_log(abs(rel_lag_ecg_samps)+1:end); true(abs(rel_lag_ecg_samps),1)];
+        if lag_ecg_samps > 0
+            ecg_exc_a_log = [true(lag_ecg_samps,1); ecg_exc_log(1:end-lag_ecg_samps)];
+        elseif lag_ecg_samps < 0
+            ecg_exc_a_log = [ecg_exc_log(abs(lag_ecg_samps)+1:end); true(abs(lag_ecg_samps),1)];
         else
             ecg_exc_a_log = ecg_exc_log;
         end

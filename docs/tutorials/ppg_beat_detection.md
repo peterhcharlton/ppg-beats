@@ -1,6 +1,8 @@
 # PPG Beat Detection
 
-This page provides a few examples of how to get started with the PPG beat detectors.
+Getting started with the PPG beat detectors.
+
+---
 
 ## Detecting beats in a PPG signal
 
