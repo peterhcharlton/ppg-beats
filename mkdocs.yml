@@ -40,6 +40,7 @@ nav:
       - 'spar_beat_detector': './functions/spar_beat_detector.md'
       - 'wfd_beat_detector': './functions/wfd_beat_detector.md'
     - 'Tutorials':
+      - 'Summary': './tutorials/summary.md'
       - 'PPG Beat Detection': './tutorials/ppg_beat_detection.md'
       - 'Performance Assessment': './tutorials/performance_assessment.md'
       - 'ECG Beat Detection': './tutorials/ecg_beat_detection.md'
