@@ -39,7 +39,7 @@ options = specify_options;
 
 %% Perform analysis on each dataset in turn
 
-do_analysis = 0;
+do_analysis = 1;
 if do_analysis
     for dataset_no = 1 : length(up.datasets)
         
@@ -630,7 +630,8 @@ options = struct;
 % Specify the beat detectors to be used
 options.beat_detectors = {'MSPTD', 'qppg', 'ABD', 'COppg'};
 options.beat_detectors = {'SPAR3', 'SPAR7', 'IMS', 'AMPD', 'MSPTD', 'ABD', 'qppg', 'HeartPy', 'COppg', 'Pulses'};
-options.beat_detectors = {'SPAR', 'IMS', 'AMPD', 'MSPTD', 'ABD', 'qppg', 'qppgfast', 'HeartPy', 'COppg', 'PPGPulses', 'ERMA', 'PWD', 'PDA', 'WFD'};
+options.beat_detectors = {'SWT', 'SPAR', 'IMS', 'AMPD', 'MSPTD', 'ABD', 'qppg', 'qppgfast', 'HeartPy', 'COppg', 'PPGPulses', 'ERMA', 'PWD', 'PDA', 'WFD'};
+% Extras: 'ATmin', 'ATmax', 
 
 % Specify the downsampling strategy
 options.do_downsample = 1;     % downsample PPG signals

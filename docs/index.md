@@ -16,7 +16,7 @@ This library provides three key items:
 2. **[Performance Assessment Resources](./toolbox/performance_assessment)**: Resources to assess the performance of PPG beat detectors, including:
     - **[Datasets](./datasets/summary)**: several publicly available datasets containing PPG and reference electrocardiogram (ECG) signals.
     - **[Code](./toolbox/performance_assessment)**: MATLAB code with which to assess performance.
-3. Tutorials on how to use the algorithms, datasets, and code.
+3. **[Tutorials](./tutorials/summary)** on how to use the algorithms, datasets, and code.
 
 Further details of the project are available at the [project website](https://peterhcharlton.github.io/project/ppg-beats/).
 

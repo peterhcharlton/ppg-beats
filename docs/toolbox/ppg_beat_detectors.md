@@ -6,6 +6,14 @@ Algorithms to detect beats in photoplethysmogram (PPG) signals.
 
 **PPG-beats** contains several algorithms to detect beats in the photoplethysmogram (PPG):
 
+## Adaptive Threshold Beat Detector
+
+**Original publication:** Shin HS et al., Adaptive threshold method for the peak detection of photoplethysmographic waveform. _Comput Biol Med_ 2009; 39: 1145-52. DOI: [10.1016/j.compbiomed.2009.10.006](https://doi.org/10.1016/j.compbiomed.2009.10.006)
+
+**Description:** 
+
+**Link:** [atmax_beat_detector](../../functions/atmax_beat_detector) (see also [atmin_beat_detector](../../functions/atmin_beat_detector))
+
 ## Automatic Beat Detection
 
 **Original publication:** Aboy M et al., An automatic beat detection algorithm for pressure signals. _IEEE Trans Biomed Eng_ 2005; 52: 1662-70. DOI: [10.1109/TBME.2005.855725](https://doi.org/10.1109/TBME.2005.855725)
@@ -101,6 +109,14 @@ photoplethysmographic signal in children,' _IEEE Journal of Biomedical and Healt
 **Description:** 
 
 **Links:** [qppg_beat_detector](../../functions/qppg_beat_detector) (original version); [qppgfast_beat_detector](../../functions/qppgfast_beat_detector) (faster version);
+
+## Stationary Wavelet Transform Beat Detector
+
+**Original publication:**  S. Vadrevu and M. Sabarimalai Manikandan, 'A robust pulse onset and peak detection method for automated PPG signal analysis system,' _IEEE Trans Instrum Meas_, vol.68, no.3, pp.807-817, 2019. DOI: [10.1109/TIM.2018.2857878](https://doi.org/10.1109/TIM.2018.2857878)
+
+**Description:** 
+
+**Link:** [swt_beat_detector](../../functions/swt_beat_detector)
 
 ## Symmetric Projection Attractor Reconstruction Detector
 

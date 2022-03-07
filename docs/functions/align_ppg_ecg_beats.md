@@ -21,7 +21,9 @@ signal with those detected in a simultaneous photoplethysmogram (PPG) signal.
 ##  Outputs
 +   ecg_beats_a_inds : the aligned indices of ECG beats
     
-+   ecg_exc_a_log : the aligned ECG exclusion logical
++   ecg_exc_a_log :    the aligned ECG exclusion logical
+    
++   lag_ecg_samps :    the number of samples by which the ECG is in front / behind the PPG
     
 ##  Documentation
 <https://ppg-beats.readthedocs.io/>

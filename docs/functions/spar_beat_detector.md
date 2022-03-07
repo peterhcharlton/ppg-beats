@@ -16,7 +16,7 @@ using the 'Symmetric Projection Attractor Reconstruction' beat detector
 none
 
 ##  Author
-Callum Pettit and Philip Aston - wrote the code: 'SPARcycleTimesPPG'
+Callum Pettit and Philip Aston - wrote the code: 'SPARcycleTimesPPG' and 'find_acl'
 Peter H. Charlton - modified the code slightly (as indicated), but mainly just wrote this wrapper
 
 ##  Documentation

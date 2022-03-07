@@ -45,4 +45,5 @@ nav:
       - 'Performance Assessment': './tutorials/performance_assessment.md'
       - 'ECG Beat Detection': './tutorials/ecg_beat_detection.md'
       - 'Time Alignment': './tutorials/time_alignment.md'
+      - 'Creating Documentation': './tutorials/creating_docs.md'
     
