@@ -25,6 +25,8 @@ nav:
       - 'preprocess_ppg_signal': './functions/preprocess_ppg_signal.md'
       - 'detect_ppg_beats': './functions/detect_ppg_beats.md'
       - 'detect_ecg_beats': './functions/detect_ecg_beats.md'
+      - 'atmax_beat_detector': './functions/atmax_beat_detector.md'
+      - 'atmin_beat_detector': './functions/atmin_beat_detector.md'
       - 'abd_beat_detector': './functions/abd_beat_detector.md'
       - 'ampd_beat_detector': './functions/ampd_beat_detector.md'
       - 'coppg_beat_detector': './functions/coppg_beat_detector.md'
@@ -38,6 +40,7 @@ nav:
       - 'qppg_beat_detector': './functions/qppg_beat_detector.md'
       - 'qppgfast_beat_detector': './functions/qppgfast_beat_detector.md'
       - 'spar_beat_detector': './functions/spar_beat_detector.md'
+      - 'swt_beat_detector': './functions/swt_beat_detector.md'
       - 'wfd_beat_detector': './functions/wfd_beat_detector.md'
     - 'Tutorials':
       - 'Summary': './tutorials/summary.md'
