@@ -20,11 +20,16 @@ _NB: You can obtain details of which functions use which toolboxes by running a 
 
 ## Installation
 
-
+_Details to be inserted about installing the toolbox directly from Matlab_
 
 ## Manual Download
 
-...
+The toolbox can be downloaded as a [ZIP file from GitHub](https://github.com/peterhcharlton/ppg-beats/archive/refs/heads/main.zip). It is available at:
+
+- [GitHub](https://github.com/peterhcharlton/ppg-beats/)
+- [Mathworks File Exchange](https://www.mathworks.com/matlabcentral/fileexchange/107644-ppg-beats)
+- [Zenodo](https://doi.org/10.5281/zenodo.6037646)
+
 
 ## Detecting beats in the PPG
 
