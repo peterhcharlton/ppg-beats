@@ -714,7 +714,7 @@ for strategy_no = 1 : length(strategies_remaining)
     
     %% HR estimation performance
     
-    if length(curr_ppg_beats.t)<2
+    if isempty(curr_ppg_beats.t)
         [a.acc_hr, a.durn_hr, a.prop_hr, a.bias_hr, a.loa_hr, a.mae_hr] = deal(nan);
         curr_ppg_strategy_perf = a; clear a
     else
@@ -796,13 +796,17 @@ for strategy_no = 1 : length(strategies_remaining)
     
     %% IBI measurement performance
     
-    if length(curr_ppg_beats.t)<3
+    if length(curr_ppg_beats.t)
         [a.acc_ibi, a.durn_ibi, a.prop_ibi, a.bias_ibi, a.loa_ibi, a.mae_ibi] = deal(nan);
         curr_ppg_strategy_perf = a; clear a
     else
         
         % - Generate time series
-        ppg_int_ts = generate_beat_signal(curr_ppg_beats.t, uParams);
+        try
+            ppg_int_ts = generate_beat_signal(curr_ppg_beats.t, uParams);
+        catch
+            a = 1;
+        end
         ecg_int_ts = generate_beat_signal(curr_ecg_beats.t, uParams);
         
         % - Generate PPG quality time series

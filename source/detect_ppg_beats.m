@@ -91,6 +91,8 @@ if ~isempty(onsets) && ~isempty(peaks)
     if onsets(1)>peaks(1)
         peaks(1) = [];
     end
+end
+if ~isempty(onsets) && ~isempty(peaks)
     if peaks(end)<onsets(end)
         onsets(end) = [];
     end

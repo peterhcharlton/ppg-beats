@@ -57,10 +57,17 @@ end
 %% Retrieve results for strategies, and provide latex table of results of selected strategy across all datasets
 selected_strategy = 'MSPTD__accel_comb_MSPTD_qppg';
 selected_strategy = 'MSPTD__none';
+selected_strategy = 'SPAR__none';
 vars = {'ppv', 'sens', 'f1_score', 'acc_ibi', 'prop_ibi', 'acc_hr', 'prop_hr'};
+vars = {'f1_score', 'sens', 'ppv', 'durn_both', 'no_beats'};
 types = {'med', 'lq', 'uq'};
-fprintf('\n - Performance of selected strategy: ')
+fprintf('\n - Performance of selected strategy: (%s)', selected_strategy)
 [total_pts, total_durn] = deal(0);
+fprintf('\nDataset');
+for s = 1 : length(vars)
+    fprintf([' & ', vars{s}]);
+end
+fprintf('\\\\')
 for dataset_no = 1 : length(up.datasets)
     
     curr_dataset = up.datasets{dataset_no};
@@ -88,7 +95,6 @@ for dataset_no = 1 : length(up.datasets)
     % Extract raw stats for each relevant strategy
     rel_strategy_els = find(contains(ppg_strategy_perf.stats.strategies, '__none'));
     raw_res.rel_strategies = ppg_strategy_perf.stats.strategies(rel_strategy_els);
-    vars = {'f1_score', 'sens', 'ppv', 'durn_both', 'no_beats'};
     for curr_var_no = 1 : length(vars)
         curr_var = vars{curr_var_no};
         for strategy_no = 1 : length(rel_strategy_els)
@@ -105,7 +111,7 @@ for dataset_no = 1 : length(up.datasets)
         strategy_el = find(strcmp(ppg_strategy_perf.stats.strategies, strrep(selected_strategy, '_accel', '')));
     end
     if ~isempty(strategy_el)
-       for var_no = 1 : length(vars)
+        for var_no = 1 : length(vars)
             curr_var = vars{var_no};
             
             % - variables requiring median and quartile ranges
@@ -630,8 +636,7 @@ options = struct;
 % Specify the beat detectors to be used
 options.beat_detectors = {'MSPTD', 'qppg', 'ABD', 'COppg'};
 options.beat_detectors = {'SPAR3', 'SPAR7', 'IMS', 'AMPD', 'MSPTD', 'ABD', 'qppg', 'HeartPy', 'COppg', 'Pulses'};
-options.beat_detectors = {'SWT', 'SPAR', 'IMS', 'AMPD', 'MSPTD', 'ABD', 'qppg', 'qppgfast', 'HeartPy', 'COppg', 'PPGPulses', 'ERMA', 'PWD', 'PDA', 'WFD'};
-% Extras: 'ATmin', 'ATmax', 
+options.beat_detectors = {'SWT', 'ATmin', 'ATmax', 'SPAR', 'IMS', 'AMPD', 'MSPTD', 'ABD', 'qppg', 'qppgfast', 'HeartPy', 'COppg', 'PPGPulses', 'ERMA', 'PWD', 'PDA', 'WFD'};
 
 % Specify the downsampling strategy
 options.do_downsample = 1;     % downsample PPG signals
