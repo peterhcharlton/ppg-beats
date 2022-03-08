@@ -1093,7 +1093,9 @@ for subj_no = 1 : uParams.dataset_details.no_subjs
         end
     elseif exist(filepath, 'file') && ~uParams.analysis.redo_analysis && ~isempty(uParams.analysis.redo_selected_beat_detectors)
         load(filepath);  % loads 'ppg_beats_inds' variable
-        beat_detectors_remaining = uParams.analysis.redo_selected_beat_detectors;
+        beat_detectors_used = fieldnames(ppg_beats_inds);
+        beat_detectors_remaining = setxor(beat_detectors_used, uParams.analysis.beat_detectors);
+        beat_detectors_remaining = unique([beat_detectors_remaining; uParams.analysis.redo_selected_beat_detectors]);
     else
         beat_detectors_remaining = uParams.analysis.beat_detectors;
         ppg_beats_inds = struct;
@@ -1343,7 +1345,9 @@ for subj_no = 1 : uParams.dataset_details.no_subjs
         end
     elseif exist(filepath, 'file') && ~uParams.analysis.redo_analysis && ~isempty(uParams.analysis.redo_selected_beat_detectors)
         load(filepath);  % loads 'ecg_beats_a_inds' variable
-        beat_detectors_remaining = uParams.analysis.redo_selected_beat_detectors;
+        beat_detectors_used = fieldnames(ecg_beats_a_inds);
+        beat_detectors_remaining = setxor(beat_detectors_used, uParams.analysis.beat_detectors);
+        beat_detectors_remaining = unique([beat_detectors_remaining; uParams.analysis.redo_selected_beat_detectors]);
     else
         beat_detectors_remaining = uParams.analysis.beat_detectors;
         ecg_beats_a_inds = struct;

@@ -4,7 +4,7 @@ Algorithms to detect beats in photoplethysmogram (PPG) signals.
 
 ---
 
-**PPG-beats** contains several algorithms to detect beats in the photoplethysmogram (PPG):
+**PPG-beats** contains several algorithms to detect beats in the photoplethysmogram (PPG). This page provides an overview of these beat detectors. Follow the links for further details on each one, and see [this tutorial](./tutorials/ppg_beat_detection) for an example of how to use them.
 
 ## Adaptive Threshold Beat Detector
 
@@ -14,6 +14,8 @@ Algorithms to detect beats in photoplethysmogram (PPG) signals.
 
 **Link:** [atmax_beat_detector](../../functions/atmax_beat_detector) (see also [atmin_beat_detector](../../functions/atmin_beat_detector))
 
+**Licence:** MIT Licence
+
 ## Automatic Beat Detection
 
 **Original publication:** Aboy M et al., An automatic beat detection algorithm for pressure signals. _IEEE Trans Biomed Eng_ 2005; 52: 1662-70. DOI: [10.1109/TBME.2005.855725](https://doi.org/10.1109/TBME.2005.855725)
@@ -22,15 +24,19 @@ Algorithms to detect beats in photoplethysmogram (PPG) signals.
 
 **Link:** [abd_beat_detector](../../functions/abd_beat_detector)
 
+**Licence:** GNU GPL Licence (could be changed in future)
+
 ## Automatic Multiscale-based Peak Detection
 
 **Original publication:** F. Scholkmann et al., 'An efficient algorithm for
 automatic peak detection in noisy periodic and quasi-periodic signals,'
 _Algorithms_, vol. 5, no. 4, pp. 588-603, 2012. DOI: [10.3390/a5040588](https://doi.org/10.3390/a5040588)
 
-**Description:** 
+**Description:** GNU GPL Licence (could be changed in future)
 
 **Link:** [ampd_beat_detector](../../functions/ampd_beat_detector)
+
+**Licence:** GNU GPL Licence (could be changed in future)
 
 ## Percentile Peak Detector
 
@@ -39,6 +45,8 @@ _Algorithms_, vol. 5, no. 4, pp. 588-603, 2012. DOI: [10.3390/a5040588](https://
 **Description:** 
 
 **Link:** [coppg_beat_detector](../../functions/coppg_beat_detector)
+
+**Licence:** GNU GPL Licence
 
 ## Event-Related Moving Averages
 
@@ -50,6 +58,8 @@ conditions,' _PLoS ONE_, vol. 8, no. 10, pp. 1-11, 2013. DOI: [10.1371/journal.p
 
 **Link:** [erma_beat_detector](../../functions/erma_beat_detector)
 
+**Licence:** GNU GPL Licence (could be changed in future)
+
 ## HeartPy
 
 **Original publication:** P. van Gent et al., 'HeartPy: A novel heart rate algorithm for the
@@ -60,6 +70,8 @@ Psychology and Behaviour_, vol. 66, pp. 368-378, 2019. DOI: [10.1016/j.trf.2019.
 
 **Link:** [heartpy_beat_detector](../../functions/heartpy_beat_detector)
 
+**Licence:** GNU GPL Licence (could be changed in future)
+
 ## Incremental Merge Segmentation
 
 **Original publication:** W. Karlen et al., 'Adaptive pulse segmentation and artifact detection in photoplethysmography for mobile applications,' in _Proc. IEEE EMBS_. IEEE, 2012, pp. 3131-4. DOI: [10.1109/EMBC.2012.6346628](https://doi.org/10.1109/EMBC.2012.6346628)
@@ -68,6 +80,8 @@ Psychology and Behaviour_, vol. 66, pp. 368-378, 2019. DOI: [10.1016/j.trf.2019.
 
 **Link:** [ims_beat_detector](../../functions/ims_beat_detector)
 
+**Licence:** GNU GPL Licence
+
 ## Multi-Scale Peak and Trough Detection
 
 **Original publication:** S. M. Bishop and A. Ercole, 'Multi-scale peak and trough detection optimised for periodic and quasi-periodic neuroscience data,' in _Intracranial Pressure and Neuromonitoring XVI. Acta Neurochirurgica Supplement_, T. Heldt, Ed. Springer, 2018, vol. 126, pp. 189-195. DOI: [10.1007/978-3-319-65798-1_39](https://doi.org/10.1007/978-3-319-65798-1_39)
@@ -75,6 +89,8 @@ Psychology and Behaviour_, vol. 66, pp. 368-378, 2019. DOI: [10.1016/j.trf.2019.
 **Description:** 
 
 **Link:** [msptd_beat_detector](../../functions/msptd_beat_detector)
+
+**Licence:** TBC
 
 ## Peak Detection Algorithm
 
@@ -85,6 +101,8 @@ low-complexity peak detection algorithm for heart rate estimation from low-ampli
 
 **Link:** [pda_beat_detector](../../functions/pda_beat_detector)
 
+**Licence:** GNU GPL Licence (could be changed in future)
+
 ## Pulse Wave Delineator
 
 **Original publication:** B. N. Li et al., 'On an automatic delineator for arterial blood pressure waveforms,' _Biomedical Signal Processing and Control_, vol. 5, no. 1, pp. 76-81, 2010. DOI: [10.1016/j.bspc.2009.06.002](https://doi.org/10.1016/j.bspc.2009.06.002)
@@ -92,6 +110,8 @@ low-complexity peak detection algorithm for heart rate estimation from low-ampli
 **Description:** 
 
 **Link:** [pwd_beat_detector](../../functions/pwd_beat_detector)
+
+**Licence:** Custom (see code)
 
 ## PPG Pulses Detector
 
@@ -102,6 +122,8 @@ photoplethysmographic signal in children,' _IEEE Journal of Biomedical and Healt
 
 **Link:** [ppgpulses_beat_detector](../../functions/ppgpulses_beat_detector)
 
+**Licence:** GNU GPL Licence
+
 ## Adapted Onset Detector
 
 **Original publication:** A. N. Vest et al., 'An open source benchmarked toolbox for cardiovascular waveform and interval analysis,' _Physiological Measurement_, vol. 39, no. 10, 2018. DOI: [10.1088/1361-6579/aae021](https://doi.org/10.1088/1361-6579/aae021)
@@ -109,6 +131,8 @@ photoplethysmographic signal in children,' _IEEE Journal of Biomedical and Healt
 **Description:** 
 
 **Links:** [qppg_beat_detector](../../functions/qppg_beat_detector) (original version); [qppgfast_beat_detector](../../functions/qppgfast_beat_detector) (faster version);
+
+**Licence:** GNU GPL Licence
 
 ## Stationary Wavelet Transform Beat Detector
 
@@ -118,6 +142,8 @@ photoplethysmographic signal in children,' _IEEE Journal of Biomedical and Healt
 
 **Link:** [swt_beat_detector](../../functions/swt_beat_detector)
 
+**Licence:** MIT Licence
+
 ## Symmetric Projection Attractor Reconstruction Detector
 
 **Original publication:**  n/a
@@ -126,6 +152,8 @@ photoplethysmographic signal in children,' _IEEE Journal of Biomedical and Healt
 
 **Link:** [spar_beat_detector](../../functions/spar_beat_detector)
 
+**Licence:** TBC
+
 ## Wavelet Foot Delineation
 
 **Original publication:** N. J. Conn and D. A. Borkholder, 'Wavelet based photoplethysmogram foot delineation for heart rate variability applications,' in _IEEE Signal Processing in Medicine and Biology Symposium_. IEEE, 2013. DOI: [10.1109/SPMB.2013.6736782](https://doi.org/10.1109/SPMB.2013.6736782)
@@ -133,3 +161,5 @@ photoplethysmographic signal in children,' _IEEE Journal of Biomedical and Healt
 **Description:** 
 
 **Link:** [wfd_beat_detector](../../functions/wfd_beat_detector)
+
+**Licence:** GNU GPL Licence (could be changed in future)

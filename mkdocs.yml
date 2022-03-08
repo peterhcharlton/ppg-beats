@@ -1,5 +1,4 @@
 site_name: PPG-beats
-repo_url: https://github.com/peterhcharlton/ppg-beats
 
 nav:
     - 'Home': 'index.md'
