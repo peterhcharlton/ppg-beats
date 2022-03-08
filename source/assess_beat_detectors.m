@@ -55,6 +55,7 @@ if nargin < 2, options = struct; end
 
 % Setup universal parameters
 uParams = setup_up(dataset, options);
+uParams.analysis.redo_selected_beat_detectors = {'SPAR'};
 
 %% Detect beats in PPG signals
 detect_beats_in_ppg_signals(uParams);
@@ -63,6 +64,7 @@ detect_beats_in_ppg_signals(uParams);
 assess_quality_of_ppg_signals(uParams);
 
 %% Detect beats in ECG signals
+uParams.analysis.redo_analysis = 1;
 detect_beats_in_ecg_signals(uParams);
 
 %% Time align PPG beats
@@ -128,8 +130,8 @@ if ~exist(uParams.paths.processing_folder, 'dir')
 end
 
 %% Analysis parameters
-uParams.analysis.tol_window = 0.2; % in secs
-uParams.analysis.qrs_tol_window = 0.2; % in secs
+uParams.analysis.tol_window = 0.15; % in secs
+uParams.analysis.qrs_tol_window = 0.15; % in secs
 uParams.analysis.win_durn = 20; % in secs
 uParams.analysis.win_overlap = 5; % in secs
 uParams.analysis.ppg_fid_pt = 'mid_pt'; % options: mid_pt, pk, onset

@@ -205,7 +205,7 @@ for option_no = 1 : length(possible_options)
            case 'verbose'
                default_val = true;
            case 'qrs_tol_window'
-               default_val = 0.2;  % in secs
+               default_val = 0.15;  % in secs
            case 'start_up_message'
                default_val = 1;    % i.e. display the start-up message
        end
