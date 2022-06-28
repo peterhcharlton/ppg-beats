@@ -43,7 +43,9 @@ if options.do_downsample && sum(strcmp(fieldnames(S), 'no_signal'))
         S.no_signal = downsample(S.no_signal, ds_factor);
     else
         % Resample
-        S.no_signal = resample(double(S.no_signal), options.downsample_freq, S.fs);
+        %S.no_signal = resample(double(S.no_signal), options.downsample_freq, S.fs);
+        t = [0:length(S.no_signal)-1]./S.fs;
+        S.no_signal = interp1(t, double(S.no_signal), 0:(1/options.downsample_freq):t(end), 'previous');
         S.no_signal = logical(S.no_signal);
     end
 end

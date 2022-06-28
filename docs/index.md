@@ -18,7 +18,7 @@ This library provides three key items:
     - **[Code](./toolbox/performance_assessment)**: MATLAB code with which to assess performance.
 3. **[Tutorials](./tutorials/summary)** on how to use the algorithms, datasets, and code.
 
-Further details of the project are available at the [project website](https://peterhcharlton.github.io/project/ppg-beats/).
+Further details of the project, including publications using this toolbox, are available at the [project website](https://peterhcharlton.github.io/project/ppg-beats/).
 
 ![PPG signal and detected beats](./assets/images/ppg_and_beats.png)
 

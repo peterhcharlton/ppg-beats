@@ -14,11 +14,13 @@ assess the quality of beat detections.
      - options.win_overlap    - The overlap of windows (in secs)
      - options.verbose        - A logical indicating whether (1) or not (0) to display text in the Command Window
      - options.qrs_tol_window - The acceptable tolerance window around QRS spikes (in secs)
+     - options.beat_detectors - The ECG beat detectors to be used. Specify either 1 or 2 out of: {'gqrs', 'jqrs', 'rpeakdetect'}
+     - options.hpf            - A logical indicating whether (1) or not (0) to high-pass filter the ECG to remove baseline wander
     
 +   no_signal_vector : (optional) a vector of the same length as the ECG vector, which indicates whether (1) or not (0) there was a signal at each sample
     
 ##  Outputs
-+   beat_inds : the indices of detected beats which both beat detectors agree on
++   agreed_beats_inds : the indices of detected beats which both beat detectors agree on
     
 +   qual : a logical indicating whether (1) or not (0) beats agreed between beat detectors for each ECG sample 
     
@@ -26,10 +28,10 @@ assess the quality of beat detections.
     
 ##  Exemplary usage:
         options.win_durn = 20;
-        [beat_inds, qual] = detect_ecg_beats(ecg, fs, options)
+        [agreed_beats_inds, qual] = detect_ecg_beats(ecg, fs, options)
     
 ##  Requirements:
-Waveform Database Software Package (WFDB) for MATLAB and Octave, available from:
+When using the gqrs beat detector, the Waveform Database Software Package (WFDB) for MATLAB and Octave is required, available from:
 <https://doi.org/10.13026/6zcz-e163>
 
 ##  Documentation
@@ -48,6 +50,12 @@ This script uses scripts from the PhysioNet Cardiovascular Signal Toolbox (under
 +   Link: <https://github.com/cliffordlab/PhysioNet-Cardiovascular-Signal-Toolbox>
     
 +   Reference: Vest et al. 'An open source benchmarked toolbox for cardiovascular waveform and interval analysis'. Physiol Meas, 39, 2018. <https://doi.org/10.1088/1361-6579/aae021> 
+    
+It also uses the 'rpeakdetect.m' script (under the GNU public licence):
+
++   Link: <http://www.mit.edu/~gari/CODE/ECGtools/ecgBag/rpeakdetect.m>
+    
++   Author: Gari Clifford
     
 ##  Version
 0.1, and is still in development.

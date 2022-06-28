@@ -57,9 +57,8 @@ end
 %% Retrieve results for strategies, and provide latex table of results of selected strategy across all datasets
 selected_strategy = 'MSPTD__accel_comb_MSPTD_qppg';
 selected_strategy = 'MSPTD__none';
-selected_strategy = 'SPAR__none';
 vars = {'ppv', 'sens', 'f1_score', 'acc_ibi', 'prop_ibi', 'acc_hr', 'prop_hr'};
-vars = {'f1_score', 'sens', 'ppv', 'durn_both', 'no_beats'};
+vars = {'mape_hr', 'f1_score', 'sens', 'ppv', 'durn_both', 'no_beats'};
 types = {'med', 'lq', 'uq'};
 fprintf('\n - Performance of selected strategy: (%s)', selected_strategy)
 [total_pts, total_durn] = deal(0);
@@ -131,7 +130,11 @@ for dataset_no = 1 : length(up.datasets)
                 curr_strategy = ppg_strategy_perf.stats.strategies{strategy_el};
                 eval(['curr_temp_data = ppg_strategy_perf.raw.' curr_strategy '.' curr_var ';']);
                 temp.total = sum(curr_temp_data(~isnan(curr_temp_data)));
-                fprintf(' & %d', temp.total)                
+                temp.total_txt = sprintf(' & %d', temp.total);
+                if temp.total >= 1000
+                    temp.total_txt = [temp.total_txt(1:end-3), ',', temp.total_txt(end-2:end)];
+                end
+                fprintf('%s', temp.total_txt)                
             end
             
             % - store results for this variable on this dataset
@@ -170,10 +173,109 @@ for dataset_no = 1 : length(up.datasets)
     up.analysis.beat_detectors = options.beat_detectors;
     dataset_res = dataset_res.res;
     
+    % remove and rename beat detectors (dataset_res)
+    res_cats = fieldnames(dataset_res);
+    for cat_no = 1 : length(res_cats)
+        curr_cat = res_cats{cat_no};
+        eval(['curr_txt_res = dataset_res.' curr_cat '.txt;']);
+        eval(['curr_num_res = dataset_res.' curr_cat '.num;']);
+        % - remove beat detectors in this cat
+        beat_detectors_to_remove = {'ATmax', 'qppg'};
+        rel_rows = true(size(curr_txt_res.strategy));
+        for s = 1 : length(beat_detectors_to_remove)
+            rel_rows = rel_rows & ~strcmp(curr_txt_res.strategy, beat_detectors_to_remove{s});
+        end
+        curr_txt_res = curr_txt_res(rel_rows,:);
+        curr_num_res = curr_num_res(rel_rows,:);
+        % - rename beat detectors in this cat
+        curr_num_res.strategy = rename_beat_detectors(curr_num_res.strategy);
+        curr_txt_res.strategy = rename_beat_detectors(curr_txt_res.strategy);
+        
+        eval(['dataset_res.' curr_cat '.txt = curr_txt_res;']);
+        eval(['dataset_res.' curr_cat '.num = curr_num_res;']);
+    end
+    
     % store results
     eval(['res.' up.datasets{dataset_no} ' = dataset_res;']);
     clear dataset_res ppg_strategy_perf options
     
+end
+
+% remove and rename beat detectors (raw_res)
+raw_res.rel_strategies = rename_beat_detectors(raw_res.rel_strategies);
+
+%% Print results summary
+
+fprintf('\n ~~~ Performance of beat detectors in different use cases ~~~')
+beat_detectors_to_exclude = {'PDA', 'SWT','ATM','WFD','Pulses'};
+
+fprintf('\n On ideal hospital datasets:')
+curr_cat = 'noQual';
+curr_datasets = {'capnobase', 'bidmc'};
+report_min_f1_score(res, curr_cat, curr_datasets, 'on ideal hospital datasets');
+report_min_f1_score(res, curr_cat, curr_datasets, 'on ideal hospital datasets', beat_detectors_to_exclude);
+
+fprintf('\n During low levels of movement:')
+curr_cat = 'noQual';
+curr_datasets = {'capnobase', 'bidmc', 'mimic_train_all', 'mimic_test_all'};
+report_min_f1_score(res, curr_cat, curr_datasets, 'on hospital datasets');
+report_min_f1_score(res, curr_cat, curr_datasets, 'on hospital datasets', beat_detectors_to_exclude);
+
+curr_datasets = {'wesad_meditation', 'ppg_dalia_sitting'};
+report_min_f1_score(res, curr_cat, curr_datasets, 'on wearable datasets with low movement');
+report_min_f1_score(res, curr_cat, curr_datasets, 'on wearable datasets with low movement', beat_detectors_to_exclude);
+
+fprintf('\n During movement:')
+curr_cat = 'noQual';
+curr_datasets = {'ppg_dalia_sitting', 'ppg_dalia_walking', 'ppg_dalia_cycling', 'ppg_dalia_stair_climbing', 'ppg_dalia_table_soccer'};
+fprintf('\n  - range F1-scores during movement:')
+for dataset_no = 1 : length(curr_datasets)
+    report_range_f1_score(res, curr_cat, curr_datasets(dataset_no), ['on ' curr_datasets{dataset_no} ' dataset']);
+end
+for dataset_no = 1 : length(curr_datasets)
+    report_range_f1_score(res, curr_cat, curr_datasets(dataset_no), ['on ' curr_datasets{dataset_no} ' dataset'], beat_detectors_to_exclude);
+end
+
+fprintf('\n During stress:')
+curr_cat = 'noQual';
+curr_datasets = {'wesad_stress', 'wesad_baseline'};
+fprintf('\n  - range F1-scores during stress:')
+for dataset_no = 1 : length(curr_datasets)
+    report_range_f1_score(res, curr_cat, curr_datasets(dataset_no), ['on ' curr_datasets{dataset_no} ' dataset']);
+end
+for dataset_no = 1 : length(curr_datasets)
+    report_range_f1_score(res, curr_cat, curr_datasets(dataset_no), ['on ' curr_datasets{dataset_no} ' dataset'], beat_detectors_to_exclude);
+end
+
+fprintf('\n ~~~ Performance of beat detectors on different datasets ~~~')
+
+fprintf('\n Best and worst performing beat detectors:')
+curr_cat = 'noQual';
+curr_datasets = fieldnames(res);
+report_best_and_worst_beat_detectors(res, curr_cat, curr_datasets);
+report_best_and_worst_beat_detectors(res, curr_cat, curr_datasets, beat_detectors_to_exclude);
+
+fprintf('\n ~~~ Acceptability (in context of heart rate monitoring) ~~~')
+
+curr_cat = 'noQual';
+curr_datasets = fieldnames(res);
+fprintf('\n All beat detectors:')
+assess_acceptability_of_beat_detectors(res, curr_cat, curr_datasets);
+fprintf('\n Selected beat detectors:')
+assess_acceptability_of_beat_detectors(res, curr_cat, curr_datasets, beat_detectors_to_exclude);
+
+fprintf('\n ~~~ Association between performance and patient physiology and demographics ~~~')
+
+fprintf('\n AF:')
+curr_cat = 'noQual';
+curr_datasets = {'mimic_af', 'mimic_non_af'};
+fprintf('\n All beat detectors:')
+for dataset_no = 1 : length(curr_datasets)
+    report_range_f1_score(res, curr_cat, curr_datasets(dataset_no), ['on ' curr_datasets{dataset_no} ' dataset']);
+end
+fprintf('\n Selected beat detectors:')
+for dataset_no = 1 : length(curr_datasets)
+    report_range_f1_score(res, curr_cat, curr_datasets(dataset_no), ['on ' curr_datasets{dataset_no} ' dataset'], beat_detectors_to_exclude);
 end
 
 %% Generate comparison figures
@@ -208,10 +310,178 @@ end
 
 end
 
+function beat_detectors = rename_beat_detectors(beat_detectors)
+beat_detectors = strrep(beat_detectors, 'ATmin', 'ATM');
+beat_detectors = strrep(beat_detectors, 'PPGPulses', 'Pulses');
+beat_detectors = strrep(beat_detectors, 'qppg', 'ignore1');
+beat_detectors = strrep(beat_detectors, 'ignore1fast', 'qppg');
+end
+
+function report_min_f1_score(res, curr_cat, curr_datasets, description, beat_detectors_to_exclude)
+
+all_datasets = fieldnames(res);
+first_dataset = all_datasets{1};
+eval(['all_beat_detectors = res.' first_dataset '.' curr_cat '.num.strategy;']);
+    
+if nargin>4
+    rel_beat_detectors = setxor(all_beat_detectors, beat_detectors_to_exclude(:));
+    exc_txt = ' (excluding ';
+    for s = 1 : length(beat_detectors_to_exclude)
+        exc_txt = [exc_txt, beat_detectors_to_exclude{s}, ', '];
+    end
+    exc_txt = [exc_txt(1:end-2), ')'];
+else
+    rel_beat_detectors = all_beat_detectors;
+    exc_txt = '';
+end
+
+curr_scores = nan(size(curr_datasets));
+for dataset_no = 1 : length(curr_datasets)
+    eval(['rel_res = res.' curr_datasets{dataset_no} '.' curr_cat '.num;']);
+    rel_rows = false(height(rel_res));
+    for beat_detector_no = 1 : length(rel_beat_detectors)
+        rel_rows(strcmp(rel_res.strategy, rel_beat_detectors{beat_detector_no})) = true;
+    end
+    curr_scores(dataset_no) = min(rel_res.f1_score_med(rel_rows));
+end
+fprintf('\n  - min median F1-score %s%s: %.1f %%', description, exc_txt, min(curr_scores))
+
+end
+
+function report_range_f1_score(res, curr_cat, curr_datasets, description, beat_detectors_to_exclude)
+
+all_datasets = fieldnames(res);
+first_dataset = all_datasets{1};
+eval(['all_beat_detectors = res.' first_dataset '.' curr_cat '.num.strategy;']);
+    
+if nargin>4
+    rel_beat_detectors = setxor(all_beat_detectors, beat_detectors_to_exclude(:));
+    exc_txt = ' (excluding ';
+    for s = 1 : length(beat_detectors_to_exclude)
+        exc_txt = [exc_txt, beat_detectors_to_exclude{s}, ', '];
+    end
+    exc_txt = [exc_txt(1:end-2), ')'];
+else
+    rel_beat_detectors = all_beat_detectors;
+    exc_txt = '';
+end
+
+curr_scores = nan(size(curr_datasets));
+for dataset_no = 1 : length(curr_datasets)
+    eval(['rel_res = res.' curr_datasets{dataset_no} '.' curr_cat '.num;']);
+    rel_rows = false(height(rel_res));
+    for beat_detector_no = 1 : length(rel_beat_detectors)
+        rel_rows(strcmp(rel_res.strategy, rel_beat_detectors{beat_detector_no})) = true;
+    end
+    curr_scores(2*dataset_no) = max(rel_res.f1_score_med(rel_rows));
+    curr_scores(2*dataset_no-1) = min(rel_res.f1_score_med(rel_rows));
+end
+fprintf('\n  - range median F1-score %s%s: %.0f - %.0f %%', description, exc_txt, min(curr_scores), max(curr_scores))
+
+end
+
+function assess_acceptability_of_beat_detectors(res, curr_cat, curr_datasets, beat_detectors_to_exclude)
+
+all_datasets = fieldnames(res);
+first_dataset = all_datasets{1};
+eval(['all_beat_detectors = res.' first_dataset '.' curr_cat '.num.strategy;']);
+    
+if nargin>3
+    rel_beat_detectors = setxor(all_beat_detectors, beat_detectors_to_exclude(:));
+    exc_txt = ' (excluding ';
+    for s = 1 : length(beat_detectors_to_exclude)
+        exc_txt = [exc_txt, beat_detectors_to_exclude{s}, ', '];
+    end
+    exc_txt = [exc_txt(1:end-2), ')'];
+else
+    rel_beat_detectors = all_beat_detectors;
+    exc_txt = '';
+end
+
+curr_scores = nan(size(curr_datasets));
+for dataset_no = 1 : length(curr_datasets)
+    fprintf('\n  - On %s Dataset%s: ', curr_datasets{dataset_no}, exc_txt);
+    eval(['rel_res = res.' curr_datasets{dataset_no} '.' curr_cat '.num;']);
+    rel_rows = [];
+    for beat_detector_no = 1 : length(rel_beat_detectors)
+        rel_rows(end+1) = find(strcmp(rel_res.strategy, rel_beat_detectors{beat_detector_no}));
+    end
+    rel_scores = rel_res.mape_hr_med(rel_rows);
+    fprintf('\n     - acceptable MAPE: ');
+    for s = 1 : length(rel_scores)
+        if rel_scores(s)<10
+            fprintf('%s, ', rel_beat_detectors{s});
+        end
+    end
+    fprintf('\n     - unacceptable MAPE: ');
+    for s = 1 : length(rel_scores)
+        if rel_scores(s)>10
+            fprintf('%s, ', rel_beat_detectors{s});
+        end
+    end
+end
+
+end
+
+function report_best_and_worst_beat_detectors(res, curr_cat, curr_datasets, beat_detectors_to_exclude)
+
+all_datasets = fieldnames(res);
+first_dataset = all_datasets{1};
+eval(['all_beat_detectors = res.' first_dataset '.' curr_cat '.num.strategy;']);
+
+% identify beat detectors to exclude
+if nargin>3
+    rel_beat_detectors = setxor(all_beat_detectors, beat_detectors_to_exclude(:));
+    exc_txt = ' (excluding ';
+    for s = 1 : length(beat_detectors_to_exclude)
+        exc_txt = [exc_txt, beat_detectors_to_exclude{s}, ', '];
+    end
+    exc_txt = [exc_txt(1:end-2), ')'];
+else
+    rel_beat_detectors = all_beat_detectors;
+    exc_txt = '';
+end
+
+% report results for remaining beat detectors
+[best_beat_detectors, second_beat_detectors, worst_beat_detectors] = deal(cell(size(curr_datasets)));
+for dataset_no = 1 : length(curr_datasets)
+    eval(['rel_res = res.' curr_datasets{dataset_no} '.' curr_cat '.num;']);
+    identified = false;
+    while ~identified
+        [~, best_row] = max(rel_res.f1_score_med);
+        [a, els] = sort(rel_res.f1_score_med, 'descend');
+        second_best_row = els(2);
+        if sum(strcmp(rel_res.strategy{best_row}, rel_beat_detectors))
+            identified = true;
+        else
+            identified = false;
+            rel_res = rel_res(setxor(1:height(rel_res), best_row),:);
+        end
+        if sum(strcmp(rel_res.strategy{second_best_row}, rel_beat_detectors))
+            identified = true;
+        else
+            identified = false;
+            rel_res = rel_res(setxor(1:height(rel_res), second_best_row),:);
+        end
+    end
+    identified = false;
+    while ~identified
+        [~, worst_row] = min(rel_res.f1_score_med);
+        if sum(strcmp(rel_res.strategy{worst_row}, rel_beat_detectors))
+            identified = true;
+        else
+            rel_res = rel_res(setxor(1:height(rel_res), worst_row),:);
+        end
+    end
+    fprintf('\n  - %s Dataset%s: %s performed best; %s second best; %s worst', curr_datasets{dataset_no}, exc_txt, rel_res.strategy{best_row}, rel_res.strategy{second_best_row}, rel_res.strategy{worst_row})
+end
+
+end
+
 function up = setup_universal_params
 
 % - Datasets to be analysed
-up.training_datasets = {'capnobase', 'bidmc', 'mimic_train_all', 'mimic_test_all', 'wesad_meditation', 'wesad_amusement', 'wesad_baseline', 'wesad_stress', 'ppg_dalia_sitting', 'ppg_dalia_working', 'ppg_dalia_cycling', 'ppg_dalia_walking'}; 
+up.training_datasets = {'capnobase', 'bidmc', 'mimic_train_all', 'mimic_test_all', 'wesad_meditation', 'wesad_amusement', 'wesad_baseline', 'wesad_stress', 'ppg_dalia_sitting', 'ppg_dalia_working', 'ppg_dalia_cycling', 'ppg_dalia_walking', 'ppg_dalia_lunch_break', 'ppg_dalia_car_driving', 'ppg_dalia_stair_climbing', 'ppg_dalia_table_soccer'}; 
 % up.training_datasets = {'mimic_non_af', 'mimic_af', 'ppg_dalia_sitting', 'ppg_dalia_working', 'ppg_dalia_walking'}; 
 up.testing_datasets = {'mimic_B', 'mimic_W', 'mimic_test_a', 'mimic_test_n', 'mimic_non_af', 'mimic_af'};
 up.datasets = [up.testing_datasets, up.training_datasets];
@@ -246,16 +516,8 @@ fprintf('\n ~~~ Making comparison figures ~~~')
 % setup
 ftsize = 22;
 
-if sum(strcmp(datasets, 'ppg_dalia_working'))
-    primary_dataset = 'ppg_dalia_working';
-elseif sum(strcmp(datasets, 'wesad_baseline'))
-    primary_dataset = 'wesad_baseline';
-else
-    primary_dataset = datasets{1};
-end
-eval(['orig_beat_detector_names = res.' primary_dataset '.noQual.num.strategy;']);
-orig_beat_detector_names = orig_beat_detector_names(~strcmp(orig_beat_detector_names, 'qppg'));
-beat_detector_names = correct_beat_detector_names(orig_beat_detector_names);
+primary_dataset = find_primary_dataset(datasets);
+eval(['beat_detector_names = res.' primary_dataset '.noQual.num.strategy;']);
 
 % identify relevant results set
 curr_strategy_set = 'noQual';
@@ -268,7 +530,7 @@ for comparison_no = 1 : no_comparisons
     
     % cycle through each statistic
     eval(['vars = fieldnames(raw_res.' uParams.settings.comparisons{comparison_no,1} ');']);
-    vars = vars(~strcmp(vars, 'rel_strategies') & ~strcmp(vars, 'durn_ibi') & ~strcmp(vars, 'durn_both') & ~strcmp(vars, 'no_beats'));
+    vars = vars(~strcmp(vars, 'rel_strategies') & ~strcmp(vars, 'durn_ibi') & ~strcmp(vars, 'durn_both') & ~strcmp(vars, 'no_beats') & ~strcmp(vars, 'mape_hr'));
     for var_no = 1 : length(vars)
         curr_var = vars{var_no};
         
@@ -283,14 +545,12 @@ for comparison_no = 1 : no_comparisons
         eval(['res2.raw.v = raw_res.' uParams.settings.comparisons{comparison_no,2} '.' curr_var ';']);
         res2.raw.strategies = raw_res.rel_strategies;
         
-        strategies_log = ~contains(raw_res.rel_strategies, 'qppg_');
-        
         % setup boxplot
         group_no = 0; [curr_res, groups, positions, box_nos, pc10s, pc90s, xticks] = deal([]);
         
         % cycle through each beat detection strategy
         for beat_detector_no = 1 : length(beat_detector_names)
-            curr_beat_detector = orig_beat_detector_names{beat_detector_no};
+            curr_beat_detector = beat_detector_names{beat_detector_no};
             res1_raw_strategy_no = find(strcmp(res1.raw.strategies, [curr_beat_detector, '__none']));
             res2_raw_strategy_no = find(strcmp(res2.raw.strategies, [curr_beat_detector, '__none']));
             
@@ -310,6 +570,11 @@ for comparison_no = 1 : no_comparisons
         end
         clear strategy_no
         
+        % draw red line if mape
+        if strcmp(curr_var, 'mape_hr')
+            plot([positions(1)-0.6, positions(end)+0.6], [10,10], '--r', 'LineWidth', 2), hold on
+        end
+        
         % create box plot
         boxplot(curr_res, groups, 'positions', positions, 'MedianStyle', 'target', 'Symbol', 'r', 'Widths', 0.6);
         set(gca, 'XTickLabelRotation', 90, 'FontSize', ftsize-2)
@@ -318,7 +583,11 @@ for comparison_no = 1 : no_comparisons
         beat_detector_xticks = unique(xticks);
         set(gca, 'XTick', beat_detector_xticks, 'XTickLabel', beat_detector_names') % used to be beat_detectors
         [ylims, ylab_txt] = get_ylabel_settings(curr_var);
-        ylim([65,100]);
+        if ~strcmp(curr_var, 'mape_hr')
+            ylim([65,100]);
+        else
+            ylim(ylims);
+        end
         ylabel(ylab_txt, 'FontSize', ftsize)
         
         % adjust whiskers to be 10th and 90th percentiles, inspired by: https://www.mathworks.com/matlabcentral/fileexchange/22526-box-plot-with-whiskers-plotted-at-fixed-percentiles
@@ -373,18 +642,18 @@ for comparison_no = 1 : no_comparisons
         % add significant differences
         pos = get(gca, 'Position');
         xlims = get(gca, 'XLim');
-        holm_sidak_alpha = 0.0014;
+        holm_sidak_alpha = 0.0013;
         no_sig = 0;
         for strategy_no = 1 :size(temp_p,2)
             if strcmp(vars{var_no}, 'f1_score') && temp_p(comparison_no,strategy_no,var_no) < holm_sidak_alpha
-                pos_x_coord = pos(1) + pos(3)*((beat_detector_xticks(strategy_no)-xlims(1))/(xlims(2)-xlims(1)));
+                pos_x_coord = -0.01 + pos(1) + 0.975*pos(3)*((beat_detector_xticks(strategy_no)-xlims(1))/(xlims(2)-xlims(1)));
                 y_coord = .28-0.05*rem(no_sig,2);
                 dim = [pos_x_coord-0.05 y_coord .1 .1];
                 str = 'p<0.002';
                 annotation('textbox',dim,'String',str,'FitBoxToText','on','HorizontalAlignment','center','VerticalAlignment','bottom','FontSize', ftsize-8, 'LineStyle', 'none');
                 no_sig = no_sig + 1;
             elseif temp_p(comparison_no,strategy_no,var_no) < 0.05
-                pos_x_coord = pos(1) + pos(3)*((beat_detector_xticks(strategy_no)-xlims(1))/(xlims(2)-xlims(1)));
+                pos_x_coord = -0.01 + pos(1) + 0.975*pos(3)*((beat_detector_xticks(strategy_no)-xlims(1))/(xlims(2)-xlims(1)));
                 y_coord = .28-0.05*rem(no_sig,2);
                 dim = [pos_x_coord-0.05 y_coord .1 .1];
                 str = 'p<0.05';
@@ -439,6 +708,19 @@ end
 function beat_detectors = correct_beat_detector_names(beat_detectors)
 beat_detectors = strrep(beat_detectors, 'qppgfast', 'qppg');
 beat_detectors = strrep(beat_detectors, 'PPGPulses', 'Pulses');
+beat_detectors = strrep(beat_detectors, 'ATmin', 'ATM');
+end
+
+function primary_dataset = find_primary_dataset(datasets)
+if sum(strcmp(datasets, 'ppg_dalia_lunch_break'))
+    primary_dataset = 'ppg_dalia_lunch_break';
+elseif sum(strcmp(datasets, 'ppg_dalia_working'))
+    primary_dataset = 'ppg_dalia_working';
+elseif sum(strcmp(datasets, 'wesad_baseline'))
+    primary_dataset = 'wesad_baseline';
+else
+    primary_dataset = datasets{1};
+end
 end
 
 function res = create_results_tables(ppg_strategy_perf, uParams)
@@ -637,6 +919,7 @@ options = struct;
 options.beat_detectors = {'MSPTD', 'qppg', 'ABD', 'COppg'};
 options.beat_detectors = {'SPAR3', 'SPAR7', 'IMS', 'AMPD', 'MSPTD', 'ABD', 'qppg', 'HeartPy', 'COppg', 'Pulses'};
 options.beat_detectors = {'SWT', 'ATmin', 'ATmax', 'SPAR', 'IMS', 'AMPD', 'MSPTD', 'ABD', 'qppg', 'qppgfast', 'HeartPy', 'COppg', 'PPGPulses', 'ERMA', 'PWD', 'PDA', 'WFD'};
+options.beat_detectors = {'IMS'};
 
 % Specify the downsampling strategy
 options.do_downsample = 1;     % downsample PPG signals
@@ -704,18 +987,23 @@ end
 function create_perf_box_plots(res, uParams, curr_datasets, do_training)
 
 if do_training ~= 0
-    %% Beat detection box plot
+    %% Beat detection MAPE HR box plot
     datasets = fieldnames(res);
     datasets = curr_datasets;
-    if sum(strcmp(datasets, 'ppg_dalia_working'))
-        primary_dataset = 'ppg_dalia_working';
-    elseif sum(strcmp(datasets, 'wesad_baseline'))
-        primary_dataset = 'wesad_baseline';
-    else
-        primary_dataset = datasets{1};
-    end
-    eval(['beat_detectors = res.' primary_dataset '.noQual.num.strategy;']);
-    curr_beat_detectors = beat_detectors(~strcmp(beat_detectors, 'qppg'));
+    primary_dataset = find_primary_dataset(datasets);
+    eval(['curr_beat_detectors = res.' primary_dataset '.noQual.num.strategy;']);
+    rel_metric = 'mape_hr';
+    rel_strategy_set = 'noQual';
+    fig_name = 'beat_detector_mape_boxplot';
+    curr_datasets = datasets(~strcmp(datasets, 'ppg_dalia_walking'));
+    curr_datasets = datasets;
+    make_boxplot_figure(res, primary_dataset, curr_datasets, curr_beat_detectors, rel_metric, rel_strategy_set, fig_name, uParams);
+    
+    %% Beat detection f1-score box plot
+    datasets = fieldnames(res);
+    datasets = curr_datasets;
+    primary_dataset = find_primary_dataset(datasets);
+    eval(['curr_beat_detectors = res.' primary_dataset '.noQual.num.strategy;']);
     rel_metric = 'f1_score';
     rel_strategy_set = 'noQual';
     fig_name = 'beat_detector_f1_boxplot';
@@ -726,13 +1014,8 @@ if do_training ~= 0
     %% Beat detection PPV box plot
     datasets = fieldnames(res);
     datasets = curr_datasets;
-    if sum(strcmp(datasets, 'ppg_dalia_working'))
-        primary_dataset = 'ppg_dalia_working';
-    else
-        primary_dataset = datasets{1};
-    end
-    eval(['beat_detectors = res.' primary_dataset '.noQual.num.strategy;']);
-    curr_beat_detectors = beat_detectors(~strcmp(beat_detectors, 'qppg'));
+    primary_dataset = find_primary_dataset(datasets);
+    eval(['curr_beat_detectors = res.' primary_dataset '.noQual.num.strategy;']);
     rel_metric = 'ppv';
     rel_strategy_set = 'noQual';
     fig_name = 'beat_detector_ppv_boxplot';
@@ -743,13 +1026,8 @@ if do_training ~= 0
     %% Beat detection sens box plot
     datasets = fieldnames(res);
     datasets = curr_datasets;
-    if sum(strcmp(datasets, 'ppg_dalia_working'))
-        primary_dataset = 'ppg_dalia_working';
-    else
-        primary_dataset = datasets{1};
-    end
-    eval(['beat_detectors = res.' primary_dataset '.noQual.num.strategy;']);
-    curr_beat_detectors = beat_detectors(~strcmp(beat_detectors, 'qppg'));
+    primary_dataset = find_primary_dataset(datasets);
+    eval(['curr_beat_detectors = res.' primary_dataset '.noQual.num.strategy;']);
     rel_metric = 'sens';
     rel_strategy_set = 'noQual';
     fig_name = 'beat_detector_sens_boxplot';
@@ -759,11 +1037,7 @@ if do_training ~= 0
     
     %% HRs no qual box plot
     datasets = fieldnames(res);
-    if sum(strcmp(datasets, 'ppg_dalia_working'))
-        primary_dataset = 'ppg_dalia_working';
-    else
-        primary_dataset = datasets{1};
-    end
+    primary_dataset = find_primary_dataset(datasets);
     rel_metric = 'acc_hr';
     rel_strategy_set = 'noQual';
     fig_name = 'HR_no_qual_boxplot';
@@ -775,11 +1049,7 @@ if do_training ~= 0
     
     %% IBIs no qual box plot
     datasets = fieldnames(res);
-    if sum(strcmp(datasets, 'ppg_dalia_working'))
-        primary_dataset = 'ppg_dalia_working';
-    else
-        primary_dataset = datasets{1};
-    end
+    primary_dataset = find_primary_dataset(datasets);
     rel_metric = 'acc_ibi';
     rel_strategy_set = 'noQual';
     fig_name = 'IBI_acc_no_qual_boxplot';
@@ -803,8 +1073,7 @@ if do_training ~= 1
     else
         primary_dataset = datasets{1};
     end
-    eval(['beat_detectors = res.' primary_dataset '.noQual.num.strategy;']);
-    curr_beat_detectors = beat_detectors(~strcmp(beat_detectors, 'SPAR3'));
+    eval(['curr_beat_detectors = res.' primary_dataset '.noQual.num.strategy;']);
     rel_metric = 'ppv';
     %curr_datasets = datasets(~cellfun(@isempty, strfind(datasets, 'ppg_dalia')));
     %curr_datasets = datasets(~cellfun(@isempty, strfind(datasets, 'wesad')));
@@ -920,9 +1189,9 @@ beat_detector_names = correct_beat_detector_names(beat_detectors);
 
 datasets = curr_datasets;
 no_y = ceil(length(datasets)/4);
-figure('Position', [20,20,1000,no_y*300])
+figure('Position', [20,20,800,no_y*300])
 [ylims, ylab_txt] = get_ylabel_settings(rel_metric);
-ftsize = 14;
+ftsize = 12;
 
 for dataset_no = 1 : length(datasets)
     
@@ -956,7 +1225,16 @@ for dataset_no = 1 : length(datasets)
     end
     curr_x = rem(temp_dataset_no-1, no_x)+1;
     curr_y = no_y-floor((temp_dataset_no-1)/no_x);
-    subplot('Position', [0.05+(0.95*(curr_x-1)/no_x), 0.08+((curr_y-1)/no_y), 0.85/no_x, 0.6/no_y])
+    if no_y ~= 4
+        subplot('Position', [0.05+(0.95*(curr_x-1)/no_x), 0.08+((curr_y-1)/no_y), 0.85/no_x, 0.6/no_y])
+    else
+        subplot('Position', [0.05+(0.97*(curr_x-1)/no_x), 0.08+(0.96*(curr_y-1)/no_y), 0.87/no_x, 0.6/no_y])        
+    end
+    
+    % draw red line if mape
+    if strcmp(rel_metric, 'mape_hr')
+        plot([0.2, length(beat_detector_names)+0.8], [10,10], '--r'), hold on
+    end
     boxplot(data', beat_detector_names, 'Widths',0.8, 'MedianStyle', 'target', 'Symbol', 'r')
     set(gca, 'XTickLabelRotation', 90, 'FontSize', ftsize-2)
     ylim(ylims)
@@ -1015,17 +1293,27 @@ annotation('line', [.62,.97],[.985, .985])
 % str = 'Polysomnography Tests';
 % annotation('textbox',dim,'String',str,'FitBoxToText','on','HorizontalAlignment','center','VerticalAlignment','bottom','FontSize', ftsize+4, 'LineStyle', 'none', 'fontweight', 'bold');
 
-dim = [.25 .64 .5 .1];
+if no_y == 4
+    init_y = .73;
+else
+    init_y = .64;
+end    
+dim = [.25 init_y .5 .1];
 str = 'Wearable data during different emotions';
 annotation('textbox',dim,'String',str,'FitBoxToText','on','HorizontalAlignment','center','VerticalAlignment','bottom','FontSize', ftsize+4, 'LineStyle', 'none', 'fontweight', 'bold');
-annotation('line', [.05,.31],[.655, .655])
-annotation('line', [.69,.97],[.655, .655])
+annotation('line', [.05,.31],(init_y+0.015)*ones(1,2))
+annotation('line', [.69,.97],(init_y+0.015)*ones(1,2))
 
-dim = [.25 .31 .5 .1];
+if no_y == 4
+    init_y = .487;
+else
+    init_y = .31;
+end    
+dim = [.25 init_y .5 .1];
 str = 'Wearable data during activities of daily living';
 annotation('textbox',dim,'String',str,'FitBoxToText','on','HorizontalAlignment','center','VerticalAlignment','bottom','FontSize', ftsize+4, 'LineStyle', 'none', 'fontweight', 'bold');
-annotation('line', [.05,.29],[.325, .325])
-annotation('line', [.71,.97],[.325, .325])
+annotation('line', [.05,.29],(init_y+0.015)*ones(1,2))
+annotation('line', [.71,.97],(init_y+0.015)*ones(1,2))
 
 
 do_beat_detector_annotation = 1;
@@ -1301,6 +1589,9 @@ elseif strcmp(rel_metric, 'acc_hr')
 elseif strcmp(rel_metric, 'acc_ibi')
     ylims = [0,100];
     ylab_txt = 'Inter-beat interval accuracy (%)';
+elseif strcmp(rel_metric, 'mape_hr')
+    ylims = [0,40];
+    ylab_txt = 'Heart rate MAPE (%)';
 end
 end
 
@@ -1331,6 +1622,12 @@ switch curr_dataset
         title_txt = 'PPG-DaLiA (lunch break)';
     case 'ppg_dalia_cycling'
         title_txt = 'PPG-DaLiA (cycling)';
+    case 'ppg_dalia_stair_climbing'
+        title_txt = 'PPG-DaLiA (stair climbing)';
+    case 'ppg_dalia_car_driving'
+        title_txt = 'PPG-DaLiA (car driving)';
+    case 'ppg_dalia_table_soccer'
+        title_txt = 'PPG-DaLiA (table soccer)';
     case 'bidmc'
         title_txt = 'BIDMC';
     case 'mimic_train_all'

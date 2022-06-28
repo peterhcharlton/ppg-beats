@@ -16,6 +16,7 @@ signal with those detected in a simultaneous photoplethysmogram (PPG) signal.
      - options.max_lag     - max permissible lag between ECG and PPG in secs
      - options.lag_int     - increment between tested lags
      - options.tol_window  - acceptable tolerance between ECG and PPG beats
+     - options.do_wins     - whether or not to use windowing to find the time lag
 +   ecg_exc_log     - (optional) A logical indicating whether or not each ECG sample will be excluded from the analysis
     
 ##  Outputs

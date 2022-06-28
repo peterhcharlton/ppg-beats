@@ -18,12 +18,12 @@ nav:
       - 'PPG-DaLiA': './datasets/ppg_dalia.md'
       - 'WESAD': './datasets/wesad.md'
     - 'Functions':
-      - 'align_ppg_ecg_beats': './functions/align_ppg_ecg_beats.md'
-      - 'assess_multiple_datasets': './functions/assess_multiple_datasets.md'
-      - 'assess_beat_detectors': './functions/assess_beat_detectors.md'
-      - 'preprocess_ppg_signal': './functions/preprocess_ppg_signal.md'
       - 'detect_ppg_beats': './functions/detect_ppg_beats.md'
       - 'detect_ecg_beats': './functions/detect_ecg_beats.md'
+      - 'assess_beat_detectors': './functions/assess_beat_detectors.md'
+      - 'assess_multiple_datasets': './functions/assess_multiple_datasets.md'
+      - 'preprocess_ppg_signal': './functions/preprocess_ppg_signal.md'
+      - 'align_ppg_ecg_beats': './functions/align_ppg_ecg_beats.md'
       - 'atmax_beat_detector': './functions/atmax_beat_detector.md'
       - 'atmin_beat_detector': './functions/atmin_beat_detector.md'
       - 'abd_beat_detector': './functions/abd_beat_detector.md'
@@ -41,6 +41,9 @@ nav:
       - 'spar_beat_detector': './functions/spar_beat_detector.md'
       - 'swt_beat_detector': './functions/swt_beat_detector.md'
       - 'wfd_beat_detector': './functions/wfd_beat_detector.md'
+      - 'collate_train_test_datasets': './functions/collate_train_test_datasets.md'
+      - 'collate_af_dataset': './functions/collate_af_dataset.md'
+      - 'collate_ethnicity_dataset': './functions/collate_ethnicity_dataset.md'
     - 'Tutorials':
       - 'Summary': './tutorials/summary.md'
       - 'PPG Beat Detection': './tutorials/ppg_beat_detection.md'
@@ -48,4 +51,3 @@ nav:
       - 'ECG Beat Detection': './tutorials/ecg_beat_detection.md'
       - 'Time Alignment': './tutorials/time_alignment.md'
       - 'Creating Documentation': './tutorials/creating_docs.md'
-    

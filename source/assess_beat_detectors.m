@@ -55,16 +55,16 @@ if nargin < 2, options = struct; end
 
 % Setup universal parameters
 uParams = setup_up(dataset, options);
-uParams.analysis.redo_selected_beat_detectors = {'SPAR'};
 
 %% Detect beats in PPG signals
+uParams.analysis.redo_analysis = 0;
 detect_beats_in_ppg_signals(uParams);
 
 %% Assess quality of PPG signals
 assess_quality_of_ppg_signals(uParams);
 
 %% Detect beats in ECG signals
-uParams.analysis.redo_analysis = 1;
+uParams.analysis.redo_analysis = 0;
 detect_beats_in_ecg_signals(uParams);
 
 %% Time align PPG beats
@@ -129,9 +129,14 @@ if ~exist(uParams.paths.processing_folder, 'dir')
     mkdir(uParams.paths.processing_folder);
 end
 
+%% Add the subfolders within this script's folder to the path
+[filepath,name,ext] = fileparts(mfilename('fullpath'));
+addpath(genpath(filepath));
+
 %% Analysis parameters
 uParams.analysis.tol_window = 0.15; % in secs
 uParams.analysis.qrs_tol_window = 0.15; % in secs
+uParams.analysis.ecg_beat_detectors = {'jqrs', 'rpeakdetect'}; % the ECG beat detectors to use
 uParams.analysis.win_durn = 20; % in secs
 uParams.analysis.win_overlap = 5; % in secs
 uParams.analysis.ppg_fid_pt = 'mid_pt'; % options: mid_pt, pk, onset
@@ -140,7 +145,7 @@ uParams.analysis.interpolation_fs = 50; % sampling freq of interpolated inter-be
 uParams.analysis.max_lag = 10; % max permissible lag between ECG and PPG in secs
 uParams.analysis.lag_int = 0.02;
 uParams.analysis.hr_tol = 5; % tolerance in bpm of HR estimates (to be classified as accurate)
-uParams.analysis.durn_flat_line = 0.1; % threshold duration in secs, above which a flat line is considered to indicate no signal (below this it might just be due to a temporarily steady PPG value).
+uParams.analysis.durn_flat_line = 0.2; % threshold duration in secs, above which a flat line is considered to indicate no signal (below this it might just be due to a temporarily steady PPG value).
 uParams.analysis.sig_qual_tools = {}; % {'accel'; 'comb_beat_detectors'};  % a list of signal quality assessment tools to use
 uParams.analysis.sig_qual_tools = add_in_comb_beat_detectors(uParams.analysis.sig_qual_tools, uParams);
 uParams.analysis.hr_win_durn = 8; % Duration of window (in secs) over which to estimate HRs.
@@ -676,7 +681,7 @@ for strategy_no = 1 : length(strategies_remaining)
     
     %% Skip if there are no reference beats
     if isempty(curr_ecg_beats_inc.t)
-        perf_metrics = {'sens'; 'ppv'; 'f1_score'; 'acc_hr'; 'durn_hr'; 'prop_hr'; 'bias_hr'; 'loa_hr'; 'mae_hr'; 'acc_ibi'; 'durn_ibi'; 'prop_ibi'; 'bias_ibi'; 'loa_ibi'; 'mae_ibi'};
+        perf_metrics = {'sens'; 'ppv'; 'f1_score'; 'acc_hr'; 'durn_hr'; 'prop_hr'; 'bias_hr'; 'loa_hr'; 'mae_hr'; 'mape_hr'; 'acc_ibi'; 'durn_ibi'; 'prop_ibi'; 'bias_ibi'; 'loa_ibi'; 'mae_ibi'};
         for metric_no = 1 : length(perf_metrics)
             curr_metric = perf_metrics{metric_no};
             % insert nan for this strategy and this metric
@@ -697,21 +702,25 @@ for strategy_no = 1 : length(strategies_remaining)
     
     % - Calculate time differences between each pair of PPG and ECG beats
     hq_ppg_beats = curr_ppg_beats_inc.t(curr_ppg_beats_inc.qual_log);
+    
     if isempty(hq_ppg_beats)
-        beat_correct_log = false(size(curr_ecg_beats_inc.t));
+        ecg_beat_correct_log = false(size(curr_ecg_beats_inc.t));
+        hq_ppg_beats_correct_els = [];
     else
         diff_matrix = repmat(hq_ppg_beats, [1, length(curr_ecg_beats_inc.t)]) - curr_ecg_beats_inc.t';
         % - Find minimum differences
-        min_abs_diff = min(abs(diff_matrix));
+        [min_abs_diff,els] = min(abs(diff_matrix));
         % - Identify correctly identified beats
-        beat_correct_log = min_abs_diff<uParams.analysis.tol_window;
+        ecg_beat_correct_log = min_abs_diff< uParams.analysis.tol_window;
+        hq_ppg_beats_correct_els = els(ecg_beat_correct_log);
     end
     clear diff_matrix min_abs_diff
     
     % - Calculate performance statistics
-    curr_ppg_strategy_perf.sens = 100*sum(beat_correct_log)/length(curr_ecg_beats_inc.t);
-    curr_ppg_strategy_perf.ppv = 100*sum(beat_correct_log)/length(hq_ppg_beats);
+    curr_ppg_strategy_perf.sens = 100*sum(ecg_beat_correct_log)/length(curr_ecg_beats_inc.t);
+    curr_ppg_strategy_perf.ppv = 100*length(hq_ppg_beats_correct_els)/length(hq_ppg_beats);
     curr_ppg_strategy_perf.f1_score = 2*curr_ppg_strategy_perf.ppv*curr_ppg_strategy_perf.sens/(curr_ppg_strategy_perf.ppv+curr_ppg_strategy_perf.sens);
+    
     clear beat_correct_log hq_ppg_beats curr_ecg_beats_inc curr_ppg_beats_inc
     
     %% HR estimation performance
@@ -780,6 +789,7 @@ for strategy_no = 1 : length(strategies_remaining)
             curr_ppg_strategy_perf.bias_hr = mean(hr_errors);
             curr_ppg_strategy_perf.loa_hr = 1.96*std(hr_errors);
             curr_ppg_strategy_perf.mae_hr = mean(abs(hr_errors));
+            curr_ppg_strategy_perf.mape_hr = 100*mean(abs(hr_errors)./ecg_hr_ts.v);
             
         end
         
@@ -805,7 +815,11 @@ for strategy_no = 1 : length(strategies_remaining)
         
         % - Generate time series
         ppg_int_ts = generate_beat_signal(curr_ppg_beats.t, uParams);
-        ecg_int_ts = generate_beat_signal(curr_ecg_beats.t, uParams);
+        try
+            ecg_int_ts = generate_beat_signal(curr_ecg_beats.t, uParams);
+        catch
+            a = 1
+        end
         
         % - Generate PPG quality time series
         ppg_qual_and_inc_ts = generate_qual_signal(curr_ppg_beats.t, ppg_beat_qual_log & curr_ppg_beats.inc_log, uParams);
@@ -1038,34 +1052,39 @@ for s = 1 : length(data)
 end
 clear ecg_durn s final_el ppg_durn
 
-% % - remove AF or non-AF data if necessary
-% if contains(uParams.dataset, 'mimic')
-%     do_af = 0;
-%     subjs_to_keep = false(length(data),1);
-%     for s = 1 : length(data)
-%         if do_af
-%             subjs_to_keep(s) = data(s).fix.af_status;
-%         else
-%             subjs_to_keep(s) = ~data(s).fix.af_status;
-%         end
-%     end
-%     data = data(subjs_to_keep);
-% end
+% - reduce duration of both ECG and PPG signals to 20 min if necessary
+reduce_durn = 0;
+if reduce_durn
+    durn = 20*60;
+    win_step = 1*60;
+    if contains(uParams.dataset, 'mimic') && (length(data(1).ppg.v)/(durn*data(1).ppg.fs))>20
+        for s = 1 : length(data)
 
-% - reduce duration of both ECG and PPG signals to 10 min if necessary
-if contains(uParams.dataset, 'mimic')
-    durn = 10*60;
-    for s = 1 : length(data)
-        no_ecg_els = data(s).ecg.fs*durn+1;
-        data(s).ecg.v = data(s).ecg.v(1:no_ecg_els);
-        no_ppg_els = data(s).ppg.fs*durn+1;
-        data(s).ppg.v = data(s).ppg.v(1:no_ppg_els);
+            % - identify period of data in which the PPG signal is most complete
+            S = data(s).ppg;
+            S = identify_periods_of_no_signal(S, uParams);
+            win_starts_ppg = 1:(win_step*data(s).ppg.fs):(length(S.v)-(durn*data(s).ppg.fs));
+            win_ends_ppg = win_starts_ppg + data(s).ppg.fs*durn;
+            n_no_signal = nan(length(win_starts_ppg),1);
+            for win_no = 1 : length(win_starts_ppg)
+                n_no_signal(win_no) = sum(S.no_signal(win_starts_ppg(win_no):win_ends_ppg(win_no)));
+            end
+            [~, most_complete_win] = min(n_no_signal);
+            clear n_no_signal
+
+            % - extract this period of data
+            win_starts_ecg = 1:(win_step*data(s).ecg.fs):(length(S.v)-(durn*data(s).ecg.fs));
+            rel_win_start = win_starts_ecg(most_complete_win);
+            rel_win_end = rel_win_start + data(s).ecg.fs*durn;
+            data(s).ecg.v = data(s).ecg.v(rel_win_start:rel_win_end);
+            rel_win_start = win_starts_ppg(most_complete_win);
+            rel_win_end = win_ends_ppg(most_complete_win);
+            data(s).ppg.v = data(s).ppg.v(rel_win_start:rel_win_end);
+            clear win_starts* rel_win* S
+        end
+        clear s win_step durn
     end
-    clear s
 end
-
-% % temporary
-% data = data(1:5);
 
 end
 
@@ -1281,6 +1300,7 @@ for subj_no = 1 : uParams.dataset_details.no_subjs
     
     %% Identify periods of no signal
     S = identify_periods_of_no_signal(S, uParams);
+    %fprintf('\n Proportion with no signal: %.2f%%', 100*mean(S.no_signal))
     
     %% Detect beats in ECG signal
     [ecg_beats_inds, ecg_exc_log] = detect_beats_in_ecg_signal(S, uParams);
@@ -1316,6 +1336,7 @@ options.start_up_message = 0;
 options.win_durn = uParams.analysis.win_durn;
 options.win_overlap = uParams.analysis.win_overlap;
 options.qrs_tol_window = uParams.analysis.qrs_tol_window;
+options.beat_detectors = uParams.analysis.ecg_beat_detectors;
 [ecg_beats_inds, qual] = detect_ecg_beats(S.v, S.fs, options, S.no_signal);
 ecg_exc_log = 1-qual;
 
