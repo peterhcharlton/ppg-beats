@@ -16,14 +16,18 @@ using the 'Incremental Merge Segmentation' beat detector
 W. Karlen et al., 'Adaptive pulse segmentation and artifact detection in photoplethysmography for mobile applications,' in Proc. IEEE EMBS. IEEE, 2012, pp. 3131-4. <https://doi.org/10.1109/EMBC.2012.6346628>
 
 ##  Author
-Marco A. Pimentel - wrote the code: 'adaptPulseSegment'
-Peter H. Charlton - did very little, just wrote this wrapper
-
++   Marco A. Pimentel - wrote the code: 'adaptPulseSegment'
+    
++   Peter H. Charlton - did very little, just wrote this wrapper
+    
 ##  Documentation
 <https://ppg-beats.readthedocs.io/>
 
 ##  Version
 0.1, and is still in development.
+
+##  Source
+Original source: adaptPulseSegment.m , part of the RRest (<http://github.com/peterhcharlton/RRest/>) repository which is covered by the GNU public licence.
 
 ##  Licence
        This file is part of PPG-beats.

@@ -15,8 +15,9 @@ In addition, the following add-ons are also required to enable the full function
 - **Statistics and Machine Learning Toolbox**: This toolbox is used by the `assess_multiple_datasets` code, and is only required when using this function to compare results across multiple datasets. It is also used by a couple of PPG beat detectors, although since these only use the `quantile` function from this toolbox, it wouldn't be too tricky to avoid the need for it in these beat detectors.
 - **Econometrics Toolbox**: This toolbox is only used by one PPG beat detector.
 - **Wavelet Toolbox**: This toolbox is only used by one or two PPG beat detectors.
+- **WFDB Toolbox**: The Waveform Database Software Package (WFDB) for MATLAB and Octave is required when using the 'gqrs' ECG beat detector in the `detect_ecg_beats` function (although this beat detector isn't used by default), and when running the scripts to download the MIMIC datasets from scratch (`collate_train_test_datasets`, `collate_ethnicity_dataset`, and `collate_af_dataset`, although these are not required to download and use the publicly available datasets). This package is available from: https://doi.org/10.13026/6zcz-e163 .
 
-_NB: You can obtain details of which functions use which toolboxes by running a Dependency Report in Matlab._
+_NB: You can obtain details of which functions use which Matlab toolboxes by running a Dependency Report in Matlab._
 
 ## Installation
 

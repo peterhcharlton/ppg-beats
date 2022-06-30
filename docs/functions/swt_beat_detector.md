@@ -33,4 +33,4 @@ D. Han et al., 'A Real-Time PPG Peak Detection Method for Accurate Determination
 my_Vadrevu_2019_peakdet.m, from the PPG_Peak_Detection GitHub Repository (accessed on 5 Mar 2022) at: <https://github.com/Cassey2016/PPG_Peak_Detection>
 
 ##  Licence
-       MIT Licence (see the licence at the top of the 'my_Vadrevu_2019_peakdet' function in the code below.
+       MIT Licence (see the licence at the top of the 'my_Vadrevu_2019_peakdet' function in the code below).

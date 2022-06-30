@@ -25,7 +25,7 @@ Adapted by Peter Charlton from code supplied by Christina Orphanidou. With grate
 0.1, and is still in development.
 
 ##  Source
-+   Original source: https://github.com/peterhcharlton/RRest/blob/master/RRest_v3.0/Algorithms/extract_resp_sig/feat_based_extraction/COr_peak_detector/co_ppg_peak_detector.m
++   Original source: <https://github.com/peterhcharlton/RRest/blob/master/RRest_v3.0/Algorithms/extract_resp_sig/feat_based_extraction/COr_peak_detector/co_ppg_peak_detector.m> , part of the RRest (<http://github.com/peterhcharlton/RRest/>) repository which is covered by the GNU public licence.
     
 +   Modifications from original by PC: (i) Removed pre-processing; (ii) Hard-coded constants
     

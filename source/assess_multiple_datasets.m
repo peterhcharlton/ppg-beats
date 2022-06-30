@@ -919,7 +919,6 @@ options = struct;
 options.beat_detectors = {'MSPTD', 'qppg', 'ABD', 'COppg'};
 options.beat_detectors = {'SPAR3', 'SPAR7', 'IMS', 'AMPD', 'MSPTD', 'ABD', 'qppg', 'HeartPy', 'COppg', 'Pulses'};
 options.beat_detectors = {'SWT', 'ATmin', 'ATmax', 'SPAR', 'IMS', 'AMPD', 'MSPTD', 'ABD', 'qppg', 'qppgfast', 'HeartPy', 'COppg', 'PPGPulses', 'ERMA', 'PWD', 'PDA', 'WFD'};
-options.beat_detectors = {'IMS'};
 
 % Specify the downsampling strategy
 options.do_downsample = 1;     % downsample PPG signals

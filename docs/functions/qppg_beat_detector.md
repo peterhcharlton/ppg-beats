@@ -16,9 +16,10 @@ using the 'Adapted Onset Detector' beat detector
 A. N. Vest et al., 'An open source benchmarked toolbox for cardiovascular waveform and interval analysis,' Physiological Measurement, vol. 39, no. 10, 2018. <https://doi.org/10.1088/1361-6579/aae021>
 
 ##  Author
-Several authors have contributed to the code (see below)
-Peter H. Charlton - did very little, just wrote this wrapper (which detects peaks given the onsets provided by the code)
-
++   Several authors have contributed to the code (see below)
+    
++   Peter H. Charlton - did very little, just wrote this wrapper (which detects peaks given the onsets provided by the code)
+    
 ##  Documentation
 <https://ppg-beats.readthedocs.io/>
 
@@ -26,7 +27,9 @@ Peter H. Charlton - did very little, just wrote this wrapper (which detects peak
 0.1, and is still in development.
 
 ##  Source
-qppg.m, from the PhysioNet Cardiovascular Signal Toolbox 1.0.0 at: <https://physionet.org/content/pcst/1.0.0/>
+qppg.m, from the PhysioNet Cardiovascular Signal Toolbox 1.0.0 at: 
+<https://physionet.org/content/pcst/1.0.0/>, which is licensed under 
+the GNU General Public License v.2.
 
 ##  Licence
        This file is part of PPG-beats.

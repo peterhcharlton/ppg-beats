@@ -124,7 +124,7 @@ for subj_no = 1 : length(stay_list)
     fprintf('\n   - Extracting data for subject no. %d (%s)', subj_no, curr_subj)
 
     % check whether this subject should be skipped (subjects which were manually identified as having unsuitable data)
-    if strcmp(curr_subj, '3004104') || strcmp(curr_subj, '3091963') || strcmp(curr_subj, '3110548')
+    if sum(strcmp(curr_subj, {'3004104','3091963','3110548','3024047','3105058', '3001551', '3002751', '3003405', '3005850', '3006240', '3013467', '3015738', '3021205', '3024873', '3025163', '3026618', '3031584', '3034102', '3039719', '3061958', '3085535', '3098373', '3124490', '3130412', '3136247', '3142279', '3027856', '3007696'}))
         fprintf('\n      - unsuitable data')
         continue
     end
@@ -402,7 +402,28 @@ sigs = sigs(~strcmp(sigs, 'fix'));
 inc_curr_file_data = true;
 for sig_no = 1 : length(sigs)
     eval(['curr_data = curr_file_data.' sigs{sig_no} '.v;']);
+    eval(['curr_fs = curr_file_data.' sigs{sig_no} '.fs;']);
+    
+    % Adapted from: https://uk.mathworks.com/matlabcentral/answers/382011-how-to-count-the-number-of-consecutive-identical-elements-in-both-the-directions-in-a-binary-vecto#answer_304569
+    Q = find([false; diff(curr_data)~=0]);
+    I = zeros(length(curr_data),1) ;
+    I(Q) = 1;
+    I = cumsum(I);
+    N = diff([1; Q; length(curr_data)+1]);
+    no_consecutive = N(I+1);
+    
+    if strcmp(sigs{sig_no}, 'imp')
+        thresh_durn = 10;
+    else
+        thresh_durn = 5;
+    end
+
     if sum(curr_data == mode(curr_data)) > (0.2*length(curr_data))
+        inc_curr_file_data = false;
+        continue
+    end
+
+    if max(no_consecutive) > (thresh_durn*curr_fs)
         inc_curr_file_data = false;
     end
 end

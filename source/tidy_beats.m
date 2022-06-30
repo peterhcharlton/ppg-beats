@@ -19,7 +19,6 @@ function beat_indices = tidy_beats(beat_indices)
 %   # Version
 %   0.1, and is still in development.
 %   
-%
 %   # Licence
 %      This is available under the GNU General Public License v2.0: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 

@@ -16,9 +16,10 @@ using the 'Pulse Wave Delineator' beat detector
 B. N. Li et al., 'On an automatic delineator for arterial blood pressure waveforms,' Biomedical Signal Processing and Control, vol. 5, no. 1, pp. 76-81, 2010. <https://doi.org/10.1016/j.bspc.2009.06.002>
 
 ##  Author
-LI Bing Nan - created the original code
-Peter H. Charlton - did very little, just wrote this wrapper
-
++   LI Bing Nan - created the original code
+    
++   Peter H. Charlton - did very little, just wrote this wrapper
+    
 ##  Documentation
 <https://ppg-beats.readthedocs.io/>
 
@@ -29,4 +30,4 @@ Peter H. Charlton - did very little, just wrote this wrapper
 <https://www.mathworks.com/matlabcentral/fileexchange/29484-pulse-waveform-delineator>
 
 ##  Licence
-       See the copyright notice below
+       The 2-Clause BSD License (see the copyright notice, list of conditions, and disclaimer below)

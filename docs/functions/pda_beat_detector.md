@@ -16,9 +16,10 @@ using the 'Peak Detection Algorithm' beat detector
 E. J. Arguello Prada and R. D. Serna Maldonado, 'A novel and low-complexity peak detection algorithm for heart rate estimation from low-amplitude photoplethysmographic (PPG) signals,' Journal of Medical Engineering and Technology, vol. 42, no. 8, pp. 569-577, 2018. <https://doi.org/10.1080/03091902.2019.1572237>
 
 ##  Author
-Elisa Mejía Mejía - wrote the code: 'upslopes'
-Peter H. Charlton - did very little, just wrote this wrapper
-
++   Elisa Mejía Mejía - wrote the code: 'upslopes'
+    
++   Peter H. Charlton - did very little, just wrote this wrapper
+    
 ##  Documentation
 <https://ppg-beats.readthedocs.io/>
 
@@ -26,7 +27,7 @@ Peter H. Charlton - did very little, just wrote this wrapper
 0.1, and is still in development.
 
 ##  Licence
-       This file is part of PPG-beats.
-       PPG-beats is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-       PPG-beats is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-       You should have received a copy of the GNU General Public License along with PPG-beats. If not, see <https://www.gnu.org/licenses/>.
+       Copyright (c) 2022 Elisa Mejía Mejía and Peter H. Charlton
+       Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+       The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+       THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

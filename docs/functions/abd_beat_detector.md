@@ -25,8 +25,10 @@ Peter H. Charlton: King's College London (August 2017), University of Cambridge 
 0.1, and is still in development.
 
 ##  Source
-This script contains items either copied or modified from the RRest
-toolbox which is covered by the GNU public licence (<http://github.com/peterhcharlton/RRest/>).
+This script contains items either copied or modified from the pulse-analyse
+(<https://github.com/peterhcharlton/pulse-analyse>) and RRest 
+(<http://github.com/peterhcharlton/RRest/>) repositories which are covered
+by the GNU public licence.
 
 ##  Licence
        This file is part of PPG-beats.

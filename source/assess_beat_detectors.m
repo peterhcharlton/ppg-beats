@@ -57,14 +57,14 @@ if nargin < 2, options = struct; end
 uParams = setup_up(dataset, options);
 
 %% Detect beats in PPG signals
-uParams.analysis.redo_analysis = 0;
+uParams.analysis.redo_analysis = 1;
 detect_beats_in_ppg_signals(uParams);
 
 %% Assess quality of PPG signals
 assess_quality_of_ppg_signals(uParams);
 
 %% Detect beats in ECG signals
-uParams.analysis.redo_analysis = 0;
+uParams.analysis.redo_analysis = 1;
 detect_beats_in_ecg_signals(uParams);
 
 %% Time align PPG beats
