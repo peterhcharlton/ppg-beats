@@ -23,6 +23,7 @@ photoplethysmogram (PPG) beat detectors on a dataset.
            options.do_downsample   - (1 or 0, default value of 0) A logical indicating whether or not to downsample the PPG signals prior to analysis.
            options.downsample_freq - the frequency at which to downsample PPG signals (Hz). Only used if downsampling is enabled by options.do_downsample.
            options.redo_analysis   - A logical indicating whether or not to overwrite existing analysis files in order to redo the analysis
+           options.redo_selected_beat_detectors - A cell containing the beat detectors for which to redo the analysis
         
 ##  Outputs
 +   ...

@@ -42,7 +42,7 @@ options = specify_options;
 do_analysis = 1;
 if do_analysis
     for dataset_no = 1 : length(up.datasets)
-        
+
         curr_dataset = up.datasets{dataset_no};
         
         % Specify the path of the Matlab data file for this dataset
@@ -57,7 +57,6 @@ end
 %% Retrieve results for strategies, and provide latex table of results of selected strategy across all datasets
 selected_strategy = 'MSPTD__accel_comb_MSPTD_qppg';
 selected_strategy = 'MSPTD__none';
-vars = {'ppv', 'sens', 'f1_score', 'acc_ibi', 'prop_ibi', 'acc_hr', 'prop_hr'};
 vars = {'mape_hr', 'f1_score', 'sens', 'ppv', 'durn_both', 'no_beats'};
 types = {'med', 'lq', 'uq'};
 fprintf('\n - Performance of selected strategy: (%s)', selected_strategy)
@@ -207,23 +206,29 @@ raw_res.rel_strategies = rename_beat_detectors(raw_res.rel_strategies);
 %% Print results summary
 
 fprintf('\n ~~~ Performance of beat detectors in different use cases ~~~')
-beat_detectors_to_exclude = {'PDA', 'SWT','ATM','WFD','Pulses'};
+beat_detectors_to_exclude = {'Pulses', 'IMS', 'COppg', 'PDA', 'ATM', 'SWT','WFD'};
 
 fprintf('\n On ideal hospital datasets:')
 curr_cat = 'noQual';
 curr_datasets = {'capnobase', 'bidmc'};
 report_min_f1_score(res, curr_cat, curr_datasets, 'on ideal hospital datasets');
 report_min_f1_score(res, curr_cat, curr_datasets, 'on ideal hospital datasets', beat_detectors_to_exclude);
+thresh_f1 = 99;
+report_no_above_f1_score(res, curr_cat, curr_datasets, 'on ideal hospital datasets', thresh_f1);
 
 fprintf('\n During low levels of movement:')
 curr_cat = 'noQual';
 curr_datasets = {'capnobase', 'bidmc', 'mimic_train_all', 'mimic_test_all'};
 report_min_f1_score(res, curr_cat, curr_datasets, 'on hospital datasets');
 report_min_f1_score(res, curr_cat, curr_datasets, 'on hospital datasets', beat_detectors_to_exclude);
+thresh_f1 = 90;
+report_no_above_f1_score(res, curr_cat, curr_datasets, 'on ideal hospital datasets', thresh_f1);
 
 curr_datasets = {'wesad_meditation', 'ppg_dalia_sitting'};
 report_min_f1_score(res, curr_cat, curr_datasets, 'on wearable datasets with low movement');
 report_min_f1_score(res, curr_cat, curr_datasets, 'on wearable datasets with low movement', beat_detectors_to_exclude);
+thresh_f1 = 90;
+report_no_above_f1_score(res, curr_cat, curr_datasets, 'on ideal hospital datasets', thresh_f1);
 
 fprintf('\n During movement:')
 curr_cat = 'noQual';
@@ -247,7 +252,7 @@ for dataset_no = 1 : length(curr_datasets)
     report_range_f1_score(res, curr_cat, curr_datasets(dataset_no), ['on ' curr_datasets{dataset_no} ' dataset'], beat_detectors_to_exclude);
 end
 
-fprintf('\n ~~~ Performance of beat detectors on different datasets ~~~')
+fprintf('\n\n ~~~ Performance of beat detectors on different datasets ~~~')
 
 fprintf('\n Best and worst performing beat detectors:')
 curr_cat = 'noQual';
@@ -255,7 +260,7 @@ curr_datasets = fieldnames(res);
 report_best_and_worst_beat_detectors(res, curr_cat, curr_datasets);
 report_best_and_worst_beat_detectors(res, curr_cat, curr_datasets, beat_detectors_to_exclude);
 
-fprintf('\n ~~~ Acceptability (in context of heart rate monitoring) ~~~')
+fprintf('\n\n ~~~ Acceptability (in context of heart rate monitoring) ~~~')
 
 curr_cat = 'noQual';
 curr_datasets = fieldnames(res);
@@ -264,7 +269,7 @@ assess_acceptability_of_beat_detectors(res, curr_cat, curr_datasets);
 fprintf('\n Selected beat detectors:')
 assess_acceptability_of_beat_detectors(res, curr_cat, curr_datasets, beat_detectors_to_exclude);
 
-fprintf('\n ~~~ Association between performance and patient physiology and demographics ~~~')
+fprintf('\n\n ~~~ Association between performance and patient physiology and demographics ~~~')
 
 fprintf('\n AF:')
 curr_cat = 'noQual';
@@ -348,6 +353,37 @@ fprintf('\n  - min median F1-score %s%s: %.1f %%', description, exc_txt, min(cur
 
 end
 
+function report_no_above_f1_score(res, curr_cat, curr_datasets, description, thresh_f1)
+
+all_datasets = fieldnames(res);
+first_dataset = all_datasets{1};
+eval(['all_beat_detectors = res.' first_dataset '.' curr_cat '.num.strategy;']);
+
+curr_scores = nan(size(curr_datasets));
+for dataset_no = 1 : length(curr_datasets)
+    eval(['rel_res = res.' curr_datasets{dataset_no} '.' curr_cat '.num;']);
+    for beat_detector_no = 1 : length(all_beat_detectors)
+        rel_row = strcmp(rel_res.strategy, all_beat_detectors{beat_detector_no});
+        beat_detector_above_thresh(dataset_no,beat_detector_no) = rel_res.f1_score_med(rel_row)>thresh_f1;
+    end
+end
+no_beat_detectors_above_thresh = 0;
+beat_detectors_below_thresh = '';
+beat_detectors_above_thresh = '';
+for beat_detector_no = 1 : length(all_beat_detectors)
+    if sum(beat_detector_above_thresh(:,beat_detector_no))==height(beat_detector_above_thresh)
+        no_beat_detectors_above_thresh = no_beat_detectors_above_thresh + 1;
+        beat_detectors_above_thresh = [beat_detectors_above_thresh, ', ', all_beat_detectors{beat_detector_no}];
+    else
+        beat_detectors_below_thresh = [beat_detectors_below_thresh, ', ', all_beat_detectors{beat_detector_no}];
+    end
+end
+fprintf('\n  - No. beat detectors with median F1-score above %.1f %%: %d', thresh_f1, sum(no_beat_detectors_above_thresh))
+fprintf('\n  - Beat detectors above this threshold: %s', beat_detectors_above_thresh)
+fprintf('\n  - Beat detectors below this threshold: %s', beat_detectors_below_thresh)
+
+end
+
 function report_range_f1_score(res, curr_cat, curr_datasets, description, beat_detectors_to_exclude)
 
 all_datasets = fieldnames(res);
@@ -376,7 +412,7 @@ for dataset_no = 1 : length(curr_datasets)
     curr_scores(2*dataset_no) = max(rel_res.f1_score_med(rel_rows));
     curr_scores(2*dataset_no-1) = min(rel_res.f1_score_med(rel_rows));
 end
-fprintf('\n  - range median F1-score %s%s: %.0f - %.0f %%', description, exc_txt, min(curr_scores), max(curr_scores))
+fprintf('\n  - range median F1-score %s%s: %.1f - %.1f %%', description, exc_txt, min(curr_scores), max(curr_scores))
 
 end
 
@@ -451,6 +487,7 @@ for dataset_no = 1 : length(curr_datasets)
         [~, best_row] = max(rel_res.f1_score_med);
         [a, els] = sort(rel_res.f1_score_med, 'descend');
         second_best_row = els(2);
+        third_best_row = els(3);
         if sum(strcmp(rel_res.strategy{best_row}, rel_beat_detectors))
             identified = true;
         else
@@ -473,7 +510,22 @@ for dataset_no = 1 : length(curr_datasets)
             rel_res = rel_res(setxor(1:height(rel_res), worst_row),:);
         end
     end
-    fprintf('\n  - %s Dataset%s: %s performed best; %s second best; %s worst', curr_datasets{dataset_no}, exc_txt, rel_res.strategy{best_row}, rel_res.strategy{second_best_row}, rel_res.strategy{worst_row})
+    fprintf('\n  - %s Dataset%s: %s performed best; %s second best; %s third best; %s worst', curr_datasets{dataset_no}, exc_txt, rel_res.strategy{best_row}, rel_res.strategy{second_best_row}, rel_res.strategy{third_best_row}, rel_res.strategy{worst_row})
+
+    % output performance of specific beat detectors, and range of all beat detectors
+    rel_row = strcmp(rel_res.strategy, 'MSPTD');
+    msptd_f1 = rel_res.f1_score_med(rel_row);
+    msptd_mape = rel_res.mape_hr_med(rel_row);
+    rel_row = strcmp(rel_res.strategy, 'qppg');
+    qppg_f1 = rel_res.f1_score_med(rel_row);
+    qppg_mape = rel_res.mape_hr_med(rel_row);
+    inc_log = false(length(rel_beat_detectors));
+    for s = 1 : length(rel_beat_detectors)
+        inc_log(strcmp(rel_beat_detectors{s},rel_res.strategy)) = true;
+    end
+    range_f1 = [min(rel_res.f1_score_med(inc_log)), max(rel_res.f1_score_med(inc_log))];
+    range_mape = [min(rel_res.mape_hr_med(inc_log)), max(rel_res.mape_hr_med(inc_log))];
+    fprintf('. F1 (MSPTD & qppg & all) & HR MAPE (MSPTD & qppg & all): %.1f & %.1f & %.1f - %.1f & %.1f & %.1f & %.1f - %.1f', msptd_f1, qppg_f1, range_f1(1), range_f1(2), msptd_mape, qppg_mape, range_mape(1), range_mape(2))
 end
 
 end
@@ -642,7 +694,7 @@ for comparison_no = 1 : no_comparisons
         % add significant differences
         pos = get(gca, 'Position');
         xlims = get(gca, 'XLim');
-        holm_sidak_alpha = 0.0013;
+        holm_sidak_alpha = 0.0019;
         no_sig = 0;
         for strategy_no = 1 :size(temp_p,2)
             if strcmp(vars{var_no}, 'f1_score') && temp_p(comparison_no,strategy_no,var_no) < holm_sidak_alpha
@@ -918,7 +970,7 @@ options = struct;
 % Specify the beat detectors to be used
 options.beat_detectors = {'MSPTD', 'qppg', 'ABD', 'COppg'};
 options.beat_detectors = {'SPAR3', 'SPAR7', 'IMS', 'AMPD', 'MSPTD', 'ABD', 'qppg', 'HeartPy', 'COppg', 'Pulses'};
-options.beat_detectors = {'SWT', 'ATmin', 'ATmax', 'SPAR', 'IMS', 'AMPD', 'MSPTD', 'ABD', 'qppg', 'qppgfast', 'HeartPy', 'COppg', 'PPGPulses', 'ERMA', 'PWD', 'PDA', 'WFD'};
+options.beat_detectors = {'SWT', 'ATmin', 'ATmax', 'SPAR', 'IMS', 'AMPD', 'MSPTD', 'ABD', 'qppg', 'qppgfast', 'HeartPy', 'COppg', 'PPGPulses', 'ERMA', 'PWD', 'PDA', 'WFD', 'SPARthree'};
 
 % Specify the downsampling strategy
 options.do_downsample = 1;     % downsample PPG signals

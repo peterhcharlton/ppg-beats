@@ -1,6 +1,6 @@
-function collate_af_dataset
-% COLLATE_AF_DATASET  Collate AF dataset.
-%   COLLATE_AF_DATASET downloads and collates data from the MIMIC-III Waveform
+function collate_mimic_perform_af_dataset
+% COLLATE_MIMIC_PERFORM_AF_DATASET  Collate AF dataset.
+%   COLLATE_MIMIC_PERFORM_AF_DATASET downloads and collates data from the MIMIC-III Waveform
 %   Database Matched Subset during Atrial Fibrillation (AF) and sinus rhythm.
 %
 %   # Inputs

@@ -2,5 +2,6 @@
 .DS_Store
 Docs/.DS_Store
 /source/beat_detection_algorithms/ppg_beat_detection/*.*
-/source/*_beat_detector.m
-/source/low_pass_differentiator_100Hz.mat
+/source/spar_beat_detector.m
+/source/low_pass_differentiator_*Hz.mat
+/source/archive/*.*

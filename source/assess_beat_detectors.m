@@ -23,6 +23,7 @@ function assess_beat_detectors(dataset, options)
 %        options.do_downsample   - (1 or 0, default value of 0) A logical indicating whether or not to downsample the PPG signals prior to analysis.
 %        options.downsample_freq - the frequency at which to downsample PPG signals (Hz). Only used if downsampling is enabled by options.do_downsample.
 %        options.redo_analysis   - A logical indicating whether or not to overwrite existing analysis files in order to redo the analysis
+%        options.redo_selected_beat_detectors - A cell containing the beat detectors for which to redo the analysis
 %   
 %   # Outputs
 %   * ...
@@ -57,14 +58,13 @@ if nargin < 2, options = struct; end
 uParams = setup_up(dataset, options);
 
 %% Detect beats in PPG signals
-uParams.analysis.redo_analysis = 1;
+uParams.analysis.redo_selected_beat_detectors = {'AMPD'};
 detect_beats_in_ppg_signals(uParams);
 
 %% Assess quality of PPG signals
 assess_quality_of_ppg_signals(uParams);
 
 %% Detect beats in ECG signals
-uParams.analysis.redo_analysis = 1;
 detect_beats_in_ecg_signals(uParams);
 
 %% Time align PPG beats
@@ -75,7 +75,6 @@ uParams.analysis.redo_analysis = 1;
 assess_ppg_beat_detector_performance(uParams);
 
 %% Calculate stats and create tables
-uParams.analysis.redo_analysis = 1;
 create_stats_and_tables(uParams);
 
 end

@@ -1,6 +1,6 @@
-function collate_train_test_datasets
-% COLLATE_TRAIN_TEST_DATASETS  Collates training and testing datasets.
-%   COLLATE_TRAIN_TEST_DATASETS downloads and collates data from the MIMIC-III
+function collate_mimic_perform_train_test_datasets
+% COLLATE_MIMIC_PERFORM_TRAIN_TEST_DATASETS  Collates training and testing datasets.
+%   COLLATE_MIMIC_PERFORM_TRAIN_TEST_DATASETS downloads and collates data from the MIMIC-III
 %   Waveform Database, for PPG beat detector performance evaluation.
 %
 %   # Inputs
@@ -95,7 +95,7 @@ function download_data(up)
 %% Identify records which meet the requirements
 % To be included, records must contain:
 % - at least 10 mins continuously
-% - of the required variables: (i) Pleth, and (ii) an ECG signal.
+% - of the required variables: (i) Pleth, (ii) ECG, and (iii) a respiration signal.
 
 stay_list_filepath = [up.paths.local.temp_folder, 'stay_list.mat'];
 if ~exist(stay_list_filepath, 'file')
@@ -279,13 +279,14 @@ unique_groups = unique(groups);
 unique_groups(end+1) = {'all'}; % an extra group combining both adult and neonate data
 for s = 1 : length(unique_groups)
     curr_group = unique_groups{s};
-    fprintf([' ' curr_group]);
-
+    
     % - identify data in this group
     if ~strcmp(curr_group, 'all')
         rel_subjs = strcmp(groups, curr_group);
     else
         rel_subjs = true(length(groups),1);
+        rel_subjs_a = find(strcmp(groups, 'a'));
+        rel_subjs_n = find(strcmp(groups, 'n'));
     end
     rel_subjs = find(rel_subjs);
 
@@ -293,11 +294,21 @@ for s = 1 : length(unique_groups)
     no_in_this_group_and_dataset = floor(length(rel_subjs)/length(up.settings.datasets));
     for dataset_no = 1 : length(up.settings.datasets)
         curr_dataset = up.settings.datasets{dataset_no};
-        fprintf([' (' curr_dataset ')']);
-        curr_rel_subjs = rel_subjs((dataset_no-1)*no_in_this_group_and_dataset+1:dataset_no*no_in_this_group_and_dataset);
+        if ~strcmp(curr_group, 'all')
+            curr_rel_subjs = rel_subjs((dataset_no-1)*no_in_this_group_and_dataset+1:dataset_no*no_in_this_group_and_dataset);
+        else
+            no_in_this_group_and_dataset_and_cohort = floor(no_in_this_group_and_dataset/2);
+            curr_rel_subjs = [rel_subjs_a((dataset_no-1)*no_in_this_group_and_dataset_and_cohort+1:dataset_no*no_in_this_group_and_dataset_and_cohort); ...
+                rel_subjs_n((dataset_no-1)*no_in_this_group_and_dataset_and_cohort+1:dataset_no*no_in_this_group_and_dataset_and_cohort)];
+        end
         data = orig_data(curr_rel_subjs);
-        save([up.paths.local.root_folder, 'mimic_' curr_dataset, '_' curr_group '_data'], 'data', 'source')
+        for new_data_s = 1:length(data), new_groups{new_data_s,1} = data(new_data_s).fix.group; end
+        dataset_name = ['mimic_' curr_dataset, '_' curr_group];
+        fprintf('\n       - Dataset %s: %d adults; %d neonates', dataset_name, sum(strcmp(new_groups, 'a')), sum(strcmp(new_groups, 'n')))
+        save([up.paths.local.root_folder, dataset_name '_data'], 'data', 'source')
+        clear new_groups curr_dataset curr_rel_subjs no_in_this_group_and_dataset_and_cohort new_data_s dataset_name
     end
+    clear rel_subjs curr_group no_in_this_group_and_dataset
 end
 
 %% Closing messages

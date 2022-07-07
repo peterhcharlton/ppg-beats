@@ -90,7 +90,7 @@ for sample_no = 1 :2
     ftsize = 16;
     markers = {'+', 'o'};
     marker_sizes = [12,8];
-    colors = {'k', 'k'};
+    colors = {'k', 'r'};
     
     % make time vector
     t = [0:length(S.v)-1]/S.fs; t = t-5;

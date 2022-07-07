@@ -1,6 +1,6 @@
-function collate_ethnicity_dataset
-% COLLATE_ETHNICITY_DATASET  Collates ethnicity dataset.
-%   COLLATE_ETHNICITY_DATASET  Downloads and collates data from the MIMIC-III
+function collate_mimic_perform_ethnicity_dataset
+% COLLATE_MIMIC_PERFORM_ETHNICITY_DATASET  Collates ethnicity dataset.
+%   COLLATE_MIMIC_PERFORM_ETHNICITY_DATASET  Downloads and collates data from the MIMIC-III
 %   Waveform Database Matched Subset from Black and White subjects, for PPG beat
 %   detector performance evaluation.
 %
@@ -290,7 +290,7 @@ function download_dataset(up)
 %% Identify records which meet the requirements
 % To be included, records must contain:
 % - at least 1 hour continuously
-% - of the required variables: (i) Pleth, and (ii) an ECG signal.
+% - of the required variables: (i) Pleth, (ii) ECG, and (iii) a respiration signal.
 
 % load staylist
 load(up.paths.stay_list)
