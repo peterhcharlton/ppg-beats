@@ -58,7 +58,6 @@ if nargin < 2, options = struct; end
 uParams = setup_up(dataset, options);
 
 %% Detect beats in PPG signals
-uParams.analysis.redo_selected_beat_detectors = {'AMPD'};
 detect_beats_in_ppg_signals(uParams);
 
 %% Assess quality of PPG signals
