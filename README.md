@@ -1,6 +1,6 @@
 # PPG-beats README
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 **PPG-beats** is a Matlab library of algorithms to detect heartbeats in photoplethysmogram (*PPG*) signals.
@@ -20,6 +20,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <table>
   <tr>
     <td align="center"><a href="https://peterhcharlton.github.io/"><img src="https://avatars.githubusercontent.com/u/9865941?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Peter H Charlton</b></sub></a><br /><a href="https://github.com/peterhcharlton/ppg-beats/commits?author=peterhcharlton" title="Code">💻</a> <a href="#content-peterhcharlton" title="Content">🖋</a> <a href="#data-peterhcharlton" title="Data">🔣</a> <a href="https://github.com/peterhcharlton/ppg-beats/commits?author=peterhcharlton" title="Documentation">📖</a> <a href="#tutorial-peterhcharlton" title="Tutorials">✅</a></td>
+    <td align="center"><a href="https://github.com/elisamejia"><img src="https://avatars.githubusercontent.com/u/10887584?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Elisa Mejía</b></sub></a><br /><a href="https://github.com/peterhcharlton/ppg-beats/commits?author=elisamejia" title="Code">💻</a></td>
   </tr>
 </table>
 
