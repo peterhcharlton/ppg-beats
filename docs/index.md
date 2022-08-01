@@ -2,8 +2,6 @@
 
 **PPG-beats** is a Matlab library of algorithms to detect heartbeats in photoplethysmogram (PPG) signals.
 
-Details of how to get started with the toolbox are available [here](./toolbox/getting_started/).
-
 ---
 
 **This toolbox is currently being developed, and not all of the resources are available yet.**
@@ -25,6 +23,10 @@ The key features of the library are:
 3. **[Tutorials](./tutorials/summary)** on how to use the algorithms, datasets, and code.
 
 ![PPG signal and detected beats](./assets/images/ppg_and_beats.png)
+
+## Getting started
+
+Details of how to get started with the toolbox are available [here](./toolbox/getting_started/).
 
 ## Further Information
 

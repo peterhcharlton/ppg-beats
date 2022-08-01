@@ -11,7 +11,7 @@ The script downloads several files from PhysioNet, which are saved locally.
 ##  Outputs
 +   files : MATLAB files containing the required data for PPG beat detector evaluation: 'mimic_train_a_data.mat', 'mimic_train_n_data.mat', 'mimic_train_all_data.mat', 'mimic_test_a_data.mat', 'mimic_test_n_data.mat', and 'mimic_test_all_data.mat'.
     
-##  Preparation:
+##  Preparation
 Modify the MATLAB script by inserting the 'up.paths.root_folder' and 'up.paths.save_folder' into the setup_up function.
 
 ##  Documentation

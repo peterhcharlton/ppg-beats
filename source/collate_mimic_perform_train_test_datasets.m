@@ -12,7 +12,7 @@ function collate_mimic_perform_train_test_datasets
 %   # Outputs
 %   * files : MATLAB files containing the required data for PPG beat detector evaluation: 'mimic_train_a_data.mat', 'mimic_train_n_data.mat', 'mimic_train_all_data.mat', 'mimic_test_a_data.mat', 'mimic_test_n_data.mat', and 'mimic_test_all_data.mat'.
 %
-%   # Preparation:
+%   # Preparation
 %   Modify the MATLAB script by inserting the 'up.paths.root_folder' and 'up.paths.save_folder' into the setup_up function.
 %
 %   # Documentation
@@ -27,7 +27,7 @@ function collate_mimic_perform_train_test_datasets
 %      PPG-beats is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 %      You should have received a copy of the GNU General Public License along with PPG-beats. If not, see <https://www.gnu.org/licenses/>.
 
-fprintf('\n ~~~ Downloading and collating MIMIC III waveform database excerpt ~~~\n')
+fprintf('\n ~~~ Downloading and collating MIMIC PERform Train and Test Datasets ~~~\n')
 
 up = setup_up;
 
@@ -37,16 +37,18 @@ end
 
 function up = setup_up
 
-fprintf('\n - Setting up parameters')
+fprintf('\n - Setting up parameters:')
 
 % The following root folder contains subfolders for each subject (name
 % 'S#' where # is the subject number)
-up.paths.local.root_folder = '/Users/petercharlton/Documents/Data/mimiciii_ppg_neonate_adult_beat_detection/';
+up.paths.local.root_folder = '/Users/petercharlton/Documents/Data/mimic_perform_train_test_datasets/';
 if ~exist(up.paths.local.root_folder, 'dir'), warning('Specified folder does not exist.\n Please adjust ''up.paths.local.root_folder'' in ''setup_up'''); end
+fprintf('\n    - Folder in which to save data:\n    - %s', up.paths.local.root_folder)
 
 % Location of files online
 up.paths.web.database_folder = 'mimic3wdb/1.0/';
 up.paths.web.root_folder = ['https://physionet.org/files/', up.paths.web.database_folder];
+fprintf('\n    - Website from which to download data:\n    - %s', up.paths.web.root_folder)
 up.paths.filenames.records_numerics_file = 'RECORDS-numerics';
 up.paths.web.records_numerics_file = [up.paths.web.root_folder, up.paths.filenames.records_numerics_file];
 up.paths.filenames.records_waveforms_file = 'RECORDS-waveforms';
@@ -59,7 +61,8 @@ up.paths.web.records_neonates_file = [up.paths.web.root_folder, up.paths.filenam
 % Filepaths at which to save
 up.paths.local.temp_folder = [up.paths.local.root_folder, 'downloaded_files', filesep];
 if ~exist(up.paths.local.temp_folder, 'dir')
-    fprintf('\n - Making directory in which to store downloaded data');
+    fprintf('\n - Making directory in which to store downloaded data at:');
+    fprintf('\n    - %s', up.paths.local.temp_folder)
     mkdir(up.paths.local.temp_folder);
 end
 up.paths.local.records_waveforms_file = [up.paths.local.temp_folder, up.paths.filenames.records_waveforms_file];
@@ -69,10 +72,11 @@ up.paths.local.records_adults_file = [up.paths.local.temp_folder, up.paths.filen
 
 % Settings
 up.settings.req_durn = 1*60*10; % minimum duration of recording (in secs)
-up.settings.no_subjs_per_group_per_dataset = 100;
+up.settings.no_subjs_per_group_per_dataset = 2; %100; %%%%% CHANGE
 up.settings.ecg_labels = {'II', 'I', 'V', 'III', 'MCL1'};
 up.settings.datasets = {'train', 'test'};
 up.settings.no_subjs_per_group = up.settings.no_subjs_per_group_per_dataset * length(up.settings.datasets);
+fprintf('\n - Collating training and testing datasets, each of \n   - %.1d minute recordings\n   - %d subjects (%d adults and %d neonates)', up.settings.req_durn/60, up.settings.no_subjs_per_group_per_dataset*2, up.settings.no_subjs_per_group_per_dataset, up.settings.no_subjs_per_group_per_dataset);
 
 % - check WFDB toolbox installation
 check_WFDB_installation;
@@ -265,6 +269,18 @@ source.date_of_conversion = datetime('now');
 source.matlab_conversion_script = [mfilename('fullpath'), '.m'];
 source.raw_data_path = up.paths.local.temp_folder;
 
+% add license details
+license.readme = 'Use the following command to view the license: ''fprintf(license.details)''';
+license.details = ['This dataset is licensed under the Open Data Commons Open Database License v1.0 (ODbL 1.0 license).' ...
+    '\nFurther details are available at: https://opendatacommons.org/licenses/odbl/summary/' ...
+    '\n\nThis dataset is derived from the MIMIC III Waveform Database:' ...
+    '\nMoody, B., Moody, G., Villarroel, M., Clifford, G. D., & Silva, I. (2020). MIMIC-III Waveform Database (version 1.0). PhysioNet. https://doi.org/10.13026/c2607m.' ...
+    '\n\nThe MIMIC III Waveform Database is licensed under the ODbL 1.0 license.' ...
+    '\n\nThe MIMIC-III database is described in the following publication:' ...
+    '\nJohnson, A. E. W., Pollard, T. J., Shen, L., Lehman, L. H., Feng, M., Ghassemi, M., Moody, B., Szolovits, P., Celi, L. A., & Mark, R. G. (2016). MIMIC-III, a freely accessible critical care database. Scientific Data, 3, 160035. https://doi.org/10.1038/sdata.2016.35' ...
+    '\n\nIt is available on PhysioNet, https://physionet.org/ :' ...
+    '\nGoldberger, A., Amaral, L., Glass, L., Hausdorff, J., Ivanov, P. C., Mark, R., ... & Stanley, H. E. (2000). PhysioBank, PhysioToolkit, and PhysioNet: Components of a new research resource for complex physiologic signals. Circulation [Online]. 101 (23), pp. e215–e220.'];
+
 % identify subjects of different groups
 groups = cell(length(data),1);
 for s = 1 : length(groups)
@@ -305,7 +321,7 @@ for s = 1 : length(unique_groups)
         for new_data_s = 1:length(data), new_groups{new_data_s,1} = data(new_data_s).fix.group; end
         dataset_name = ['mimic_' curr_dataset, '_' curr_group];
         fprintf('\n       - Dataset %s: %d adults; %d neonates', dataset_name, sum(strcmp(new_groups, 'a')), sum(strcmp(new_groups, 'n')))
-        save([up.paths.local.root_folder, dataset_name '_data'], 'data', 'source')
+        save([up.paths.local.root_folder, dataset_name '_data'], 'data', 'source', 'license')
         clear new_groups curr_dataset curr_rel_subjs no_in_this_group_and_dataset_and_cohort new_data_s dataset_name
     end
     clear rel_subjs curr_group no_in_this_group_and_dataset

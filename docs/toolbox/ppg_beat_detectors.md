@@ -8,8 +8,6 @@ Algorithms to detect beats in photoplethysmogram (PPG) signals.
 
 **Accompanying tutorial:** See [this tutorial](./tutorials/ppg_beat_detection) for an example of how to use the beat detectors.
 
-_**Source:** details of the peak detectors are taken from [DOI: 10.1088/1361-6579/ac826d](http://peterhcharlton.github.io/publication/assess_ppg_beat_detectors/) under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)._
-
 ---
 
 ## Automatic Beat Detection
@@ -183,3 +181,9 @@ photoplethysmographic signal in children,' _IEEE Journal of Biomedical and Healt
 **Link:** [wfd_beat_detector](../../functions/wfd_beat_detector)
 
 **Licence:** MIT Licence
+
+---
+
+_**Source:** details of the peak detectors are taken from [DOI: 10.1088/1361-6579/ac826d](http://peterhcharlton.github.io/publication/assess_ppg_beat_detectors/) under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)._
+
+---

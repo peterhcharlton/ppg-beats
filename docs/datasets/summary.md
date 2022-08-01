@@ -19,4 +19,8 @@ Follow the links to find out more about each dataset.
  **[WESAD](../wesad)** | Recordings from volunteers during a laboratory-based protocol designed to induce different emotions.
  **[PPG-DaLiA](../ppg_dalia)** | Recordings from volunteers during a protocol of activities of daily living.
 
+---
+
 _**Source:** descriptions are adapted from [DOI: 10.1088/1361-6579/ac826d](http://peterhcharlton.github.io/publication/assess_ppg_beat_detectors/) under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)._
+
+---

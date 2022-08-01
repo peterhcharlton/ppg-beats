@@ -1,4 +1,9 @@
 site_name: PPG-beats
+repo_url: https://github.com/peterhcharlton/ppg-beats
+edit_uri: ''
+site_description: PPG-beats, a Matlab library of algorithms to detect heartbeats in photoplethysmogram (PPG) signals
+site_author: Peter H Charlton
+copyright: Made available under the <a href = "https://creativecommons.org/licenses/by/4.0/">CC BY 4.0 license</a>
 
 nav:
     - 'Home': 'index.md'
@@ -11,10 +16,10 @@ nav:
       - 'Summary': './datasets/summary.md'
       - 'CapnoBase': './datasets/capnobase.md'
       - 'BIDMC': './datasets/bidmc.md'
-      - 'MIMIC PERform AF': './datasets/mimic_perform_af.md'
-      - 'MIMIC PERform Ethnicity': './datasets/mimic_perform_ethnicity.md'
       - 'MIMIC PERform Training': './datasets/mimic_perform_training.md'
       - 'MIMIC PERform Testing': './datasets/mimic_perform_testing.md'
+      - 'MIMIC PERform AF': './datasets/mimic_perform_af.md'
+      - 'MIMIC PERform Ethnicity': './datasets/mimic_perform_ethnicity.md'
       - 'PPG-DaLiA': './datasets/ppg_dalia.md'
       - 'WESAD': './datasets/wesad.md'
     - 'Functions':
@@ -30,7 +35,7 @@ nav:
       - 'atmin_beat_detector': './functions/atmin_beat_detector.md'
       - 'coppg_beat_detector': './functions/coppg_beat_detector.md'
       - 'erma_beat_detector': './functions/erma_beat_detector.md'
-      - 'heartpypc_beat_detector': './functions/heartpypc_beat_detector.md'
+      - 'heartpy_beat_detector': './functions/heartpy_beat_detector.md'
       - 'ims_beat_detector': './functions/ims_beat_detector.md'
       - 'msptd_beat_detector': './functions/msptd_beat_detector.md'
       - 'pda_beat_detector': './functions/pda_beat_detector.md'
@@ -41,9 +46,10 @@ nav:
       - 'spar_beat_detector': './functions/spar_beat_detector.md'
       - 'swt_beat_detector': './functions/swt_beat_detector.md'
       - 'wfd_beat_detector': './functions/wfd_beat_detector.md'
-      - 'collate_train_test_datasets': './functions/collate_train_test_datasets.md'
-      - 'collate_af_dataset': './functions/collate_af_dataset.md'
-      - 'collate_ethnicity_dataset': './functions/collate_ethnicity_dataset.md'
+      - 'collate_mimic_perform_train_test_datasets': './functions/collate_mimic_perform_train_test_datasets.md'
+      - 'collate_mimic_perform_af_dataset': './functions/collate_mimic_perform_af_dataset.md'
+      - 'collate_mimic_perform_ethnicity_dataset': './functions/collate_mimic_perform_ethnicity_dataset.md'
+      - 'mimic_perform_dataset_converter': './functions/mimic_perform_dataset_converter.md'
     - 'Tutorials':
       - 'Summary': './tutorials/summary.md'
       - 'PPG Beat Detection': './tutorials/ppg_beat_detection.md'
