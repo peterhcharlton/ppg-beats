@@ -12,6 +12,8 @@ nav:
       - 'PPG Beat Detectors': './toolbox/ppg_beat_detectors.md'
       - 'ECG Beat Detectors': './toolbox/ecg_beat_detectors.md'
       - 'Performance Assessment': './toolbox/performance_assessment.md'
+      - 'Contributing': './toolbox/contributing.md'
+      - 'Acknowledgments': './toolbox/acknowledgments.md'
     - 'Datasets':
       - 'Summary': './datasets/summary.md'
       - 'CapnoBase': './datasets/capnobase.md'
