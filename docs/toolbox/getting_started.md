@@ -4,7 +4,11 @@ A few pointers on how to quickly start using the toolbox.
 
 ---
 
-## Manual Download
+## Downloading the toolbox
+
+To download the toolbox, either (i) manually download it, or (ii) install it automatically in Matlab:
+
+### (i) Manual download
 
 The toolbox can be downloaded as a ZIP file here:
 
@@ -20,7 +24,9 @@ It is hosted by:
 - [Mathworks File Exchange](https://www.mathworks.com/matlabcentral/fileexchange/107644-ppg-beats)
 - [Zenodo](https://doi.org/10.5281/zenodo.6037646)
 
-## Automatic Installation
+_Please bear in mind the [Matlab requirements](#matlab-requirements) detailed below._
+
+### (ii) Automatic Installation
 
 Alternatively, the toolbox can be automatically downloaded and installed by:
 
@@ -40,7 +46,19 @@ savepath
 ```
 _NB: These instructions are adapted from those provided for the WFDB Toolbox [here](https://archive.physionet.org/physiotools/matlab/wfdb-app-matlab/)._
 
-## Requirements
+## Detecting beats in the PPG
+
+The toolbox contains several PPG beat detectors, which are detailed [here](/toolbox/ppg_beat_detectors/).
+
+This [PPG Beat Detection Tutorial](/tutorials/ppg_beat_detection/) provides instructions and sample code to quickly start using a PPG beat detection algorithm.
+
+## Assessing the performance of PPG beat detectors
+
+The toolbox contains tools to assess the performance of PPG beat detectors, which are detailed [here](/toolbox/performance_assessment/).
+
+This [Performance Assessment Tutorial](/tutorials/performance_assessment/) provides instructions and sample code to quickly start using a PPG beat detection algorithm.
+
+## Matlab Requirements
 
 The toolbox is run in Matlab, and requires the following add-on:
 
@@ -55,14 +73,3 @@ In addition, the following add-ons are also required to enable the full function
 
 _NB: You can obtain details of which functions use which Matlab toolboxes by running a Dependency Report in Matlab._
 
-## Detecting beats in the PPG
-
-The toolbox contains several PPG beat detectors, which are detailed [here](/toolbox/ppg_beat_detectors/).
-
-This [PPG Beat Detection Tutorial](/tutorials/ppg_beat_detection/) provides instructions and sample code to quickly start using a PPG beat detection algorithm.
-
-## Assessing the performance of PPG beat detectors
-
-The toolbox contains tools to assess the performance of PPG beat detectors, which are detailed [here](/toolbox/performance_assessment/).
-
-This [Performance Assessment Tutorial](/tutorials/performance_assessment/) provides instructions and sample code to quickly start using a PPG beat detection algorithm.
