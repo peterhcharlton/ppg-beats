@@ -7,9 +7,9 @@
  Item | Details 
  :--- | :--- 
  **Links** | [Dataset](https://archive.ics.uci.edu/ml/datasets/WESAD+%28Wearable+Stress+and+Affect+Detection%29), [Publication](https://doi.org/10.1145/3242969.3242985) 
- **Signals** | PPG, ECG, resp, accel, others 
+ **Signals** | PPG, ECG, respiration, accelerometry, others 
  **No. Subjs** | 15 
- **Protocol** | Recordings at baseline and during amusement, stress and meditation 
+ **Protocol** | Recordings during a laboratory-based protocol designed to induce different emotions, consisting of: baseline, amusement, stress and meditation 
 
 ## Importing the data into MATLAB
 

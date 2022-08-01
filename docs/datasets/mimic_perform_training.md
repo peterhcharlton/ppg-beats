@@ -9,9 +9,9 @@ This subset contains ECG and PPG recordings of 10-minute duration, some of which
  Item | Details 
  :--- | :--- 
  **Links** | _TBC_
- **Signals** | PPG, ECG, resp
+ **Signals** | PPG, ECG, respiration
  **No. Subjs** | 200 (100 adults, 100 neonates)
- **Protocol** | 200 critically-ill patients during routine clinical care. Data were measured using a bedside monitor at 125 Hz. Data were extracted from the MIMIC-III [Waveform Database](https://physionet.org/content/mimic3wdb/1.0/).
+ **Protocol** | Critically-ill patients during routine clinical care. Data were measured using a bedside monitor at 125 Hz. Data were extracted from the MIMIC-III [Waveform Database](https://physionet.org/content/mimic3wdb/1.0/).
 
 ## Importing the data into MATLAB
 

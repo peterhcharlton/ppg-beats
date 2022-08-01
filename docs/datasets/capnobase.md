@@ -7,9 +7,9 @@
  Item | Details 
  :--- | :--- 
  **Links** | [Dataset](https://doi.org/10.5683/SP2/NLB8IT), [Publication](https://doi.org/10.1109/TBME.2013.2246160) 
- **Signals** | PPG, ECG, resp
+ **Signals** | PPG, ECG (inc. manual beat annotations), respiration
  **No. Subjs** | 42 
- **Protocol** | Recordings from adults and children during elective surgery and routine anaesthesia  
+ **Protocol** | Recordings from adults and children during elective surgery and routine anaesthesia (mostly high-quality recordings).  
 
 ## Importing the data into MATLAB
 

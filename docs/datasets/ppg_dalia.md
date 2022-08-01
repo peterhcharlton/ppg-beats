@@ -7,9 +7,9 @@
  Item | Details 
  :--- | :--- 
  **Links** | [Dataset](https://archive.ics.uci.edu/ml/datasets/PPG-DaLiA), [Publication](https://doi.org/10.3390/s19143079) 
- **Signals** | PPG, ECG, resp, accel, others 
+ **Signals** | PPG, ECG (inc. manual beat annotations), respiration, accelerometry, others 
  **No. Subjs** | 15 
- **Protocol** | Recordings during activities of daily living (car driving, cycling, in a lunch break, sitting, stair climbing, playing table soccer, walking and working)
+ **Protocol** | Recordings during a protocol of activities of daily living (car driving, cycling, in a lunch break, sitting, stair climbing, playing table soccer, walking and working)
 
 ## Importing the data into MATLAB
 

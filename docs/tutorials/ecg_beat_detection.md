@@ -31,3 +31,5 @@ This results in the following:
 
 ... IMAGE AND DESCRIPTION TO BE INSERTED ...
 
+
+## Assessing the quality of beat detections
