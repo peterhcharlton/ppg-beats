@@ -1,0 +1,28 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "peterhcharlton",
+      "name": "Peter H Charlton",
+      "avatar_url": "https://avatars.githubusercontent.com/u/9865941?v=4",
+      "profile": "https://peterhcharlton.github.io/",
+      "contributions": [
+        "code",
+        "content",
+        "data",
+        "doc",
+        "tutorial"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "ppg-beats",
+  "projectOwner": "peterhcharlton",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": true
+}
