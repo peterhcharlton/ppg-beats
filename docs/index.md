@@ -1,4 +1,4 @@
-# PPG-beats documentation
+# PPG-beats
 
 **PPG-beats** is a Matlab library of algorithms to detect heartbeats in photoplethysmogram (PPG) signals.
 
@@ -10,7 +10,11 @@
 
 ## Background
 
-PPG sensors are now widely used in clinical devices (such as pulse oximeters) and consumer devices (such as smartwatches). A wealth of information can be obtained from PPG signals, including heart rate, heart rhythm, and blood oxygen saturation. A fundamental step when deriving such parameters is the detection of individual heartbeats. Indeed, several algorithms have been developed to detect heartbeats in PPG signals.
+Photoplethysmography (PPG) sensors are the optical sensors which are now widely used for oxygen saturation and heart rate monitoring in clinical devices (such as pulse oximeters) and consumer devices (such as smartwatches). A wealth of information can be obtained from PPG signals, including heart rate, heart rhythm, and blood oxygen saturation. A fundamental step when deriving such parameters is the detection of individual heartbeats. Indeed, several algorithms have been developed to detect heartbeats in PPG signals.
+
+## Purpose
+
+This software is designed to provide open-source algorithms for detecting heartbeats in PPG signals, and to provide a framework with which to assess their performance. The software is intended for use in research, and is therefore aimed at academic researchers.
 
 ## Features
 

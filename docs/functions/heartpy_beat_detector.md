@@ -22,7 +22,7 @@ Peter H. Charlton, University of Cambridge, February 2022.
 <https://ppg-beats.readthedocs.io/>
 
 ##  Version
-0.1, and is still in development.
+1.0
 
 ##  Source
 This is a Matlab implementation of the original Python algorithm, described in:

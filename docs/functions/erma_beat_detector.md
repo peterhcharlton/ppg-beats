@@ -24,7 +24,7 @@ M. Elgendi et al., 'Systolic peak detection in acceleration photoplethysmograms 
 <https://ppg-beats.readthedocs.io/>
 
 ##  Version
-0.1, and is still in development.
+1.0
 
 ##  MIT License
        Copyright (c) 2022 Elisa Mejía Mejía and Peter H. Charlton

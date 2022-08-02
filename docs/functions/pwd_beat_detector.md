@@ -24,7 +24,7 @@ B. N. Li et al., 'On an automatic delineator for arterial blood pressure wavefor
 <https://ppg-beats.readthedocs.io/>
 
 ##  Version
-0.1, and is still in development.
+1.0
 
 ##  Source
 <https://www.mathworks.com/matlabcentral/fileexchange/29484-pulse-waveform-delineator>

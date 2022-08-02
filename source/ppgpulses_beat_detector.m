@@ -24,7 +24,7 @@ function [peaks, onsets] = ppgpulses_beat_detector(sig,fs)
 %   <https://ppg-beats.readthedocs.io/>
 %   
 %   # Version
-%   0.1, and is still in development.
+%   1.0
 %   
 %   # Source
 %   This function was copied from the 'ecg-kit' repository by 'marianux' at:

@@ -26,7 +26,7 @@ function [peaks,onsets] = swt_beat_detector(sig,fs)
 %   <https://ppg-beats.readthedocs.io/>
 %   
 %   # Version
-%   0.1, and is still in development.
+%   1.0
 %   
 %   # Source
 %   my_Vadrevu_2019_peakdet.m, from the PPG_Peak_Detection GitHub Repository (accessed on 5 Mar 2022) at: <https://github.com/Cassey2016/PPG_Peak_Detection>

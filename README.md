@@ -7,9 +7,18 @@
 
 ```NB: The toolbox is currently under preparation.```
 
-The accompanying documentation is available [here](https://ppg-beats.readthedocs.io/en/latest/).
+## Purpose
+This software is designed to provide open-source algorithms for detecting heartbeats in PPG signals, and to provide a framework with which to assess their performance. The software is intended for use in research, and is therefore aimed at academic researchers.
 
-Full details of the project are available at the [project website](https://peterhcharlton.github.io/project/ppg-beats/).
+## Getting Started
+To get started, see the accompanying documentation [here](https://ppg-beats.readthedocs.io/en/latest/) (and in particular, the [Getting Started](https://ppg-beats.readthedocs.io/en/latest/toolbox/getting_started/) page).
+
+## Further Information
+For further information, please see:
+- The accompanying [documentation](https://ppg-beats.readthedocs.io/en/latest/)
+- The repository [license](LICENSE.txt)
+- The [project website](https://peterhcharlton.github.io/project/ppg-beats/).
+
 ## Contributors ✨
 
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):

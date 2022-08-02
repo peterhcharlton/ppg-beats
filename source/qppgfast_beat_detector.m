@@ -23,7 +23,7 @@ function [peaks,onsets] = qppgfast_beat_detector(sig,fs)
 %   <https://ppg-beats.readthedocs.io/>
 %   
 %   # Version
-%   0.1, and is still in development.
+%   1.0
 %   
 %   # Source
 %   qppg_fast.m, from the PhysioNet Cardiovascular Signal Toolbox (as of 4 May 2022) at: 

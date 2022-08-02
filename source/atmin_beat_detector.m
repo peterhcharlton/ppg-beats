@@ -26,13 +26,13 @@ function [peaks,onsets] = atmin_beat_detector(sig,fs)
 %   <https://ppg-beats.readthedocs.io/>
 %   
 %   # Version
-%   0.1, and is still in development.
+%   1.0
 %   
 %   # Source
 %   my_peak_compare_Shin_2009.m, from the PPG_Peak_Detection GitHub Repository (accessed on 3 Mar 2022) at: <https://github.com/Cassey2016/PPG_Peak_Detection>
 %   
 %   # Licence
-%      MIT Licence (see the licence at the top of the 'my_peak_compare_shin_2009' function in the code below.
+%      MIT Licence (see the licence at the top of the 'my_peak_compare_shin_2009' function in the code below).
 
 V_max_flag = 0; % specifies to detect pulse onsets
 output = my_peak_compare_Shin_2009(sig,fs,V_max_flag);
