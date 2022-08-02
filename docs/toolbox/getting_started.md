@@ -6,7 +6,7 @@ A few pointers on how to quickly start using the toolbox.
 
 ## Downloading the toolbox
 
-To download the toolbox, either (i) manually download it, or (ii) install it automatically in Matlab:
+To download the toolbox, either (i) manually download it, or (ii) install it automatically in Matlab. _Please bear in mind the [Matlab requirements](#matlab-requirements) detailed below._
 
 ### (i) Manual download
 
@@ -17,14 +17,6 @@ The toolbox can be downloaded as a ZIP file here:
 <button type="button"> [Download Toolbox](https://github.com/peterhcharlton/ppg-beats/archive/refs/heads/main.zip) </button>
 </font>
 </center>
-
-It is hosted by:
-
-- [GitHub](https://github.com/peterhcharlton/ppg-beats/)
-- [Mathworks File Exchange](https://www.mathworks.com/matlabcentral/fileexchange/107644-ppg-beats)
-- [Zenodo](https://doi.org/10.5281/zenodo.6037646)
-
-_Please bear in mind the [Matlab requirements](#matlab-requirements) detailed below._
 
 ### (ii) Automatic Installation
 
@@ -73,3 +65,10 @@ In addition, the following add-ons are also required to enable the full function
 
 _NB: You can obtain details of which functions use which Matlab toolboxes by running a Dependency Report in Matlab._
 
+## Finding the toolbox online
+
+The toolbox is hosted by:
+
+- [GitHub](https://github.com/peterhcharlton/ppg-beats/)
+- [Mathworks File Exchange](https://www.mathworks.com/matlabcentral/fileexchange/107644-ppg-beats)
+- [Zenodo](https://doi.org/10.5281/zenodo.6037646)
