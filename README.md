@@ -38,4 +38,10 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
-This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
+<table>
+  <tr>
+<td align="center"><a href="https://www.surrey.ac.uk/people/philip-aston"><img src="https://www.surrey.ac.uk/sites/default/files/styles/image_gallery/public/2018-07/Aston_main.webp?itok=-XZ58Y0Z" width="100px;" alt=""/><br /><sub><b>Philip Aston</b></sub></a><br /><a href="" title="Code">💻</a></td>
+  </tr>
+</table>
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome! See [here](CONTRIBUTING.md) for details of how to contribute.
