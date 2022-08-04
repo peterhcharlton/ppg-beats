@@ -30,5 +30,8 @@ Details of how to get started with the toolbox are available [here](./toolbox/ge
 
 Further details of the project, including publications produced using this toolbox, are available at the [project website](https://peterhcharlton.github.io/project/ppg-beats/).
 
+## Citation
+When using this toolbox, please cite:
 
+Charlton PH _et al._, [Detecting beats in the photoplethysmogram: benchmarking open-source algorithms](https://doi.org/10.1088/1361-6579/ac826d), Physiological Measurement, 2022.
 

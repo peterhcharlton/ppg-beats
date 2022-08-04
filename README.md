@@ -18,6 +18,11 @@ For further information, please see:
 - The [project website](https://peterhcharlton.github.io/project/ppg-beats/).
 - [Contributing guidelines](CONTRIBUTING.md) and the [Contributor Code of Conduct](CODE_OF_CONDUCT.md).
 
+## Citation
+When using this toolbox, please cite:
+
+Charlton PH _et al._, [Detecting beats in the photoplethysmogram: benchmarking open-source algorithms](https://doi.org/10.1088/1361-6579/ac826d), Physiological Measurement, 2022.
+
 ## Contributors ✨
 
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
