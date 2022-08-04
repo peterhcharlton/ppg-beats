@@ -15,13 +15,13 @@ We very much value contributions of new PPG beat detection algorithms. If you ar
 1. Check to see whether this algorithm is already available in the toolbox by consulting the list of existing beat detectors [here](https://ppg-beats.readthedocs.io/en/latest/toolbox/ppg_beat_detectors/).
 2. Prepare a submission:
    - **Code:** The algorithm should be provided in Matlab format, in a `.m` file, laid out as follows:
-   ```function [peaks, onsets] = <beat detector abbreviation>_beat_detector(sig,fs)
+   ``` function [peaks, onsets] = <beat detector abbreviation>_beat_detector(sig,fs)
       
       <documentation>
       
       <code>
       
-      end```
+      end ```
       
       Note the following:
          - the main function takes the PPG signal (`sig`, a numerical column vector) and its sampling frequency (`fs`, a numerical variable) as inputs.
