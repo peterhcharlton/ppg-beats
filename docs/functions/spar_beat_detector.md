@@ -27,5 +27,10 @@ none
 0.1, and is still in development.
 
 ##  Licence
-       Copyright (c) 2022 Callum Pettit and Philip Aston
-       ...
+       SPAR PPG Beat Detector as [downloaded/received] is Copyright ©, 2021-2022 University of Surrey.
+    
+       All Rights Reserved - You are allowed to alter and use this code only for your own non-commercial research purposes and this excludes commercial use of any kind. You are not permitted to copy and distribute this code to anyone under any circumstances. All rights remain with the Copyright holders.
+    
+       If you wish to copy, distribute or make any commercial use of the Software please contact Surrey’s IP & Licensing team at techtransfer@surrey.ac.uk to request an appropriate licence.
+    
+       Please contact Philip Aston (P.Aston@surrey.ac.uk) with any technical questions or collaboration requests.

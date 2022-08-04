@@ -25,7 +25,6 @@ Peter H. Charlton, University of Cambridge, February 2022.
 
 ##  Version
 1.0
-NB: the lpf_freq input should probably be removed.
 
 ##  License - MIT
        Copyright (c) 2022 Peter H. Charlton
