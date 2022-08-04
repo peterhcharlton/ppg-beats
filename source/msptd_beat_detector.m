@@ -1,4 +1,4 @@
-function [peaks, onsets] = msptd_beat_detector(sig,fs,lpf_freq)
+function [peaks, onsets] = msptd_beat_detector(sig,fs)
 % MSPTD_BEAT_DETECTOR  MSPTD PPG beat detector.
 %   MSPTD_BEAT_DETECTOR detects beats in a photoplethysmogram (PPG) signal
 %   using the 'Multi-Scale Peak and Trough Detection' beat detector
@@ -52,12 +52,8 @@ end
 
 % Set up downsampling if the sampling frequency is particularly high
 do_ds = 0;
+min_fs = 2*10;
 if do_ds
-    if exist('lpf_freq','var')
-        min_fs = 2*up.filtering.beat_detection.elim_high_freqs.Fpass;
-    else
-        min_fs = 2*10;
-    end
     if fs > min_fs
         ds_factor = floor(fs/min_fs);
         ds_fs = fs/floor(fs/min_fs);
@@ -70,21 +66,26 @@ end
 
 peaks = []; onsets = [];
 for win_no = 1 : length(win_starts)
+
     % - extract this window's data
     win_sig = sig(win_starts(win_no):win_ends(win_no));
+    
     % - downsample signal
     if do_ds
         rel_sig = downsample(win_sig, ds_factor);
     else
         rel_sig = win_sig;
     end
+    
     % - detect peaks and onsets
     [p,t] = detect_peaks_and_onsets_using_msptd(win_sig);
+    
     % - resample peaks
     if do_ds
         p = p*ds_factor;
         t = t*ds_factor;
     end
+    
     % - correct peak indices by finding highest point within tolerance either side of detected peaks
     tol = ceil(fs*0.05);
     for pk_no = 1 : length(p)
@@ -95,6 +96,7 @@ for win_no = 1 : length(win_starts)
         p(pk_no) = curr_peak - tol + temp - 1;
         clear temp curr_peak tol_start tol_end
     end
+    
     % - correct onset indices by finding highest point within tolerance either side of detected onsets
     for onset_no = 1 : length(t)
         curr_onset = t(onset_no);
@@ -104,12 +106,15 @@ for win_no = 1 : length(win_starts)
         t(onset_no) = curr_onset - tol + temp - 1;
         clear temp curr_onset tol_start tol_end
     end
+    
     % - store peaks and onsets
     win_peaks = p + win_starts(win_no) -1;
     peaks = [peaks; win_peaks];
     win_onsets = t + win_starts(win_no) -1;
     onsets = [onsets; win_onsets];
+
 end
+% tidy up detected peaks and onsets (by ordering them and only retaining unique ones)
 peaks = unique(peaks(:));
 onsets = unique(onsets(:));
 
