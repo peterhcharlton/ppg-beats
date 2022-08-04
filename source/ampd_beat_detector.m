@@ -1,4 +1,4 @@
-function [peaks, onsets] = ampd_beat_detector(sig,fs,lpf_freq)
+function [peaks, onsets] = ampd_beat_detector(sig,fs)
 % AMPD_BEAT_DETECTOR  AMPD PPG beat detector.
 %   AMPD_BEAT_DETECTOR detects beats in a photoplethysmogram (PPG) signal
 %   using the 'Automatic Multiscale-based Peak Detection' beat detector
@@ -24,7 +24,6 @@ function [peaks, onsets] = ampd_beat_detector(sig,fs,lpf_freq)
 %   
 %   # Version
 %   1.0
-%   NB: the lpf_freq input should probably be removed.
 %   
 %   # License - MIT
 %      Copyright (c) 2022 Peter H. Charlton
@@ -55,11 +54,7 @@ end
 % Set up downsampling if the sampling frequency is particularly high
 do_ds = 0;
 if do_ds
-    if exist('lpf_freq','var')
-        min_fs = 2*up.filtering.beat_detection.elim_high_freqs.Fpass;
-    else
-        min_fs = 2*10;
-    end
+    min_fs = 2*10;
     if fs > min_fs
         ds_factor = floor(fs/min_fs);
         ds_fs = fs/floor(fs/min_fs);
@@ -72,24 +67,31 @@ end
 
 peaks = [];
 for win_no = 1 : length(win_starts)
+
     % - extract this window's data
     win_sig = sig(win_starts(win_no):win_ends(win_no));
+    
     % - downsample signal
     if do_ds
         rel_sig = downsample(win_sig, ds_factor);
     else
         rel_sig = win_sig;
     end
+    
     % - detect peaks
     p = detect_peaks_using_ampd(win_sig);
+    
     % - resample peaks
     if do_ds
         p = p*ds_factor;
     end
+    
     % - store peaks
     win_peaks = p + win_starts(win_no) -1;
     peaks = [peaks; win_peaks];
 end
+
+% tidy up detected peaks and onsets (by ordering them and only retaining unique ones)
 peaks = unique(peaks(:));
 
 %% correct peak indices

@@ -114,6 +114,7 @@ for win_no = 1 : length(win_starts)
     onsets = [onsets; win_onsets];
 
 end
+
 % tidy up detected peaks and onsets (by ordering them and only retaining unique ones)
 peaks = unique(peaks(:));
 onsets = unique(onsets(:));
