@@ -29,7 +29,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   <tr>
     <td align="center"><a href="https://peterhcharlton.github.io/"><img src="https://avatars.githubusercontent.com/u/9865941?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Peter H Charlton</b></sub></a><br /><a href="https://github.com/peterhcharlton/ppg-beats/commits?author=peterhcharlton" title="Code">💻</a> <a href="#content-peterhcharlton" title="Content">🖋</a> <a href="#data-peterhcharlton" title="Data">🔣</a> <a href="https://github.com/peterhcharlton/ppg-beats/commits?author=peterhcharlton" title="Documentation">📖</a> <a href="#tutorial-peterhcharlton" title="Tutorials">✅</a></td>
     <td align="center"><a href="https://github.com/elisamejia"><img src="https://avatars.githubusercontent.com/u/10887584?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Elisa Mejía</b></sub></a><br /><a href="https://github.com/peterhcharlton/ppg-beats/commits?author=elisamejia" title="Code">💻</a></td>
-    <td align="center"><a href="https://www.surrey.ac.uk/people/philip-aston"><img src="https://www.surrey.ac.uk/sites/default/files/styles/image_gallery/public/2018-07/Aston_main.webp?itok=-XZ58Y0Z" width="100px;" alt=""/><br /><sub><b>Philip Aston</b></sub></a><br /><a href="" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/jbehar"><img src="https://avatars.githubusercontent.com/u/7780023?v=4?s=100" width="100px;" alt=""/><br /><sub><b>jbehar</b></sub></a><br /><a href="https://github.com/peterhcharlton/ppg-beats/commits?author=jbehar" title="Code">💻</a></td>
   </tr>
 </table>
 
