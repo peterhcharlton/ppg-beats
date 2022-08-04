@@ -14,19 +14,20 @@ We very much value contributions of new PPG beat detection algorithms. If you ar
 
 1. Check to see whether this algorithm is already available in the toolbox by consulting the list of existing beat detectors [here](https://ppg-beats.readthedocs.io/en/latest/toolbox/ppg_beat_detectors/).
 2. Prepare a submission:
-   - **Code:** The algorithm should be provided in Matlab format, in a `.m` file containing:
-   ```
-      function [peaks, onsets] = <beat detector abbreviation>_beat_detector(sig,fs)
-      % documentation
+   - **Code:** The algorithm should be provided in Matlab format, in a `.m` file, laid out as follows:
+   ```function [peaks, onsets] = <beat detector abbreviation>_beat_detector(sig,fs)
+      
+      <documentation>
       
       <code>
-      end
-   ```
-   Note the following:
-      - the main function takes the PPG signal (`sig`, a numerical column vector) and its sampling frequency (`fs`, a numerical variable) as inputs.
-      - the main function is named "<beat detector abbreviation>_beat_detector".
-      - the main function outputs two variables: `peaks` and `onsets`, which are column vectors containing the indices of detected pulse peaks / onsets in the signal.
-      - additional functions can be used in the same file, and should appear below this main function.
+      
+      end```
+      
+      Note the following:
+         - the main function takes the PPG signal (`sig`, a numerical column vector) and its sampling frequency (`fs`, a numerical variable) as inputs.
+         - the main function is named "<beat detector abbreviation>_beat_detector".
+         - the main function outputs two variables: `peaks` and `onsets`, which are column vectors containing the indices of detected pulse peaks / onsets in the signal.
+         - additional functions can be used in the same file, and should appear below this main function.
 
 ### Specific improvements
 
