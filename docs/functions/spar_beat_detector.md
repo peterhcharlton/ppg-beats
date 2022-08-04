@@ -13,7 +13,7 @@ using the 'Symmetric Projection Attractor Reconstruction' beat detector
 +   onsets : indices of detected pulse onsets
     
 ##  Reference
-none
+C. Pettit and P. Aston, 'Photoplethysmogram (PPG) Beat Detection Using Symmetric Projection Attractor Reconstruction,' [in preparation].
 
 ##  Author
 +   Callum Pettit and Philip Aston - wrote the code: 'SPARcycleTimesPPG' and 'find_acl'
@@ -24,7 +24,7 @@ none
 <https://ppg-beats.readthedocs.io/>
 
 ##  Version
-0.1, and is still in development.
+1.0
 
 ##  Licence
        SPAR PPG Beat Detector as [downloaded/received] is Copyright ©, 2021-2022 University of Surrey.
