@@ -16,7 +16,7 @@ To get started, see the accompanying documentation [here](https://ppg-beats.read
 ## Further Information
 For further information, please see:
 - The accompanying [documentation](https://ppg-beats.readthedocs.io/en/latest/)
-- The repository [license](LICENSE.txt)
+- The repository [license](LICENSE.md)
 - The [project website](https://peterhcharlton.github.io/project/ppg-beats/).
 - [Contributing guidelines](CONTRIBUTING.md) and the [Contributor Code of Conduct](CODE_OF_CONDUCT.md).
 
