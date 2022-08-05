@@ -13,7 +13,7 @@ function [agreed_beats_inds, qual] = detect_ecg_beats(ecg, fs, options, no_signa
 %    - options.win_overlap    - The overlap of windows (in secs)
 %    - options.verbose        - A logical indicating whether (1) or not (0) to display text in the Command Window
 %    - options.qrs_tol_window - The acceptable tolerance window around QRS spikes (in secs)
-%    - options.beat_detectors - The ECG beat detectors to be used. Specify either 1 or 2 out of: {'gqrs', 'jqrs', 'rpeakdetect'}
+%    - options.beat_detectors - The ECG beat detectors to be used. Provide a cell containing either 1 or 2 out of: {'gqrs', 'jqrs', 'rpeakdetect'}
 %    - options.hpf            - A logical indicating whether (1) or not (0) to high-pass filter the ECG to remove baseline wander
 %
 %   * no_signal_vector : (optional) a vector of the same length as the ECG vector, which indicates whether (1) or not (0) there was a signal at each sample
@@ -185,7 +185,10 @@ if length(options.beat_detectors) > 1
 
 end
 
-% Output the beats 
+% Output a dummy 'qual' variable if there was only 1 beat detector
+if ~exist('qual', 'var')
+    qual = [];
+end
 
 
 end
