@@ -9,7 +9,7 @@ Getting started with the PPG beat detectors.
 This tutorial demonstrates how to detect beats in a PPG signal using algorithms in the toolbox.
 
 - Download a minute of [sample data](https://zenodo.org/record/6967256/files/MIMIC_PERform_1_min_normal.mat?download=1).
-- Load this data file into Matlab. The data in this file is contained within a structure named _data_, which contains ECG and other signals. The ECG data can be found at _data.ekg_ (with the ECG signal given in two fields: _v_ contains the ECG samples, and _fs_ is the sampling frequency in Hz).
+- Load this data file into Matlab. The data in this file is contained within a structure named _data_, which contains PPG and other signals. The PPG data can be found at _data.ppg_ (with the PPG signal given in two fields: _v_ contains the PPG samples, and _fs_ is the sampling frequency in Hz).
 - Use the following Matlab commands to detect beats in the PPG (using the 'IMS' beat detector), and then plot the PPG signal and detected beats:
 
 ```matlab
