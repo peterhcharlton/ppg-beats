@@ -33,6 +33,8 @@ fprintf('\n ~~~ Exporting Sample MIMIC PERform dataset excerpts ~~~')
 
 up = setup_up;
 
+extract_and_save_truncated_dataset(up);
+
 extract_and_save_excerpts(up);
 
 end
@@ -55,12 +57,63 @@ up.paths.save_folder = '/Users/petercharlton/Downloads/';
 %%%%%%%%%%%%%%%%%%%%%%%%   OTHER PARAMETERS   %%%%%%%%%%%%%%%%%%%%%%%%%
 
 up.settings.durn_short_samples = 60; % durn of short samples in seconds
-up.settings.n_subj_truncated_dataset = 10; % number of subjects to be included in the truncated dataset
+up.settings.truncated_datasets.no_subjs = [10]; % number of subjects to be included in the truncated dataset
 up.settings.short_samples.dataset = {'mimic_perform_non_af_data', 'mimic_perform_af_data', 'mimic_perform_train_n_data', 'mimic_perform_non_af_data'};
 up.settings.short_samples.subj_no = [16, 1, 1, 7];
 up.settings.short_samples.start_sample = [86000, 40000, 29600, 60000];
 up.settings.short_samples.name = {'normal', 'AF', 'neonate', 'noisy'};
+up.settings.truncated_datasets.dataset = {'mimic_perform_train_all_data'};
+up.settings.truncated_datasets.name = {'train_all_data'};
 up.settings.fs = 125; % assume that the sampling frequency is always 125 Hz (which is the case for MIMIC III).
+
+end
+
+function extract_and_save_truncated_dataset(up)
+
+fprintf('\n - Extracting and saving truncated dataset')
+
+%% Load datasets
+for dataset_no = 1 : length(up.settings.truncated_datasets.dataset)
+    dataset_name = up.settings.truncated_datasets.dataset{dataset_no};
+    eval([dataset_name ' = load(up.paths.' dataset_name ');'])
+end
+
+%% Truncated datasets
+for dataset_no = 1 : length(up.settings.truncated_datasets.dataset)
+
+    abbr_dataset_name = up.settings.truncated_datasets.name{dataset_no};
+    fprintf('\n    - Dataset: %s', abbr_dataset_name)
+
+    dataset_name = up.settings.truncated_datasets.dataset{dataset_no};
+    no_subjs = up.settings.truncated_datasets.no_subjs(dataset_no);
+    
+    % extract data from this dataset
+    eval(['rel_data = ' dataset_name ';']);
+
+    % narrow down to only the required subjects
+    rel_subjs = [];
+    no_per_group = ceil(no_subjs/2);
+    no_adults = 0;
+    no_neonates = 0;
+    for s = 1 : length(rel_data.data)
+        if strcmp(rel_data.data(s).fix.group, 'a') & no_adults < no_per_group
+            rel_subjs(end+1) = s;
+            no_adults = no_adults + 1;
+        end
+        if strcmp(rel_data.data(s).fix.group, 'n') & no_neonates < no_per_group
+            rel_subjs(end+1) = s;
+            no_neonates = no_neonates + 1;
+        end
+    end
+    rel_data.data = rel_data.data(rel_subjs);
+
+    % save this truncated dataset
+    filepath = [up.paths.save_folder, 'MIMIC_PERform_truncated_' abbr_dataset_name];
+    data = rel_data.data;
+    license = rel_data.license;
+    save(filepath, 'data', 'license');
+
+end
 
 end
 

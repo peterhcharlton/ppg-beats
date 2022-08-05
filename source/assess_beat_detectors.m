@@ -245,7 +245,7 @@ for s = 1 : length(option_names)
         % otherwise, use default option
         switch option_names{s}
             case 'beat_detectors'
-                default_setting = {'IMS', 'AMPD', 'MSPTD', 'ABD', 'qppg', 'HeartPy', 'COppg', 'Pulses'};
+                default_setting = {'AMPD', 'MSPTD', 'qppgfast', 'PWD', 'ERMA', 'SPAR', 'ABD', 'HeartPy'};
             case 'do_downsample'
                 default_setting = 0;
             case 'downsample_freq'
@@ -1026,13 +1026,16 @@ if contains(uParams.dataset, 'vortal')
         data(s).ppg = data(s).ppgfraw;
     end
 end
-% - rename ECG in Capnobase and mimic
-if contains(uParams.dataset, 'capnobase') || contains(uParams.dataset, 'mimic') || contains(uParams.dataset, 'bidmc')
+% - rename ECG
+if sum(strcmp(fieldnames(data), 'ekg'))
     for s = 1 : length(data)
         data(s).ecg = data(s).ekg;
-        if contains(uParams.dataset, 'capnobase')
-            data(s).ecg.rpeaks = data(s).ecg.pk;
-        end
+    end
+end
+% - rename ECG beat annotations
+if contains(uParams.dataset, 'capnobase')
+    for s = 1 : length(data)
+        data(s).ecg.rpeaks = data(s).ecg.pk;
     end
 end
 % - reduce duration of signals if necessary
