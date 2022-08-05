@@ -52,6 +52,7 @@ nav:
       - 'collate_mimic_perform_af_dataset': './functions/collate_mimic_perform_af_dataset.md'
       - 'collate_mimic_perform_ethnicity_dataset': './functions/collate_mimic_perform_ethnicity_dataset.md'
       - 'mimic_perform_dataset_converter': './functions/mimic_perform_dataset_converter.md'
+      - 'export_sample_mimic_perform_data': './functions/export_sample_mimic_perform_data.md'
     - 'Tutorials':
       - 'Summary': './tutorials/summary.md'
       - 'PPG Beat Detection': './tutorials/ppg_beat_detection.md'
