@@ -6,7 +6,7 @@ The tutorials on this page demonstrate how to assess the performance of PPG beat
 
 This tutorial demonstrates how to assess the performance of beat detectors on a single dataset.
 
-- Install the PPG-beats toolbox by following the instructions [here](/toolbox/getting_started/).
+- Install the PPG-beats toolbox by following the instructions [here](https://ppg-beats.readthedocs.io/en/latest/toolbox/getting_started/).
 - Download the truncated version of the MIMIC PERform Training Dataset from [here](https://zenodo.org/record/6967256/files/MIMIC_PERform_truncated_train_all_data.mat?download=1).
 - Use the `assess_beat_detectors.m` script to run the analysis using the following commands:
 ```matlab
