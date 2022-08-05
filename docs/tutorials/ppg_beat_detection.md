@@ -30,7 +30,7 @@ xlabel('Time (s)', 'FontSize', ftsize)
 
 This results in the following detected beats:
 
-![1-minute PPG signal and detected beats](../assets/images/ppg_1_min_beat_detection.png)
+![1-minute PPG signal and detected beats](../assets/images/ppg_1_min_beat_detection_normal.png)
 
 
 ## Detecting beats in different types of signals
