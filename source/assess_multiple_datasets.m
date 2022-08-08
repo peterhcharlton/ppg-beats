@@ -302,6 +302,20 @@ if length(intersect(all_datasets, curr_datasets)) == length(curr_datasets)
     end
 end
 
+curr_datasets = {'mimic_test_a', 'mimic_test_n'};
+if length(intersect(all_datasets, curr_datasets)) == length(curr_datasets)
+    fprintf('\n Adults and Neonates:')
+    curr_cat = 'noQual';
+    fprintf('\n All beat detectors:')
+    for dataset_no = 1 : length(curr_datasets)
+        report_range_f1_score(res, curr_cat, curr_datasets(dataset_no), ['on ' curr_datasets{dataset_no} ' dataset']);
+    end
+    fprintf('\n Selected beat detectors:')
+    for dataset_no = 1 : length(curr_datasets)
+        report_range_f1_score(res, curr_cat, curr_datasets(dataset_no), ['on ' curr_datasets{dataset_no} ' dataset'], beat_detectors_to_exclude);
+    end
+end
+
 end
 
 function report_f1_scores(res, all_datasets, all_curr_use_case_datasets, curr_use_case_descrip, curr_cat, thresh_f1, beat_detectors_to_exclude)
@@ -597,7 +611,10 @@ up.datasets = [up.comparison_datasets, up.assessment_datasets];
 up.paths.plots_root_folder = '/Users/petercharlton/Desktop/temp/ppg-beats_stuff/';
 
 % Specify comparisons
-up.settings.comparisons = up.comparison_datasets;
+up.settings.comparisons = {};
+for comparison_no = 1 : floor(length(up.comparison_datasets)/2)
+    up.settings.comparisons(comparison_no, 1:2) = up.comparison_datasets(comparison_no*2-1:comparison_no*2);
+end
 
 %% Display startup message
 display_startup_message;
