@@ -17,6 +17,10 @@ assess_beat_detectors('MIMIC_PERform_truncated_train_all_data', options)
 - During this process a new folder will have been created called `proc_data_MIMIC_PERform_truncated_train_all_data`. Within this folder you will find files storing the analysis steps, including the file containing the results: the `ppg_detect_stats.mat` file. Open this file in Matlab, and you will see it contains a variable called `res` (for results).
 - Have a look at the table containing the results by typing `res.noQual.txt` at the command window. This provides the median and inter-quartile range for a set of statistics describing the performance of each beat detector (each 'strategy' in this table).
 
+The following video demonstrates this tutorial:
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/jd5fT_HvRLo" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
 ## Assessing performance on multiple datasets
 
 This tutorial demonstrates how to assess the performance of beat detectors across multiple datasets.
