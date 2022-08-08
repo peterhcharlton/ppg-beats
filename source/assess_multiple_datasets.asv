@@ -1106,6 +1106,10 @@ switch dataset
         dataset_file = '/Users/petercharlton/Downloads/MIMIC_PERform_truncated_train_all_data.mat';
     case 'mimic_perform_truncated_test_all'
         dataset_file = '/Users/petercharlton/Downloads/MIMIC_PERform_truncated_test_all_data.mat';
+    case 'mimic_perform_truncated_train_a'
+        dataset_file = '/Users/petercharlton/Downloads/MIMIC_PERform_truncated_train_a_data.mat';
+    case 'mimic_perform_truncated_train_n'
+        dataset_file = '/Users/petercharlton/Downloads/MIMIC_PERform_truncated_train_n_data.mat';
     case 'mimic_perform_truncated_af'
         dataset_file = '/Users/petercharlton/Downloads/MIMIC_PERform_truncated_af_data.mat';
     case 'mimic_perform_truncated_non_af'
@@ -1777,7 +1781,6 @@ function save_figure(fig_handle, fig_name, uParams)
 
 fig_path = [uParams.paths.plots_root_folder, fig_name];
 print(fig_path, '-depsc');
-print(fig_path, '-dpng');
 close all
 
 end

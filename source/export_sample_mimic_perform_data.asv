@@ -6,8 +6,9 @@ function export_sample_mimic_perform_data
 %   # Inputs
 %   None, although the script uses the following MIMIC PERform dataset files (which can be downloaded from <https://doi.org/10.5281/zenodo.6807402>):
 %
-%   * mimic_perform_train_all_data.mat
+%   * mimic_perform_train_a_data.mat
 %   * mimic_perform_train_n_data.mat
+%   * mimic_perform_train_all_data.mat
 %   * mimic_perform_test_all_data.mat
 %   * mimic_perform_af_data.mat
 %   * mimic_perform_non_af_data.mat
@@ -38,8 +39,6 @@ extract_and_save_truncated_dataset(up);
 
 extract_and_save_excerpts(up);
 
-fprintf('\n Finished: saved at %s', up.paths.save_folder)
-
 end
 
 function up = setup_up
@@ -52,29 +51,31 @@ fprintf('\n - Setting up parameters')
 
 up.paths.mimic_perform_af_data = '/Users/petercharlton/Documents/Data/mimic_perform_af_dataset/mimic_perform_af_data.mat';
 up.paths.mimic_perform_non_af_data = '/Users/petercharlton/Documents/Data/mimic_perform_af_dataset/mimic_perform_non_af_data.mat';
+up.paths.mimic_perform_train_n_data = '/Users/petercharlton/Documents/Data/mimic_perform_train_test_datasets/mimic_perform_train_n_data.mat';
 up.paths.mimic_perform_train_all_data = '/Users/petercharlton/Documents/Data/mimic_perform_train_test_datasets/mimic_perform_train_all_data.mat';
-up.paths.mimic_perform_train_n_data =   '/Users/petercharlton/Documents/Data/mimic_perform_train_test_datasets/mimic_perform_train_n_data.mat';
-up.paths.mimic_perform_test_all_data =  '/Users/petercharlton/Documents/Data/mimic_perform_train_test_datasets/mimic_perform_test_all_data.mat';
+up.paths.mimic_perform_train_a_data = '/Users/petercharlton/Documents/Data/mimic_perform_train_test_datasets/mimic_perform_train_a_data.mat';
+up.paths.mimic_perform_train_n_data = '/Users/petercharlton/Documents/Data/mimic_perform_train_test_datasets/mimic_perform_train_n_data.mat';
+up.paths.mimic_perform_test_all_data = '/Users/petercharlton/Documents/Data/mimic_perform_train_test_datasets/mimic_perform_test_all_data.mat';
 
 up.paths.save_folder = '/Users/petercharlton/Downloads/';
 
 %%%%%%%%%%%%%%%%%%%%%%%%   OTHER PARAMETERS   %%%%%%%%%%%%%%%%%%%%%%%%%
 
 up.settings.durn_short_samples = 60; % durn of short samples in seconds
+up.settings.truncated_datasets.no_subjs = [10]; % number of subjects to be included in the truncated dataset
 up.settings.short_samples.dataset = {'mimic_perform_non_af_data', 'mimic_perform_af_data', 'mimic_perform_train_n_data', 'mimic_perform_non_af_data'};
 up.settings.short_samples.subj_no = [16, 1, 1, 7];
 up.settings.short_samples.start_sample = [86000, 40000, 29600, 60000];
 up.settings.short_samples.name = {'normal', 'AF', 'neonate', 'noisy'};
-up.settings.truncated_datasets.no_subjs = [10, 10, 10, 10]; % number of subjects to be included in the truncated dataset
-up.settings.truncated_datasets.dataset = {'mimic_perform_train_all_data', 'mimic_perform_test_all_data', 'mimic_perform_non_af_data', 'mimic_perform_af_data'};
-up.settings.truncated_datasets.name = {'train_all_data', 'test_all_data', 'non_af_data', 'af_data'};
+up.settings.truncated_datasets.dataset = {'mimic_perform_train_all_data', 'mimic_perform_test_all_data', 'mimic_perform_train_a_data', 'mimic_perform_train_n_data'};
+up.settings.truncated_datasets.name = {'train_all_data', 'test_all_data', 'train_a_data', 'test_a_data'};
 up.settings.fs = 125; % assume that the sampling frequency is always 125 Hz (which is the case for MIMIC III).
 
 end
 
 function extract_and_save_truncated_dataset(up)
 
-fprintf('\n - Extracting and saving truncated datasets')
+fprintf('\n - Extracting and saving truncated dataset')
 
 %% Load datasets
 do_extraction = false(length(up.settings.truncated_datasets.dataset));
@@ -109,20 +110,16 @@ for dataset_no = 1 : length(up.settings.truncated_datasets.dataset)
     no_per_group = ceil(no_subjs/2);
     no_adults = 0;
     no_neonates = 0;
-    no_subjs_extracted = 0;
     for s = 1 : length(rel_data.data)
-        if strcmp(dataset_name, 'train_all_data') || strcmp(dataset_name, 'test_all_data')
-            if strcmp(rel_data.data(s).fix.group, 'a') & no_adults < no_per_group
-                rel_subjs(end+1) = s;
-                no_adults = no_adults + 1;
-            end
-            if strcmp(rel_data.data(s).fix.group, 'n') & no_neonates < no_per_group
-                rel_subjs(end+1) = s;
-                no_neonates = no_neonates + 1;
-            end
-        elseif no_subjs_extracted < no_subjs
+        if strcmp(dataset_name, 'train_all_data')
+        if strcmp(rel_data.data(s).fix.group, 'a') & no_adults < no_per_group
             rel_subjs(end+1) = s;
-            no_subjs_extracted = no_subjs_extracted+1;
+            no_adults = no_adults + 1;
+        end
+        if strcmp(rel_data.data(s).fix.group, 'n') & no_neonates < no_per_group
+            rel_subjs(end+1) = s;
+            no_neonates = no_neonates + 1;
+        end
         end
     end
     rel_data.data = rel_data.data(rel_subjs);
