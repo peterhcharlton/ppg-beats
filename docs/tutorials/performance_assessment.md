@@ -19,4 +19,13 @@ assess_beat_detectors('MIMIC_PERform_truncated_train_all_data', options)
 
 ## Assessing performance on multiple datasets
 
-_Tutorial to be inserted, using `assess_multiple_datasets.m`_
+This tutorial demonstrates how to assess the performance of beat detectors across multiple datasets.
+
+- Install the PPG-beats toolbox by following the instructions [here](https://ppg-beats.readthedocs.io/en/latest/toolbox/getting_started/).
+- Download the required datasets: [BIDMC dataset](https://physionet.org/content/bidmc/1.0.0/bidmc_data.mat), [MIMIC PERform Training Dataset](https://zenodo.org/record/6950488/files/mimic_perform_train_all_data.mat?download=1), and [MIMIC PERform Testing Dataset](https://zenodo.org/record/6950488/files/mimic_perform_test_all_data.mat?download=1).
+- Open the `assess_multiple_datasets.m` script (within **PPG-beats**) in Matlab. Edit is as follows:
+    - Specify the path of the Matlab file for each dataset in the `specify_path_of_dataset_file` function within the `assess_multiple_datasets.m` script.
+    - Specify the folder in which to save results figures by modifying the `up.paths.plots_root_folder` variable within the `setup_universal_params` function within the `assess_multiple_datasets.m` script.
+- Run the `assess_multiple_datasets.m` script to assess the performance of PPG beat detectors across all of the datasets. This will:
+    - Analyse each dataset in turn
+    - Generate results (in the command window) and results figures (saved in the specified folder)

@@ -14,7 +14,7 @@ assess the quality of beat detections.
      - options.win_overlap    - The overlap of windows (in secs)
      - options.verbose        - A logical indicating whether (1) or not (0) to display text in the Command Window
      - options.qrs_tol_window - The acceptable tolerance window around QRS spikes (in secs)
-     - options.beat_detectors - The ECG beat detectors to be used. Specify either 1 or 2 out of: {'gqrs', 'jqrs', 'rpeakdetect'}
+     - options.beat_detectors - The ECG beat detectors to be used. Provide a cell containing either 1 or 2 out of: {'gqrs', 'jqrs', 'rpeakdetect'}
      - options.hpf            - A logical indicating whether (1) or not (0) to high-pass filter the ECG to remove baseline wander
     
 +   no_signal_vector : (optional) a vector of the same length as the ECG vector, which indicates whether (1) or not (0) there was a signal at each sample
