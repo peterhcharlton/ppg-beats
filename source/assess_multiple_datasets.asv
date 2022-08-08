@@ -39,7 +39,7 @@ options = specify_options;
 
 %% Perform analysis on each dataset in turn
 
-do_analysis = 0;
+do_analysis = 1;
 if do_analysis
     analyse_performance_on_each_dataset(up, options);
 end
@@ -587,7 +587,7 @@ up.comparison_datasets = {'mimic_B', 'mimic_W', 'mimic_test_a', 'mimic_test_n', 
 do_tutorial = 1;
 if do_tutorial
     up.assessment_datasets = {'mimic_perform_truncated_train_all', 'mimic_perform_truncated_test_all'};
-    up.comparison_datasets = {'mimic_perform_truncated_af', 'mimic_perform_truncated_non_af'};
+    up.comparison_datasets = {'mimic_perform_truncated_non_af', 'mimic_perform_truncated_af'};
 end
 
 % (all datasets)
@@ -751,7 +751,7 @@ for comparison_no = 1 : no_comparisons
             leg_labels = {'Adults', 'Neonates'};
         elseif isequal(uParams.settings.comparisons(comparison_no,:), {'mimic_non_af','mimic_af'})
             leg_labels = {'Non-AF', 'AF'};
-        elseif isequal(uParams.settings.comparisons(comparison_no,:), {'mimic_perform_truncated_af','mimic_perform_truncated_non_af'})
+        elseif isequal(uParams.settings.comparisons(comparison_no,:), {'mimic_perform_truncated_non_af', 'mimic_perform_truncated_af'})
             leg_labels = {'Non-AF', 'AF'};
         end
         legend(hleg, leg_labels, 'Position', [0.33,0.9,0.5,0.1], 'Orientation', 'Horizontal')
@@ -1103,17 +1103,13 @@ switch dataset
     case 'mimic_test_n'
         dataset_file = '/Users/petercharlton/Documents/Data/mimic_perform_train_test_datasets/mimic_perform_test_n_data.mat';
     case 'mimic_perform_truncated_train_all'
-        dataset_file = '/Users/petercharlton/Downloads/MIMIC_PERform_truncated_train_all_data.mat';
+        dataset_file = '/Users/petercharlton/Downloads/downloaded2/MIMIC_PERform_truncated_train_all_data.mat';
     case 'mimic_perform_truncated_test_all'
-        dataset_file = '/Users/petercharlton/Downloads/MIMIC_PERform_truncated_test_all_data.mat';
-    case 'mimic_perform_truncated_train_a'
-        dataset_file = '/Users/petercharlton/Downloads/MIMIC_PERform_truncated_train_a_data.mat';
-    case 'mimic_perform_truncated_train_n'
-        dataset_file = '/Users/petercharlton/Downloads/MIMIC_PERform_truncated_train_n_data.mat';
+        dataset_file = '/Users/petercharlton/Downloads/downloaded2/MIMIC_PERform_truncated_test_all_data.mat';
     case 'mimic_perform_truncated_af'
-        dataset_file = '/Users/petercharlton/Downloads/MIMIC_PERform_truncated_af_data.mat';
+        dataset_file = '/Users/petercharlton/Downloads/downloaded2/MIMIC_PERform_truncated_af_data.mat';
     case 'mimic_perform_truncated_non_af'
-        dataset_file = '/Users/petercharlton/Downloads/MIMIC_PERform_truncated_non_af_data.mat';
+        dataset_file = '/Users/petercharlton/Downloads/downloaded2/MIMIC_PERform_truncated_non_af_data.mat';
     
 end
 
@@ -1781,6 +1777,7 @@ function save_figure(fig_handle, fig_name, uParams)
 
 fig_path = [uParams.paths.plots_root_folder, fig_name];
 print(fig_path, '-depsc');
+print(fig_path, '-dpng');
 close all
 
 end

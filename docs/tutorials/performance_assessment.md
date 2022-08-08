@@ -38,3 +38,7 @@ This tutorial demonstrates how to assess the performance of beat detectors acros
 - Run the `assess_multiple_datasets.m` script to assess the performance of PPG beat detectors across all of the datasets. This will:
     - Analyse each dataset in turn
     - Generate results (in the command window) and results figures (saved in the specified folder).
+
+This tutorial is demonstrated in the following video:
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/Li7aiqPSSfc" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
