@@ -5,9 +5,11 @@ MIMIC Perform datasets.
 ##  Inputs
 None, although the script uses the following MIMIC PERform dataset files (which can be downloaded from <https://doi.org/10.5281/zenodo.6807402>):
 
++   mimic_perform_train_all_data.mat
+    
 +   mimic_perform_train_n_data.mat
     
-+   mimic_perform_train_all_data.mat
++   mimic_perform_test_all_data.mat
     
 +   mimic_perform_af_data.mat
     

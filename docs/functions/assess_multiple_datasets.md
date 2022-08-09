@@ -5,7 +5,7 @@ PPG beat detectors across multiple datasets.
 ##  Inputs
 +   none
     
-+   NB: the 'ppg_beat_detector_assessment' function, which is called by this function, requires a dataset to analyse
++   although the datasets to be analysed should be specified in the 'setup_universal_params' function, and their paths should be specified in the 'specify_path_of_dataset_file' function.
     
 ##  Outputs
 +   Plots illustrating the performance of PPG beat detectors.
@@ -19,7 +19,7 @@ PPG beat detectors across multiple datasets.
 <https://ppg-beats.readthedocs.io/>
 
 ##  Author
-Peter H. Charlton, University of Cambridge, February 2022.
+Peter H. Charlton, University of Cambridge, August 2022.
 
 ##  Version
 1.0

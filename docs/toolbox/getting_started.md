@@ -40,15 +40,15 @@ _NB: These instructions are adapted from those provided for the WFDB Toolbox [he
 
 ## Detecting beats in the PPG
 
-The toolbox contains several PPG beat detectors, which are detailed [here](/toolbox/ppg_beat_detectors/).
+The toolbox contains several PPG beat detectors, which are detailed [here](../../toolbox/ppg_beat_detectors/).
 
-This [PPG Beat Detection Tutorial](/tutorials/ppg_beat_detection/) provides instructions and sample code to quickly start using a PPG beat detection algorithm.
+This [PPG Beat Detection Tutorial](../../tutorials/ppg_beat_detection/) provides instructions and sample code to quickly start using a PPG beat detection algorithm.
 
 ## Assessing the performance of PPG beat detectors
 
-The toolbox contains tools to assess the performance of PPG beat detectors, which are detailed [here](/toolbox/performance_assessment/).
+The toolbox contains tools to assess the performance of PPG beat detectors, which are detailed [here](../../toolbox/performance_assessment/).
 
-This [Performance Assessment Tutorial](/tutorials/performance_assessment/) provides instructions and sample code to quickly start using a PPG beat detection algorithm.
+This [Performance Assessment Tutorial](../../tutorials/performance_assessment/) provides instructions and sample code to quickly start using a PPG beat detection algorithm.
 
 ## Matlab Requirements
 
