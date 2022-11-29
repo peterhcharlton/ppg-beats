@@ -12,9 +12,9 @@ function [peaks, onsets, mid_amps] = detect_ppg_beats(s, beat_detector)
 %   * beat_detector  - a string specifying the beat detector to be used
 %   
 %   # Outputs
-%   * peaks : ...TBC...
-%   * onsets : ...TBC...
-%   * mid_amps : ...TBC...
+%   * peaks : indices of pulse peaks
+%   * onsets : indices of pulse onsets
+%   * mid_amps : indices of mid-points on the upslope between onsets and peaks (defined as the mid-amplitude)
 %   
 %   # Documentation
 %   <https://ppg-beats.readthedocs.io/>
@@ -23,7 +23,7 @@ function [peaks, onsets, mid_amps] = detect_ppg_beats(s, beat_detector)
 %   Peter H. Charlton, University of Cambridge, February 2022.
 %   
 %   # Version
-%   1.0
+%   1.1
 %   
 %   # License - GPL-3.0
 %      Copyright (c) 2022 Peter H. Charlton
@@ -68,7 +68,7 @@ clear repeated_vals
 %% (ii) At least one local minimum between consecutive peaks
 
 % If there are two peaks without a local minimum between them, then remove the lower one
-local_min = [false; sig(3:end)>sig(2:end-1) & sig(1:end-2)>sig(2:end-1); false];
+local_min = islocalmin(sig);
 finished = false;
 while ~finished
     els_to_remove = [];
@@ -90,7 +90,7 @@ clear local_min finished els_to_remove peak_no rel_els peak_vals el_to_remove
 %% (iii) At least one local maximum between consecutive onsets
 
 % If there are two onsets without a local maximum between them, then remove the higher one
-local_max = [false; sig(3:end)<sig(2:end-1) & sig(1:end-2)<sig(2:end-1); false];
+local_max = islocalmax(sig);
 finished = false;
 while ~finished
     els_to_remove = [];
