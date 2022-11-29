@@ -4,3 +4,4 @@ Docs/.DS_Store
 /source/beat_detection_algorithms/ppg_beat_detection/*.*
 /source/low_pass_differentiator_*Hz.mat
 /source/archive/*.*
+**qppgfastpc_beat_detector.m
