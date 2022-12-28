@@ -10,13 +10,18 @@ To download the toolbox, either (i) manually download it, or (ii) install it aut
 
 ### (i) Manual download
 
-The toolbox can be downloaded as a ZIP file here:
+The toolbox can be downloaded as a ZIP folder here:
 
 <center>
 <font size="+3">
 <button type="button"> [Download Toolbox](https://github.com/peterhcharlton/ppg-beats/archive/refs/heads/main.zip) </button>
 </font>
 </center>
+
+After downloading the toolbox:
+
+1. Unzip the ZIP folder
+2. Add the extracted files and folders to the Matlab path, using for instance `addpath(genpath('<path>'))`, where `<path>` is replaced with the path of the extracted files.
 
 ### (ii) Automatic Installation
 
