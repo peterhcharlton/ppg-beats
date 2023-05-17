@@ -1,4 +1,4 @@
-function [peaks, onsets, mid_amps] = detect_ppg_beats(s, beat_detector)
+function [peaks, onsets, mid_amps, t_taken] = detect_ppg_beats(s, beat_detector, do_timing)
 % DETECT_PPG_BEATS  detects beats in PPG.
 %   DETECT_PPG_BEATS detects beats in a photoplethysmogram (PPG) signal
 %   using a specified beat detector
@@ -9,21 +9,24 @@ function [peaks, onsets, mid_amps] = detect_ppg_beats(s, beat_detector)
 %    - v : a vector of PPG values
 %    - fs : the sampling frequency of the PPG in Hz
 %    
-%   * beat_detector  - a string specifying the beat detector to be used
+%   * beat_detector  - a string specifying the beat detector algorithm to be used
+%
+%   * do_timing - a logical indicating whether or not to time how long it takes to run the beat detector algorithm
 %   
 %   # Outputs
 %   * peaks : indices of pulse peaks
 %   * onsets : indices of pulse onsets
 %   * mid_amps : indices of mid-points on the upslope between onsets and peaks (defined as the mid-amplitude)
+%   * t_taken : time taken (in secs) to run the beat detector algorithm
 %   
 %   # Documentation
 %   <https://ppg-beats.readthedocs.io/>
 %   
 %   # Author
-%   Peter H. Charlton, University of Cambridge, February 2022.
+%   Peter H. Charlton, University of Cambridge, January 2023.
 %   
 %   # Version
-%   1.1
+%   1.2
 %   
 %   # License - GPL-3.0
 %      Copyright (c) 2022 Peter H. Charlton
@@ -31,12 +34,17 @@ function [peaks, onsets, mid_amps] = detect_ppg_beats(s, beat_detector)
 %      This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 %      You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-%% Detect peaks and onsets in pulse signal
+%% Setup
+if nargin<3
+    do_timing = 0;
+end
 
+%% Detect peaks and onsets in pulse signal
+if do_timing, tic, end
 eval(['[peaks, onsets] = ' lower(beat_detector) '_beat_detector(s.v,s.fs);']);
+if do_timing, t_taken = toc; else, t_taken = nan; end
 
 %% Tidy up peaks and onsets
-
 [peaks, onsets] = tidy_peaks_and_onsets(s.v, peaks,onsets);
 
 %% Add mid-amplitude points

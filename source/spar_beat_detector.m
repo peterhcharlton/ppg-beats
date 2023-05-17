@@ -23,7 +23,7 @@ function [peaks, onsets] = spar_beat_detector(sig,fs)
 %   <https://ppg-beats.readthedocs.io/>
 %   
 %   # Version
-%   1.0
+%   1.1
 %   
 %   # Licence
 %      SPAR PPG Beat Detector as [downloaded/received] is Copyright ©, 2021-2022 University of Surrey.
@@ -67,7 +67,8 @@ function [beat_indices_all,cycle_times_all] = SPARcycleTimesPPG(signal_all,fs,N)
 
 % set parameters
 
-global acl
+%global acl
+acl = [];
 
 k = 1;                 % the projection - we only use the first one
 pltACL = 0;            % 0 = no plot, 1 = plot ACL function

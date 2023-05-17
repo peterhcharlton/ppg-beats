@@ -39,10 +39,10 @@ function assess_beat_detectors(dataset, options)
 %   Peter H. Charlton, University of Cambridge, February 2022.
 %   
 %   # Version
-%   1.0
+%   1.1
 %   
 %   # License - GPL-3.0
-%      Copyright (c) 2022 Peter H. Charlton
+%      Copyright (c) 2023 Peter H. Charlton
 %      This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 %      This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 %      You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
@@ -58,6 +58,7 @@ if nargin < 2, options = struct; end
 uParams = setup_up(dataset, options);
 
 %% Detect beats in PPG signals
+uParams.analysis.redo_analysis = 0;
 detect_beats_in_ppg_signals(uParams);
 
 %% Assess quality of PPG signals
@@ -312,7 +313,7 @@ for subj_no = 1 : uParams.dataset_details.no_subjs
     %% Load time-aligned PPG beats
     file_type = 'ppg_beats';
     loadpath = create_proc_filepath(uParams, subj_no, file_type);
-    load(loadpath); clear loadpath % loads ppg_beats_inds and ppg_exc_log
+    load(loadpath); clear loadpath % loads ppg_beats_inds, ppg_exc_log, and ppg_timings
     
     %% Load ECG beats
     file_type = 'ecg_beats_aligned';
@@ -322,11 +323,11 @@ for subj_no = 1 : uParams.dataset_details.no_subjs
     %% Load quality assessment results
     file_type = 'ppg_qual';
     loadpath = create_proc_filepath(uParams, subj_no, file_type);
-    load(loadpath); clear loadpath % loads ppg_qual
+    load(loadpath); clear loadpath % loads ppg_qual and ppg_qual_timings
     
     %% Assess performance of each tool
-    ppg_strategy_perf.raw = assess_beat_detection_strategies(ppg_qual, ppg_beats_inds, ecg_beats_a_inds, ppg_exc_log, ecg_exc_a_log, strategies_remaining, ppg_strategy_perf.raw, subj_no, uParams);
-    clear file_type ppg_beats_inds ecg_beats_a_inds ppg_qual
+    ppg_strategy_perf.raw = assess_beat_detection_strategies(ppg_qual, ppg_beats_inds, ppg_qual_timings, ppg_timings, ecg_beats_a_inds, ppg_exc_log, ecg_exc_a_log, strategies_remaining, ppg_strategy_perf.raw, subj_no, uParams);
+    clear file_type ppg_beats_inds ecg_beats_a_inds ppg_qual ppg_qual_timings
     
 end
 clear subj_no quality_tools_remaining 
@@ -394,16 +395,16 @@ eval(['perf_metrics = fieldnames(ppg_strategy_perf.raw.' ppg_strategy_perf.stats
 % --- Best strategies with no quality assessment
 fprintf('\n    - Rankings for strategies with no quality assessment')
 rel_strategies = contains(ppg_strategy_perf.stats.strategies, '__none');
-score_to_rank = 'f1_score';
-ranking_direction = 'descend';
+score_to_rank = 'mae_ibi'; %'f1_score';
+ranking_direction = 'ascend'; %'descend';
 strategy_group_name = 'noQual';
 res = create_table_of_top_ranked_strategies(ppg_strategy_perf, rel_strategies, strategy_group_name, score_to_rank, ranking_direction, res);
 clear rel_strategies score_to_rank strategy_group_name
 
 % --- Best strategies with accel only
 fprintf('\n    - Rankings for strategies with accel only')
-score_to_rank = 'acc_hr';
-ranking_direction = 'descend';
+score_to_rank = 'mae_ibi';
+ranking_direction = 'ascend'; %'descend';
 rel_strategies = false(size(ppg_strategy_perf.stats.strategies));
 for s = 1 : length(rel_strategies)
     if strcmp(ppg_strategy_perf.stats.strategies{s}(end-6:end), '__accel')
@@ -608,11 +609,11 @@ clear cols metric_no
 clear strategy sens ppv f1_score
 end
 
-function ppg_strategy_perf = assess_beat_detection_strategies(ppg_qual, ppg_beats_inds, ecg_beats_a_inds, ppg_exc_log, ecg_exc_a_log, strategies_remaining, ppg_strategy_perf, subj_no, uParams)
+function ppg_strategy_perf = assess_beat_detection_strategies(ppg_qual, ppg_beats_inds, ppg_qual_timings, ppg_timings, ecg_beats_a_inds, ppg_exc_log, ecg_exc_a_log, strategies_remaining, ppg_strategy_perf, subj_no, uParams)
 
 %% insert nans if there are no suitable data for analysis:
 if unique(ppg_exc_log) == 1  % i.e. all the PPG data are excluded from the analysis
-    perf_metrics = {'durn_total'; 'durn_ppg'; 'durn_ecg'; 'durn_both'; 'no_beats'; 'sens'; 'ppv'; 'f1_score'; 'acc_hr'; 'durn_hr'; 'prop_hr'; 'bias_hr'; 'loa_hr'; 'mae_hr'; 'acc_ibi'; 'durn_ibi'; 'prop_ibi'; 'bias_ibi'; 'loa_ibi'; 'mae_ibi'};
+    perf_metrics = {'durn_total'; 'durn_ppg'; 'durn_ecg'; 'durn_both'; 'no_beats'; 'sens'; 'ppv'; 'f1_score'; 'acc_hr'; 'durn_hr'; 'prop_hr'; 'bias_hr'; 'loa_hr'; 'mae_hr'; 'acc_ibi'; 'durn_ibi'; 'prop_ibi'; 'bias_ibi'; 'loa_ibi'; 'mae_ibi'; 'perc_time'};
     % cycle through each strategy
     for strategy_no = 1 : length(strategies_remaining)
         curr_strategy = strategies_remaining{strategy_no};
@@ -629,6 +630,10 @@ end
 
 %% Assess performance of each beat detection strategy
 
+% specify whether or not to investigate accel thresholds
+do_acc_thresh = 1;
+acc_thresh_strategy = 'MSPTDPC__accel';
+
 % - cycle through each beat detection strategy
 for strategy_no = 1 : length(strategies_remaining)
     
@@ -641,6 +646,17 @@ for strategy_no = 1 : length(strategies_remaining)
     
     % - extract data relating to this strategy
     eval(['curr_ppg_beat_inds = ppg_beats_inds.' curr_beat_detector ';']);
+    if strcmp(curr_qual_tool, 'none') % in this case there is a little time added for the quality assessment (and the time for the beat detector isn't already included)
+        eval(['curr_ppg_timings = ppg_timings.' curr_beat_detector ' + ppg_qual_timings.' curr_qual_tool ';']);
+    elseif contains(curr_qual_tool, 'comb') && contains(curr_qual_tool, curr_beat_detector) % in this case the time taken to run the beat detector is included in the qual tool time
+        eval(['curr_ppg_timings = ppg_qual_timings.' curr_qual_tool ';']);
+    elseif contains(curr_qual_tool, 'comb') && ~contains(curr_qual_tool, curr_beat_detector) % in this case the time taken to run the beat detector is not included in the qual tool time
+        eval(['curr_ppg_timings = ppg_timings.' curr_beat_detector ' + ppg_qual_timings.' curr_qual_tool ';']);
+    elseif strcmp(curr_qual_tool, 'accel') % in this case the time taken to run the beat detector is not included in the qual tool time
+        eval(['curr_ppg_timings = ppg_timings.' curr_beat_detector ' + ppg_qual_timings.' curr_qual_tool ';']);
+    else 
+        error('this shouldn''t happen')
+    end
     eval(['curr_ecg_beat_a_inds = ecg_beats_a_inds.' curr_beat_detector ';']);
     eval(['curr_ppg_qual = ppg_qual.' curr_qual_tool ';']);
     curr_ppg_strategy_perf.durn_total = length(curr_ppg_qual.v)/curr_ppg_qual.fs;
@@ -648,6 +664,9 @@ for strategy_no = 1 : length(strategies_remaining)
     
     % - evaluate quality of each PPG beat detection
     ppg_beat_qual_log = create_ppg_beat_qual_log(curr_ppg_beat_inds, curr_ppg_qual);
+    if do_acc_thresh && strcmp(curr_strategy, acc_thresh_strategy)
+        ppg_beat_qual_raw = create_ppg_beat_qual_raw(curr_ppg_beat_inds, curr_ppg_qual);
+    end
     
     % - create vectors of PPG and ECG beat detection timings
     curr_ppg_beats.t = (curr_ppg_beat_inds-1)./uParams.dataset_details.ppg_fs_ds;
@@ -676,10 +695,13 @@ for strategy_no = 1 : length(strategies_remaining)
     curr_ppg_strategy_perf.durn_ecg = sum(curr_ecg_beats.ibi(curr_ecg_beats.inc_ecg_log(1:end-1))); % Duration of ECG available for inclusion in analysis
     curr_ppg_strategy_perf.durn_both = sum(curr_ecg_beats_inc.ibi); % Duration of ECG available for inclusion in analysis
     curr_ppg_strategy_perf.no_beats = length(curr_ecg_beats_inc.t); % No. ECG beats included in analysis
+
+    % - store percentage of signal time required to run the beat detection algorithm
+    curr_ppg_strategy_perf.perc_time = 100*curr_ppg_timings;
     
     %% Skip if there are no reference beats
     if isempty(curr_ecg_beats_inc.t)
-        perf_metrics = {'sens'; 'ppv'; 'f1_score'; 'acc_hr'; 'durn_hr'; 'prop_hr'; 'bias_hr'; 'loa_hr'; 'mae_hr'; 'mape_hr'; 'acc_ibi'; 'durn_ibi'; 'prop_ibi'; 'bias_ibi'; 'loa_ibi'; 'mae_ibi'};
+        perf_metrics = {'sens'; 'ppv'; 'f1_score'; 'acc_hr'; 'durn_hr'; 'prop_hr'; 'bias_hr'; 'loa_hr'; 'mae_hr'; 'mape_hr'; 'acc_ibi'; 'durn_ibi'; 'prop_ibi'; 'bias_ibi'; 'loa_ibi'; 'mae_ibi'; 'perc_time'};
         for metric_no = 1 : length(perf_metrics)
             curr_metric = perf_metrics{metric_no};
             % insert nan for this strategy and this metric
@@ -813,14 +835,18 @@ for strategy_no = 1 : length(strategies_remaining)
         
         % - Generate time series
         ppg_int_ts = generate_beat_signal(curr_ppg_beats.t, uParams);
-        try
-            ecg_int_ts = generate_beat_signal(curr_ecg_beats.t, uParams);
-        catch
-            a = 1
-        end
+        ecg_int_ts = generate_beat_signal(curr_ecg_beats.t, uParams);
         
         % - Generate PPG quality time series
         ppg_qual_and_inc_ts = generate_qual_signal(curr_ppg_beats.t, ppg_beat_qual_log & curr_ppg_beats.inc_log, uParams);
+        if do_acc_thresh && strcmp(curr_strategy, acc_thresh_strategy)
+            ppg_qual_raw_ts = generate_qual_signal(curr_ppg_beats.t, ppg_beat_qual_raw, uParams);
+            ppg_inc_ts = generate_qual_signal(curr_ppg_beats.t, curr_ppg_beats.inc_log, uParams);
+            file_type = 'accel_qual_thresh';
+            savepath = create_proc_filepath(uParams, subj_no, file_type);
+            save(savepath, 'ppg_qual_raw_ts', 'ppg_inc_ts', 'ppg_int_ts', 'ecg_int_ts')
+            clear ppg_beat_qual_raw
+        end
         
         clear ppg_beats ecg_beats ppg_beat_qual_log curr_ecg_beats curr_ppg_beats
         
@@ -949,6 +975,17 @@ if isempty(curr_ppg_beat_inds)
     ppg_beat_qual_log = false(0);
 else
     ppg_beat_qual_log = curr_ppg_qual.v(curr_ppg_beat_inds);
+end
+
+end
+
+function ppg_beat_qual_raw = create_ppg_beat_qual_raw(curr_ppg_beat_inds, curr_ppg_qual)
+% create a vector indicating the raw accel value at each ppg beat detection
+
+if isempty(curr_ppg_beat_inds)
+    ppg_beat_qual_raw = [];
+else
+    ppg_beat_qual_raw = curr_ppg_qual.raw(curr_ppg_beat_inds);
 end
 
 end
@@ -1103,22 +1140,23 @@ for subj_no = 1 : uParams.dataset_details.no_subjs
     filepath = create_proc_filepath(uParams, subj_no, file_type);
     % - load file
     if exist(filepath, 'file') && ~uParams.analysis.redo_analysis && isempty(uParams.analysis.redo_selected_beat_detectors)
-        load(filepath);  % loads 'ppg_beats_inds' variable
+        load(filepath);  % loads 'ppg_beats_inds' and 'ppg_timings' variables
         beat_detectors_used = fieldnames(ppg_beats_inds);
-        beat_detectors_remaining = setxor(beat_detectors_used, uParams.analysis.beat_detectors);
+        beat_detectors_remaining = setdiff(uParams.analysis.beat_detectors, beat_detectors_used);
         % - skip this subject if there are no more beat detectors to use
         if isempty(beat_detectors_remaining)
             fprintf('all done');
             continue
         end
     elseif exist(filepath, 'file') && ~uParams.analysis.redo_analysis && ~isempty(uParams.analysis.redo_selected_beat_detectors)
-        load(filepath);  % loads 'ppg_beats_inds' variable
+        load(filepath);  % loads 'ppg_beats_inds' and 'ppg_timings' variables
         beat_detectors_used = fieldnames(ppg_beats_inds);
-        beat_detectors_remaining = setxor(beat_detectors_used, uParams.analysis.beat_detectors);
+        beat_detectors_remaining = setdiff(uParams.analysis.beat_detectors(:), beat_detectors_used(:));
         beat_detectors_remaining = unique([beat_detectors_remaining; uParams.analysis.redo_selected_beat_detectors]);
     else
         beat_detectors_remaining = uParams.analysis.beat_detectors;
         ppg_beats_inds = struct;
+        ppg_timings = struct;
     end
     
     %% Load raw dataset from Matlab file for analysis
@@ -1136,11 +1174,11 @@ for subj_no = 1 : uParams.dataset_details.no_subjs
     S = preprocess_ppg_signal(S, uParams.analysis);
     
     %% Detect beats in PPG signal
-    [ppg_beats_inds, ppg_exc_log] = detect_beats_in_ppg_signal(S, beat_detectors_remaining, ppg_beats_inds, uParams);
+    [ppg_beats_inds, ppg_exc_log, ppg_timings] = detect_beats_in_ppg_signal(S, beat_detectors_remaining, ppg_beats_inds, ppg_timings, uParams);
     clear S
     
     %% Save indices of detected beats
-    save(filepath, 'ppg_beats_inds', 'ppg_exc_log');
+    save(filepath, 'ppg_beats_inds', 'ppg_exc_log', 'ppg_timings');
     clear filepath ppg_beats_inds beat_detectors_remaining ppg_exc_log
     
 end
@@ -1172,10 +1210,13 @@ S.no_signal = durn_of_periods_of_no_signal > round(S.fs*uParams.analysis.durn_fl
 
 end
 
-function [ppg_beats_inds, ppg_exc_log] = detect_beats_in_ppg_signal(S, beat_detectors_remaining, ppg_beats_inds, uParams)
+function [ppg_beats_inds, ppg_exc_log, ppg_timings] = detect_beats_in_ppg_signal(S, beat_detectors_remaining, ppg_beats_inds, ppg_timings, uParams)
 
 % set up variable to note any periods of PPG to be excluded from the analysis
 ppg_exc_log = false(size(S.v));
+
+% specify to time how long it takes to run the beat detector algorithms
+do_timing = 1;
 
 % identify beats in PPG
 for beat_detector_no = 1 : length(beat_detectors_remaining)
@@ -1192,7 +1233,8 @@ for beat_detector_no = 1 : length(beat_detectors_remaining)
     options.beat_detector = curr_beat_detector;
     
     % - setup SPAR beat detector (which requires a global variable)
-    if strcmp(curr_beat_detector, 'SPAR')
+    do_global = 0;
+    if do_global && strcmp(curr_beat_detector, 'SPAR')
         global acl,
         acl=0;
     end    
@@ -1208,11 +1250,14 @@ for beat_detector_no = 1 : length(beat_detectors_remaining)
         elseif strcmp(uParams.analysis.ppg_fid_pt, 'mid_pt')
             eval(['ppg_beats_inds.' curr_beat_detector ' = pulses.mid_amps;']);
         end
+        eval(['ppg_beats_timings.' curr_beat_detector ' = nan;']);
     else
         % With windowing
         win_starts = 0:(uParams.analysis.win_durn-uParams.analysis.win_overlap):(((length(S.v)-1)/S.fs)-uParams.analysis.win_durn);
         t = 0:(1/S.fs):((length(S.v)-1)/S.fs);
         temp_beats = [];
+        timings.secs_taken = 0;
+        timings.secs_processed = 0;
         for win_no = 1 : length(win_starts)
             
             % identify elements corresponding to this window
@@ -1235,7 +1280,11 @@ for beat_detector_no = 1 : length(beat_detectors_remaining)
             % identify beats in this window
             rel_S.v = S.v(rel_els);
             rel_S.fs = S.fs;
-            [peaks, onsets, mid_amps] = detect_ppg_beats(rel_S, curr_beat_detector);
+            [peaks, onsets, mid_amps, t_taken] = detect_ppg_beats(rel_S, curr_beat_detector, do_timing);
+
+            % store timings
+            timings.secs_taken = timings.secs_taken + t_taken;
+            timings.secs_processed = timings.secs_processed + (curr_end-curr_start);
             
             % store beats
             if strcmp(uParams.analysis.ppg_fid_pt, 'pk')
@@ -1265,6 +1314,9 @@ for beat_detector_no = 1 : length(beat_detectors_remaining)
         % store beats
         eval(['ppg_beats_inds.' curr_beat_detector ' = temp_beats;']);
         clear temp_beats win_no t win_starts
+
+        % store timings
+        eval(['ppg_timings.' curr_beat_detector ' = timings.secs_taken/timings.secs_processed;']); % in secs taken per sec processed.
     end
     clear pulses do_wins options curr_beat_detector
     
@@ -1359,7 +1411,7 @@ for subj_no = 1 : uParams.dataset_details.no_subjs
     if exist(filepath, 'file') && ~uParams.analysis.redo_analysis && isempty(uParams.analysis.redo_selected_beat_detectors)
         load(filepath);  % loads 'ecg_beats_a_inds' variable
         beat_detectors_used = fieldnames(ecg_beats_a_inds);
-        beat_detectors_remaining = setxor(beat_detectors_used, uParams.analysis.beat_detectors);
+        beat_detectors_remaining = setdiff(uParams.analysis.beat_detectors, beat_detectors_used);
         % - skip this subject if there are no more beat detectors to use
         if isempty(beat_detectors_remaining)
             fprintf('all done');
@@ -1368,7 +1420,7 @@ for subj_no = 1 : uParams.dataset_details.no_subjs
     elseif exist(filepath, 'file') && ~uParams.analysis.redo_analysis && ~isempty(uParams.analysis.redo_selected_beat_detectors)
         load(filepath);  % loads 'ecg_beats_a_inds' variable
         beat_detectors_used = fieldnames(ecg_beats_a_inds);
-        beat_detectors_remaining = setxor(beat_detectors_used, uParams.analysis.beat_detectors);
+        beat_detectors_remaining = setdiff(uParams.analysis.beat_detectors(:), beat_detectors_used(:));
         beat_detectors_remaining = unique([beat_detectors_remaining; uParams.analysis.redo_selected_beat_detectors]);
     else
         beat_detectors_remaining = uParams.analysis.beat_detectors;
@@ -1530,18 +1582,23 @@ for subj_no = 1 : uParams.dataset_details.no_subjs
         
         if strcmp(curr_tool, 'none')
             % - if no tool, then just label all samples as of high quality.
+            tic
             curr_qual.v = true(ppg_details.no_samps,1);
             curr_qual.fs = ppg_details.fs;
+            curr_timing = toc;
             eval(['ppg_qual.' curr_tool ' = curr_qual;']);
+            eval(['ppg_qual_timings.' curr_tool ' = curr_timing;']);
+            clear curr_qual curr_timing
             
         elseif strcmp(curr_tool, 'accel')
             % - use accelerometry signal at same site as PPG measurement
             fprintf('accel, ');
-            curr_qual = assess_qual_using_accel(data(subj_no).acc_ppg_site, ppg_details, subj_no, curr_tool, uParams);
+            [curr_qual, curr_timing] = assess_qual_using_accel(data(subj_no).acc_ppg_site, ppg_details, subj_no, curr_tool, uParams);
             
             % store results
             eval(['ppg_qual.' curr_tool ' = curr_qual;']);
-            clear curr_qual curr_tool
+            eval(['ppg_qual_timings.' curr_tool ' = curr_timing;']);
+            clear curr_qual curr_tool curr_timing
             
         elseif strcmp(curr_tool(1:5), 'comb_')
             % - use combinations of PPG beat detectors
@@ -1549,7 +1606,7 @@ for subj_no = 1 : uParams.dataset_details.no_subjs
             %  -- Load PPG beat detections
             file_type = 'ppg_beats';
             loadpath = create_proc_filepath(uParams, subj_no, file_type);
-            load(loadpath); % load 'ppg_beat_inds' variable
+            load(loadpath); % load 'ppg_beat_inds' and 'ppg_timings' variables
             
             %  -- Assess qual using each combination of PPG beat detectors
             temp = strfind(curr_tool, '_');
@@ -1557,14 +1614,16 @@ for subj_no = 1 : uParams.dataset_details.no_subjs
             detector2 = curr_tool(temp(2)+1:end);
             for detector_no = 1 : 2
                 eval(['detector' num2str(detector_no) '_ppg_beats_inds = ppg_beats_inds.' eval(['detector', num2str(detector_no)]), ';']);
+                eval(['detector' num2str(detector_no) '_ppg_timings = ppg_timings.' eval(['detector', num2str(detector_no)]), ';']);
             end
             fprintf([curr_tool ', ']);
-            curr_qual = assess_qual_using_comb_beat_detectors(ppg_details, detector1_ppg_beats_inds, detector2_ppg_beats_inds, uParams);
+            [curr_qual, curr_timing] = assess_qual_using_comb_beat_detectors(ppg_details, detector1_ppg_beats_inds, detector2_ppg_beats_inds, detector1_ppg_timings, detector2_ppg_timings, uParams);
             clear detector1 detector2 detector1_ppg_beats_inds detector2_ppg_beats_inds
             
             % store results
             eval(['ppg_qual.' curr_tool ' = curr_qual;']);
-            clear curr_qual curr_tool
+            eval(['ppg_qual_timings.' curr_tool ' = curr_timing;']);
+            clear curr_qual curr_tool ppg_timings curr_timing
             
         elseif strcmp(curr_tool(1:6), 'accel_')
             % use accel with another tool
@@ -1572,7 +1631,9 @@ for subj_no = 1 : uParams.dataset_details.no_subjs
             temp = strfind(curr_tool, '_');
             other_tool = curr_tool(temp(1)+1:end);
             accel_qual = ppg_qual.accel;
+            accel_timing = ppg_qual_timings.accel;
             eval(['other_qual = ppg_qual.' other_tool ';']);
+            eval(['other_timing = ppg_qual_timings.' other_tool ';']);
             if ~isequal(other_qual.fs, accel_qual.fs)
                 error('\n These sampling freqs should be the same')
             end
@@ -1581,15 +1642,16 @@ for subj_no = 1 : uParams.dataset_details.no_subjs
             
             % store results
             eval(['ppg_qual.' curr_tool ' = curr_qual;']);
-            clear curr_qual curr_tool accel_qual other_qual temp
+            eval(['ppg_qual_timings.' curr_tool ' = other_timing + accel_timing;']);
+            clear curr_qual curr_tool accel_qual other_qual temp other_timing accel_timing
         end
         
     end
     clear tool_no
     
     %% Save quality results for this subject
-    save(filepath, 'ppg_qual');
-    clear filepath ppg_qual qual_tools_remaining
+    save(filepath, 'ppg_qual', 'ppg_qual_timings');
+    clear filepath ppg_qual qual_tools_remaining ppg_qual_timings ppg_timings
     
 end
 clear subj_no
@@ -1729,8 +1791,9 @@ end
 
 end
 
-function curr_qual = assess_qual_using_accel(acc_ppg_site, ppg_details, subj_no, curr_tool, uParams)
+function [curr_qual, curr_timing] = assess_qual_using_accel(acc_ppg_site, ppg_details, subj_no, curr_tool, uParams)
 
+tic
 %% Obtain mean absolute deviation (MAD) signal
 %  - create time vector
 acc_ppg_site.t = [0:length(acc_ppg_site.v)-1]./acc_ppg_site.fs; acc_ppg_site.t = acc_ppg_site.t(:);
@@ -1752,11 +1815,20 @@ clear win_no deviations rel_els win_starts win_durn
 mad_sig.hq = mad_sig.v< 16.7; % threshold from p.68 of ﻿https://doi.org/10.1111/cpf.12127
 
 %% Create vector of qualities at PPG's original sampling freq
-curr_qual = create_vector_of_quals_at_ppg_freq(ppg_details, mad_sig);
+curr_qual = create_vector_of_quals_at_ppg_freq(ppg_details, mad_sig, 1);
+
+time_to_assess_qual = toc;
+prop_time_to_assess_qual = toc/((ppg_details.no_samps-1)/ppg_details.fs);
+
+%% Calculate total time to detect beats and assess quality
+
+curr_timing = prop_time_to_assess_qual;
 
 end
 
-function curr_qual = assess_qual_using_comb_beat_detectors(ppg_details, detector1_ppg_beats_inds, detector2_ppg_beats_inds, uParams)
+function [curr_qual, curr_timing] = assess_qual_using_comb_beat_detectors(ppg_details, detector1_ppg_beats_inds, detector2_ppg_beats_inds, detector1_ppg_timings, detector2_ppg_timings, uParams)
+
+tic
 
 %% Convert beat indices to timings
 for detector_no = 1 :2
@@ -1794,9 +1866,9 @@ agreed_beats.t = high_ppv_detector_t(beat_correct_log);
 
 %% assess quality of each beat detection
 
-% - High qual if: (i) previous IBI < 2 s; (ii) next IBI < 2 s; 
+% - High qual if: (i) previous IBI < 2.5 s; (ii) next IBI < 2.5 s; 
 curr_IBI = [inf; diff(agreed_beats.t); inf];
-high_qual_IBI_log = curr_IBI(1:end-1) < 2 & curr_IBI(2:end) < 2;
+high_qual_IBI_log = curr_IBI(1:end-1) < 2.5 & curr_IBI(2:end) < 2.5;
 clear curr_IBI
 
 % - High qual if: (iii) no incorrect_t in previous 5 s
@@ -1818,9 +1890,20 @@ clear min_diff high_qual_IBI_log
 %% Create vector of qualities at PPG's original sampling freq
 curr_qual = create_vector_of_quals_at_ppg_freq(ppg_details, agreed_beats);
 
+time_to_assess_qual = toc;
+prop_time_to_assess_qual = toc/((ppg_details.no_samps-1)/ppg_details.fs);
+
+%% Calculate total time to detect beats and assess quality
+
+curr_timing = detector1_ppg_timings + detector2_ppg_timings + prop_time_to_assess_qual;
 end
 
-function curr_qual = create_vector_of_quals_at_ppg_freq(ppg_details, qual_vector)
+function curr_qual = create_vector_of_quals_at_ppg_freq(ppg_details, qual_vector, do_raw)
+
+% set do_raw to zero as default
+if nargin<3
+    do_raw = false;
+end
 
 % - create time vector for ppg
 
@@ -1834,6 +1917,9 @@ end
 % - resample at original sampling freq
 ppg.t = [0:ppg_details.no_samps-1]./ppg_details.fs; ppg.t = ppg.t(:);
 curr_qual.v = interp1(qual_vector.t, double(qual_vector.hq), ppg.t, 'previous');
+if do_raw
+    curr_qual.raw = interp1(qual_vector.t, qual_vector.v, ppg.t, 'previous');
+end
 curr_qual.fs = ppg_details.fs;
 % - convert to logical
 curr_qual.v(isnan(curr_qual.v)) = 0;
