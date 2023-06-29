@@ -22,10 +22,10 @@ function assess_multiple_datasets
 %   Peter H. Charlton, University of Cambridge, August 2022.
 %   
 %   # Version
-%   1.1
+%   1.0
 %   
 %   # License - GPL-3.0
-%      Copyright (c) 2023 Peter H. Charlton
+%      Copyright (c) 2022 Peter H. Charlton
 %      This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 %      This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 %      You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>.
@@ -60,10 +60,7 @@ res = collate_results_for_all_datasets(up, options);
 print_results_summary(res);
 
 %% Generate comparison figures
-%curr_strategy_set = 'comb_noAccel';
-%create_comparison_figures(up.datasets, raw_res, res, options, up, curr_strategy_set);
-curr_strategy_set = 'noQual';
-create_comparison_figures(up.datasets, raw_res, res, options, up, curr_strategy_set);
+create_comparison_figures(up.datasets, raw_res, res, up);
 
 %% Generate results figures
 generate_results_figures(res, up);
@@ -88,7 +85,7 @@ end
 
 function [strategy_res, raw_res] = retrieve_results_for_each_strategy(selected_strategy, up, options)
 
-vars = {'mape_hr', 'f1_score', 'sens', 'ppv', 'durn_both', 'no_beats', 'mae_ibi', 'prop_ibi'};
+vars = {'mape_hr', 'f1_score', 'sens', 'ppv', 'durn_both', 'no_beats'};
 types = {'med', 'lq', 'uq'};
 fprintf('\n - Performance of selected strategy: (%s)', selected_strategy)
 [total_pts, total_durn] = deal(0);
@@ -124,17 +121,7 @@ for dataset_no = 1 : length(up.datasets)
     end
 
     % Extract raw stats for each relevant strategy
-    %  - old approach
-    rel_strategy_els = find(contains(ppg_strategy_perf.stats.strategies, '__none')); 
-    %  - better approach
-    pot_rel_strategies = cell(0);
-    for beat_det_no = 1 : length(options.beat_detectors)
-        pot_rel_strategies{end+1} = [options.beat_detectors{beat_det_no}, '__none'];
-    end
-    [rel_strategies, rel_strategy_els, ~] = intersect(ppg_strategy_perf.stats.strategies, pot_rel_strategies);
-    % - include all strategies
-    rel_strategy_els = 1:length(ppg_strategy_perf.stats.strategies);
-    % extract raw stats for each strategy
+    rel_strategy_els = find(contains(ppg_strategy_perf.stats.strategies, '__none'));
     raw_res.rel_strategies = ppg_strategy_perf.stats.strategies(rel_strategy_els);
     for curr_var_no = 1 : length(vars)
         curr_var = vars{curr_var_no};
@@ -610,23 +597,12 @@ function up = setup_universal_params
 % (comprehensive list)
 up.assessment_datasets = {'capnobase', 'bidmc', 'mimic_train_all', 'mimic_test_all', 'wesad_meditation', 'wesad_amusement', 'wesad_baseline', 'wesad_stress', 'ppg_dalia_sitting', 'ppg_dalia_working', 'ppg_dalia_cycling', 'ppg_dalia_walking', 'ppg_dalia_lunch_break', 'ppg_dalia_car_driving', 'ppg_dalia_stair_climbing', 'ppg_dalia_table_soccer'}; 
 up.comparison_datasets = {'mimic_B', 'mimic_W', 'mimic_test_a', 'mimic_test_n', 'mimic_non_af', 'mimic_af'};
-% (training datasets)
-do_training = 0;
-if do_training
-    up.assessment_datasets = {'mimic_train_all', 'wesad_meditation', 'wesad_amusement', 'wesad_baseline', 'wesad_stress'}; 
-    up.comparison_datasets = {};
-end
 % (datasets used in tutorial)
-do_tutorial = 0;
+do_tutorial = 1;
 if do_tutorial
     up.assessment_datasets = {'mimic_perform_truncated_train_all', 'mimic_perform_truncated_test_all'};
     up.comparison_datasets = {'mimic_perform_truncated_non_af', 'mimic_perform_truncated_af'};
 end
-
-% my current datasets
-up.assessment_datasets = {'wesad_meditation', 'wesad_amusement', 'wesad_baseline', 'wesad_stress', 'ppg_dalia_working', 'ppg_dalia_sitting', 'ppg_dalia_cycling', 'ppg_dalia_walking', 'ppg_dalia_lunch_break', 'ppg_dalia_car_driving', 'ppg_dalia_stair_climbing', 'ppg_dalia_table_soccer'}; %, 'mimic_train_all', 'mimic_test_all'}; 
-up.assessment_datasets = {'wesad_meditation', 'wesad_amusement', 'wesad_baseline', 'wesad_stress'}; 
-up.comparison_datasets = {}; %{'mimic_non_af', 'mimic_af'};
 
 % (all datasets)
 up.datasets = [up.comparison_datasets, up.assessment_datasets];
@@ -657,7 +633,7 @@ fprintf(licence_details)
 
 end
 
-function create_comparison_figures(datasets, raw_res, res, options, uParams, curr_strategy_set)
+function create_comparison_figures(datasets, raw_res, res, uParams)
 
 fprintf('\n ~~~ Making comparison figures ~~~')
 
@@ -667,6 +643,9 @@ all_datasets = fieldnames(raw_res); all_datasets = all_datasets(~strcmp(all_data
 
 primary_dataset = find_primary_dataset(datasets);
 eval(['beat_detector_names = res.' primary_dataset '.noQual.num.strategy;']);
+
+% identify relevant results set
+curr_strategy_set = 'noQual';
 
 % cycle through each comparison (i.e. pair of datasets)
 no_comparisons = size(uParams.settings.comparisons,1);
@@ -679,7 +658,7 @@ for comparison_no = 1 : no_comparisons
         continue
     end
     
-    fprintf('\n - Making comparison figure for %s and %s (%s): ', uParams.settings.comparisons{comparison_no,1}, uParams.settings.comparisons{comparison_no,2}, curr_strategy_set)
+    fprintf('\n - Making comparison figure for %s and %s: ', uParams.settings.comparisons{comparison_no,1}, uParams.settings.comparisons{comparison_no,2})
     
     % cycle through each statistic
     eval(['vars = fieldnames(raw_res.' uParams.settings.comparisons{comparison_no,1} ');']);
@@ -704,26 +683,8 @@ for comparison_no = 1 : no_comparisons
         % cycle through each beat detection strategy
         for beat_detector_no = 1 : length(beat_detector_names)
             curr_beat_detector = beat_detector_names{beat_detector_no};
-            if strcmp(curr_strategy_set, 'noQual')
-                res1_raw_strategy_no = find(strcmp(res1.raw.strategies, [curr_beat_detector, '__none']));
-                res2_raw_strategy_no = find(strcmp(res2.raw.strategies, [curr_beat_detector, '__none']));
-            elseif strcmp(curr_strategy_set, 'comb_noAccel')
-                eval(['rel_row = strcmp(res.' uParams.settings.comparisons{comparison_no,1} '.' curr_strategy_set '.txt.strategy, curr_beat_detector);']);
-                eval(['other_beat_detector = res.' uParams.settings.comparisons{comparison_no,1} '.' curr_strategy_set '.txt.qual{rel_row};']);
-                other_beat_detector = correct_beat_detector_names(other_beat_detector);
-                res1_raw_strategy_no = find(strcmp(res1.raw.strategies, [curr_beat_detector, '__comb_' curr_beat_detector, '_', other_beat_detector]));
-                if isempty(res1_raw_strategy_no)
-                    res1_raw_strategy_no = find(strcmp(res1.raw.strategies, [curr_beat_detector, '__comb_' other_beat_detector, '_', curr_beat_detector]));
-                end
-                eval(['rel_row = strcmp(res.' uParams.settings.comparisons{comparison_no,2} '.' curr_strategy_set '.txt.strategy, curr_beat_detector);']);
-                eval(['other_beat_detector = res.' uParams.settings.comparisons{comparison_no,2} '.' curr_strategy_set '.txt.qual{rel_row};']);
-                other_beat_detector = correct_beat_detector_names(other_beat_detector);
-                res2_raw_strategy_no = find(strcmp(res2.raw.strategies, [curr_beat_detector, '__comb_' curr_beat_detector, '_', other_beat_detector]));
-                if isempty(res2_raw_strategy_no)
-                    res2_raw_strategy_no = find(strcmp(res2.raw.strategies, [curr_beat_detector, '__comb_' other_beat_detector, '_', curr_beat_detector]));
-                end
-                
-            end
+            res1_raw_strategy_no = find(strcmp(res1.raw.strategies, [curr_beat_detector, '__none']));
+            res2_raw_strategy_no = find(strcmp(res2.raw.strategies, [curr_beat_detector, '__none']));
             
             % Test whether the use of a particular beat detection strategy on these two datasets resulted in significantly different results.
             temp_p(comparison_no,beat_detector_no,var_no) = ranksum(res1.raw.v(res1_raw_strategy_no,:), res2.raw.v(res2_raw_strategy_no,:));
@@ -754,7 +715,7 @@ for comparison_no = 1 : no_comparisons
         beat_detector_xticks = unique(xticks);
         set(gca, 'XTick', beat_detector_xticks, 'XTickLabel', beat_detector_names') % used to be beat_detectors
         [ylims, ylab_txt] = get_ylabel_settings(curr_var);
-        if ~strcmp(curr_var, 'mape_hr') && ~strcmp(curr_var, 'mae_ibi')
+        if ~strcmp(curr_var, 'mape_hr')
             ylim([65,100]);
         else
             ylim(ylims);
@@ -844,7 +805,7 @@ for comparison_no = 1 : no_comparisons
         xlabel('Beat detector', 'FontSize', ftsize)
         
         % save figure
-        fig_name = ['comparison_' leg_labels{1} '_' leg_labels{2} '_' curr_var '_' curr_strategy_set];
+        fig_name = ['comparison_' leg_labels{1} '_' leg_labels{2} '_' curr_var];
         save_figure(gcf, fig_name, uParams);
         
         close all;
@@ -886,7 +847,6 @@ end
 
 function beat_detectors = correct_beat_detector_names(beat_detectors)
 beat_detectors = strrep(beat_detectors, 'qppgfast', 'qppg');
-beat_detectors = strrep(beat_detectors, 'qppgfastpc', 'qppgpc');
 beat_detectors = strrep(beat_detectors, 'PPGPulses', 'Pulses');
 beat_detectors = strrep(beat_detectors, 'ATmin', 'ATM');
 end
@@ -1099,11 +1059,6 @@ options = struct;
 options.beat_detectors = {'SWT', 'ATmax', 'SPAR', 'IMS', 'AMPD', 'MSPTD', 'ABD', 'qppgfast', 'HeartPy', 'COppg', 'PPGPulses', 'ERMA', 'PWD', 'PDA', 'WFD'};
 %options.beat_detectors = {'AMPD', 'MSPTD', 'qppgfast', 'PWD', 'ERMA', 'SPAR', 'ABD', 'HeartPy'};
 options.beat_detectors = {'MSPTD', 'qppgfast'};
-options.beat_detectors = {'SPAR', 'SPAR2', 'MSPTD', 'MSPTDPC', 'PPGPulsesPC', 'qppgfast', 'qppgfastpc', 'qppgfastpcimp', 'qppgfastpcimp2', 'qppgfastpcimp3', 'wepd', 'PDAthree'}; %, 'PDAfour'}; % 'ABDtwo', 
-options.beat_detectors = {'SPAR', 'SPAR2', 'SPAR3',  'MSPTD', 'qppgfast'}; %, 'PDAfour'}; % 'ABDtwo', 
-
-% specify beat detectors to redo
-options.redo_selected_beat_detectors = {'SPAR'; 'SPAR2'; 'SPAR3'}; %{'PDAthree'; 'PDAfour'}; %{'qppgfast', 'qppgfastpc', 'qppgfastpcimp', 'qppgfastpcimp2', 'qppgfastpcimp3'}; %{'MSPTD'; 'MSPTDPC'; 'qppgfast'; 'qppgfastpcimp'; 'qppgfastpcimp2'; 'qppgfastpcimp3'}; % must be column vector
 
 % Specify the downsampling strategy
 options.do_downsample = 1;     % downsample PPG signals
@@ -1179,95 +1134,82 @@ end
 
 function create_perf_box_plots(res, uParams, curr_datasets)
 
-do_no_qual = 1;
-if do_no_qual
-    %% Time to run algorithms plot
-    datasets = fieldnames(res);
-    datasets = curr_datasets;
-    primary_dataset = find_primary_dataset(datasets);
-    eval(['curr_beat_detectors = res.' primary_dataset '.noQual.num.strategy;']);
-    rel_metric = 'perc_time';
-    rel_strategy_set = 'noQual';
-    fig_name = 'beat_detector_time_boxplot';
-    curr_datasets = datasets(~strcmp(datasets, 'ppg_dalia_walking'));
-    curr_datasets = datasets;
-    make_boxplot_figure(res, primary_dataset, curr_datasets, curr_beat_detectors, rel_metric, rel_strategy_set, fig_name, uParams);
+%% Beat detection MAPE HR box plot
+datasets = fieldnames(res);
+datasets = curr_datasets;
+primary_dataset = find_primary_dataset(datasets);
+eval(['curr_beat_detectors = res.' primary_dataset '.noQual.num.strategy;']);
+rel_metric = 'mape_hr';
+rel_strategy_set = 'noQual';
+fig_name = 'beat_detector_mape_boxplot';
+curr_datasets = datasets(~strcmp(datasets, 'ppg_dalia_walking'));
+curr_datasets = datasets;
+make_boxplot_figure(res, primary_dataset, curr_datasets, curr_beat_detectors, rel_metric, rel_strategy_set, fig_name, uParams);
 
-    %% Beat detection f1-score box plot
-    datasets = fieldnames(res);
-    datasets = curr_datasets;
-    primary_dataset = find_primary_dataset(datasets);
-    eval(['curr_beat_detectors = res.' primary_dataset '.noQual.num.strategy;']);
-    rel_metric = 'f1_score';
-    rel_strategy_set = 'noQual';
-    fig_name = 'beat_detector_f1_boxplot';
-    curr_datasets = datasets(~strcmp(datasets, 'ppg_dalia_walking'));
-    curr_datasets = datasets;
-    make_boxplot_figure(res, primary_dataset, curr_datasets, curr_beat_detectors, rel_metric, rel_strategy_set, fig_name, uParams);
+%% Beat detection f1-score box plot
+datasets = fieldnames(res);
+datasets = curr_datasets;
+primary_dataset = find_primary_dataset(datasets);
+eval(['curr_beat_detectors = res.' primary_dataset '.noQual.num.strategy;']);
+rel_metric = 'f1_score';
+rel_strategy_set = 'noQual';
+fig_name = 'beat_detector_f1_boxplot';
+curr_datasets = datasets(~strcmp(datasets, 'ppg_dalia_walking'));
+curr_datasets = datasets;
+make_boxplot_figure(res, primary_dataset, curr_datasets, curr_beat_detectors, rel_metric, rel_strategy_set, fig_name, uParams);
 
-    %% Beat detection MAPE HR box plot
-    datasets = fieldnames(res);
-    datasets = curr_datasets;
-    primary_dataset = find_primary_dataset(datasets);
-    eval(['curr_beat_detectors = res.' primary_dataset '.noQual.num.strategy;']);
-    rel_metric = 'mape_hr';
-    rel_strategy_set = 'noQual';
-    fig_name = 'beat_detector_mape_boxplot';
-    curr_datasets = datasets(~strcmp(datasets, 'ppg_dalia_walking'));
-    curr_datasets = datasets;
-    make_boxplot_figure(res, primary_dataset, curr_datasets, curr_beat_detectors, rel_metric, rel_strategy_set, fig_name, uParams);
+%% Beat detection PPV box plot
+datasets = fieldnames(res);
+datasets = curr_datasets;
+primary_dataset = find_primary_dataset(datasets);
+eval(['curr_beat_detectors = res.' primary_dataset '.noQual.num.strategy;']);
+rel_metric = 'ppv';
+rel_strategy_set = 'noQual';
+fig_name = 'beat_detector_ppv_boxplot';
+curr_datasets = datasets(~strcmp(datasets, 'ppg_dalia_walking'));
+curr_datasets = datasets;
+make_boxplot_figure(res, primary_dataset, curr_datasets, curr_beat_detectors, rel_metric, rel_strategy_set, fig_name, uParams);
 
-    %% Beat detection PPV box plot
-    datasets = fieldnames(res);
-    datasets = curr_datasets;
-    primary_dataset = find_primary_dataset(datasets);
-    eval(['curr_beat_detectors = res.' primary_dataset '.noQual.num.strategy;']);
-    rel_metric = 'ppv';
-    rel_strategy_set = 'noQual';
-    fig_name = 'beat_detector_ppv_boxplot';
-    curr_datasets = datasets(~strcmp(datasets, 'ppg_dalia_walking'));
-    curr_datasets = datasets;
-    make_boxplot_figure(res, primary_dataset, curr_datasets, curr_beat_detectors, rel_metric, rel_strategy_set, fig_name, uParams);
+%% Beat detection sens box plot
+datasets = fieldnames(res);
+datasets = curr_datasets;
+primary_dataset = find_primary_dataset(datasets);
+eval(['curr_beat_detectors = res.' primary_dataset '.noQual.num.strategy;']);
+rel_metric = 'sens';
+rel_strategy_set = 'noQual';
+fig_name = 'beat_detector_sens_boxplot';
+curr_datasets = datasets(~strcmp(datasets, 'ppg_dalia_walking'));
+curr_datasets = datasets;
+make_boxplot_figure(res, primary_dataset, curr_datasets, curr_beat_detectors, rel_metric, rel_strategy_set, fig_name, uParams);
 
-    %% Beat detection sens box plot
-    datasets = fieldnames(res);
-    datasets = curr_datasets;
-    primary_dataset = find_primary_dataset(datasets);
-    eval(['curr_beat_detectors = res.' primary_dataset '.noQual.num.strategy;']);
-    rel_metric = 'sens';
-    rel_strategy_set = 'noQual';
-    fig_name = 'beat_detector_sens_boxplot';
-    curr_datasets = datasets(~strcmp(datasets, 'ppg_dalia_walking'));
-    curr_datasets = datasets;
-    make_boxplot_figure(res, primary_dataset, curr_datasets, curr_beat_detectors, rel_metric, rel_strategy_set, fig_name, uParams);
+%% HRs no qual box plot
+datasets = fieldnames(res);
+primary_dataset = find_primary_dataset(datasets);
+rel_metric = 'acc_hr';
+rel_strategy_set = 'noQual';
+fig_name = 'HR_no_qual_boxplot';
+make_boxplot_figure(res, primary_dataset, curr_datasets, curr_beat_detectors, rel_metric, rel_strategy_set, fig_name, uParams);
+rel_metric = 'mae_hr';
+rel_strategy_set = 'noQual';
+fig_name = 'HR_mae_no_qual_boxplot';
+make_boxplot_figure(res, primary_dataset, curr_datasets, curr_beat_detectors, rel_metric, rel_strategy_set, fig_name, uParams);
 
-    %% HRs no qual box plot
-    datasets = fieldnames(res);
-    primary_dataset = find_primary_dataset(datasets);
-    rel_metric = 'acc_hr';
-    rel_strategy_set = 'noQual';
-    fig_name = 'HR_no_qual_boxplot';
-    make_boxplot_figure(res, primary_dataset, curr_datasets, curr_beat_detectors, rel_metric, rel_strategy_set, fig_name, uParams);
-    rel_metric = 'mae_hr';
-    rel_strategy_set = 'noQual';
-    fig_name = 'HR_mae_no_qual_boxplot';
-    make_boxplot_figure(res, primary_dataset, curr_datasets, curr_beat_detectors, rel_metric, rel_strategy_set, fig_name, uParams);
+%% IBIs no qual box plot
+datasets = fieldnames(res);
+primary_dataset = find_primary_dataset(datasets);
+rel_metric = 'acc_ibi';
+rel_strategy_set = 'noQual';
+fig_name = 'IBI_acc_no_qual_boxplot';
+make_boxplot_figure(res, primary_dataset, curr_datasets, curr_beat_detectors, rel_metric, rel_strategy_set, fig_name, uParams);
+rel_metric = 'mae_ibi';
+rel_strategy_set = 'noQual';
+fig_name = 'IBI_mae_no_qual_boxplot';
+make_boxplot_figure(res, primary_dataset, curr_datasets, curr_beat_detectors, rel_metric, rel_strategy_set, fig_name, uParams);
 
-    %% IBIs no qual box plot
-    datasets = fieldnames(res);
-    primary_dataset = find_primary_dataset(datasets);
-    rel_metric = 'acc_ibi';
-    rel_strategy_set = 'noQual';
-    fig_name = 'IBI_acc_no_qual_boxplot';
-    make_boxplot_figure(res, primary_dataset, curr_datasets, curr_beat_detectors, rel_metric, rel_strategy_set, fig_name, uParams);
-    rel_metric = 'mae_ibi';
-    rel_strategy_set = 'noQual';
-    fig_name = 'IBI_mae_no_qual_boxplot';
-    make_boxplot_figure(res, primary_dataset, curr_datasets, curr_beat_detectors, rel_metric, rel_strategy_set, fig_name, uParams);
-end
 
-do_qual = 1;
-if do_qual == 1
+return
+
+if do_training ~= 1
     
     %% Beat detection with and without accel only and in combination qual box plot
     datasets = fieldnames(res);
@@ -1281,38 +1223,21 @@ if do_qual == 1
         primary_dataset = datasets{1};
     end
     eval(['curr_beat_detectors = res.' primary_dataset '.noQual.num.strategy;']);
-    metrics = {'mae_ibi', 'ppv', 'sens', 'f1_score', 'perc_time', 'prop_ibi'};
-    for metric_no = 1 : length(metrics)
-        rel_metric = metrics{metric_no};
-        fprintf('\n - Making multiple approaches boxplot figure for: %s', rel_metric);
-        rel_strategy_sets = {'noQual', 'accel', 'comb_noAccel', 'comb_Accel'};
-        fig_name = sprintf('multiple_approaches_boxplot_%s', rel_metric);
-        make_boxplot_figure_multiple_approaches(res, primary_dataset, curr_datasets, curr_beat_detectors, rel_metric, rel_strategy_sets, fig_name, uParams);
-    end
     rel_metric = 'ppv';
-    fprintf('\n - Making multiple approaches boxplot figure for: %s', rel_metric);
     %curr_datasets = datasets(~cellfun(@isempty, strfind(datasets, 'ppg_dalia')));
     %curr_datasets = datasets(~cellfun(@isempty, strfind(datasets, 'wesad')));
     rel_strategy_sets = {'noQual', 'accel', 'comb_noAccel', 'comb_Accel'};
     fig_name = 'beat_detector_ppv_with_without_accel_boxplot';
     make_boxplot_figure_multiple_approaches(res, primary_dataset, curr_datasets, curr_beat_detectors, rel_metric, rel_strategy_sets, fig_name, uParams);
     rel_metric = 'sens';
-    fprintf('\n - Making multiple approaches boxplot figure for: %s', rel_metric);
     %curr_datasets = datasets(~cellfun(@isempty, strfind(datasets, 'ppg_dalia')));
     %curr_datasets = datasets(~cellfun(@isempty, strfind(datasets, 'wesad')));
     fig_name = 'beat_detector_sens_with_without_accel_boxplot';
     make_boxplot_figure_multiple_approaches(res, primary_dataset, curr_datasets, curr_beat_detectors, rel_metric, rel_strategy_sets, fig_name, uParams);
     rel_metric = 'f1_score';
-    fprintf('\n - Making multiple approaches boxplot figure for: %s', rel_metric);
     %curr_datasets = datasets(~cellfun(@isempty, strfind(datasets, 'ppg_dalia')));
     %curr_datasets = datasets(~cellfun(@isempty, strfind(datasets, 'wesad')));
     fig_name = 'beat_detector_f1_with_without_accel_boxplot';
-    make_boxplot_figure_multiple_approaches(res, primary_dataset, curr_datasets, curr_beat_detectors, rel_metric, rel_strategy_sets, fig_name, uParams);
-    rel_metric = 'perc_time';
-    fprintf('\n - Making multiple approaches boxplot figure for: %s', rel_metric);
-    %curr_datasets = datasets(~cellfun(@isempty, strfind(datasets, 'ppg_dalia')));
-    %curr_datasets = datasets(~cellfun(@isempty, strfind(datasets, 'wesad')));
-    fig_name = 'beat_detector_perc_time_with_without_accel_boxplot';
     make_boxplot_figure_multiple_approaches(res, primary_dataset, curr_datasets, curr_beat_detectors, rel_metric, rel_strategy_sets, fig_name, uParams);
     
     %% HRs with and without accel only and in combination qual box plot
@@ -1323,7 +1248,6 @@ if do_qual == 1
         primary_dataset = datasets{1};
     end
     rel_metric = 'mae_hr';
-    fprintf('\n - Making multiple approaches boxplot figure for: %s', rel_metric);
     %curr_datasets = datasets(~cellfun(@isempty, strfind(datasets, 'ppg_dalia')));
     %curr_datasets = datasets(~cellfun(@isempty, strfind(datasets, 'wesad')));
     fig_name = 'HR_mae_with_without_accel_boxplot';
@@ -1337,7 +1261,6 @@ if do_qual == 1
         primary_dataset = datasets{1};
     end
     rel_metric = 'mae_ibi';
-    fprintf('\n - Making multiple approaches boxplot figure for: %s', rel_metric);
     %curr_datasets = datasets(~cellfun(@isempty, strfind(datasets, 'ppg_dalia')));
     %curr_datasets = datasets(~cellfun(@isempty, strfind(datasets, 'wesad')));
     fig_name = 'IBI_mae_with_without_accel_boxplot';
@@ -1351,7 +1274,6 @@ if do_qual == 1
         primary_dataset = datasets{1};
     end
     rel_metric = 'acc_hr';
-    fprintf('\n - Making multiple approaches boxplot figure for: %s', rel_metric);
     %curr_datasets = datasets(~cellfun(@isempty, strfind(datasets, 'ppg_dalia')));
     %curr_datasets = datasets(~cellfun(@isempty, strfind(datasets, 'wesad')));
     fig_name = 'HR_acc_with_without_accel_boxplot';
@@ -1678,10 +1600,6 @@ datasets = curr_datasets;
 for dataset_no = 1 : length(datasets)
     
     curr_dataset = datasets{dataset_no};
-
-    % identify strategies available for this dataset
-    eval(['strategies_available = fieldnames(res.' curr_dataset ');']);
-    rel_strategy_sets = intersect(rel_strategy_sets, strategies_available);
     
     % extract numerical results (approaches 1 and 2)
     for approach_no = 1 : length(rel_strategy_sets)
@@ -1691,7 +1609,6 @@ for dataset_no = 1 : length(datasets)
             curr_stat = stat_types{stat_type_no};
             eval(['curr_metric.' curr_stat '(:,approach_no) = res.' curr_dataset '.' rel_strategy_sets{approach_no} '.num.' rel_metric '_' curr_stat ';']);
         end
-        eval(['curr_beat_detectors = res.' curr_dataset '.' rel_strategy_sets{approach_no} '.num.strategy;']);
         clear stat_type_no curr_stat stat_types
     end
     
@@ -1701,7 +1618,7 @@ for dataset_no = 1 : length(datasets)
         curr_beat_detector = beat_detectors{beat_detector_no};
         for approach_no = 1 : length(rel_strategy_sets)
             curr_strategy = rel_strategy_sets{approach_no};
-            rel_el = find(strcmp(curr_beat_detectors, curr_beat_detector));
+            eval(['rel_el = find(strcmp(curr_strategy' num2str(approach_no) ', curr_beat_detector));']);
             data(length(rel_strategy_sets)*beat_detector_no-length(rel_strategy_sets)+approach_no, :) = [0, curr_metric.pc10(rel_el,approach_no), curr_metric.lq(rel_el,approach_no), curr_metric.med(rel_el,approach_no), curr_metric.uq(rel_el,approach_no), curr_metric.pc90(rel_el,approach_no), 100];
             if approach_no == 1
                 % labels{end+1,1} = [curr_beat_detector '_' curr_strategy];
@@ -1801,9 +1718,6 @@ function [ylims, ylab_txt] = get_ylabel_settings(rel_metric)
 if strcmp(rel_metric, 'f1_score')
     ylims = [40,100];
     ylab_txt = 'F_1 score (%)';
-elseif strcmp(rel_metric, 'perc_time')
-    ylims = [0,0.2];
-    ylab_txt = 'Percentage time to run (%)';
 elseif strcmp(rel_metric, 'ppv')
     ylims = [60,100];
     ylab_txt = 'Positive predictive value (%)';
@@ -1825,9 +1739,6 @@ elseif strcmp(rel_metric, 'acc_hr')
 elseif strcmp(rel_metric, 'acc_ibi')
     ylims = [0,100];
     ylab_txt = 'Inter-beat interval accuracy (%)';
-elseif strcmp(rel_metric, 'prop_ibi')
-    ylims = [0,100];
-    ylab_txt = 'Proportion of inter-beat intervals (%)';
 elseif strcmp(rel_metric, 'mape_hr')
     ylims = [0,40];
     ylab_txt = 'Heart rate MAPE (%)';
