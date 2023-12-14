@@ -131,6 +131,7 @@ if options.do_variable_lag
     all_diffs = nan(length(ecg_beats_t), length(lag_ts));
     lag_win_durn = 300;
     lag_win_starts = 1:lag_win_durn:length(ecg_beats_t)-lag_win_durn;
+    if isempty(lag_win_starts), lag_win_starts = 1; end  % CHANGE added by PC on 3-Oct-2023 for short signal duration
     lag_win_ends = lag_win_starts + lag_win_durn - 1;
     lag_win_ends(end) = length(ecg_beats_t);
     curr_perf = nan(length(lag_ts), length(lag_win_starts));
