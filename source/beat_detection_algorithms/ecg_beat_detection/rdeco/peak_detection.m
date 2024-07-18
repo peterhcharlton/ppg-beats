@@ -274,8 +274,8 @@ function [R_peak_segm, RR_int_segm, RR_avg] = adaptive_thresholding(peaks,signal
         % Select the peak
         peak = signal(peaks(idx));
         
-        % skip statement (added by PC on 14-Dec-2023 to account for when no peaks so far are above the threshold, so RRavg isn't long enough for the next step)
-        if (idx-1) > length(RRavg)
+        % skip statement (added by PC on 14-Dec-2023 to account for when no peaks so far are above the threshold, so RR_avg isn't long enough for the next step)
+        if (idx-1) > length(RR_avg)
             continue
         end
 

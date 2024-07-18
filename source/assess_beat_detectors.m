@@ -58,7 +58,7 @@ if nargin < 2, options = struct; end
 uParams = setup_up(dataset, options);
 
 %% Detect beats in PPG signals
-uParams.analysis.redo_analysis = 0;
+uParams.analysis.redo_analysis = 1;
 detect_beats_in_ppg_signals(uParams);
 
 %% Assess quality of PPG signals
@@ -136,8 +136,11 @@ addpath(genpath(filepath));
 uParams.analysis.tol_window = 0.15; % in secs
 uParams.analysis.qrs_tol_window = 0.15; % in secs
 uParams.analysis.ecg_beat_detectors = {'jqrs', 'rpeakdetect'}; % the ECG beat detectors to use
+uParams.analysis.ecg_beat_detectors = {'jqrs', 'rdeco'}; % CHANGE by PC on 3-Oct-2023 for short signal duration
 uParams.analysis.win_durn = 20; % in secs
 uParams.analysis.win_overlap = 5; % in secs
+%uParams.analysis.win_durn = 10; % in secs
+%uParams.analysis.win_overlap = 5; % in secs
 uParams.analysis.ppg_fid_pt = 'mid_pt'; % options: mid_pt, pk, onset
 uParams.analysis.do_wins = 1; % whether or not to analyse a PPG signal in windows rather than as one long segment
 uParams.analysis.interpolation_fs = 50; % sampling freq of interpolated inter-beat-interval time series (shouldn't be more than 100 Hz)
@@ -148,6 +151,7 @@ uParams.analysis.durn_flat_line = 0.2; % threshold duration in secs, above which
 uParams.analysis.sig_qual_tools = {}; % {'accel'; 'comb_beat_detectors'};  % a list of signal quality assessment tools to use
 uParams.analysis.sig_qual_tools = add_in_comb_beat_detectors(uParams.analysis.sig_qual_tools, uParams);
 uParams.analysis.hr_win_durn = 8; % Duration of window (in secs) over which to estimate HRs.
+%uParams.analysis.hr_win_durn = 5; % reduced for ambulatory study
 
 %% Combined PPG beat detector quality assessment
 uParams.analysis.window_durn_for_incorrect_beats = 5; % in secs
@@ -1448,7 +1452,12 @@ for subj_no = 1 : uParams.dataset_details.no_subjs
     
         %% Time-align ECG with PPG beats obtained using this beat detector
         eval(['curr_ppg_beats_inds = ppg_beats_inds.' curr_detector ';']);
-        [curr_ecg_beats_a_inds, ecg_exc_a_log] = align_ppg_ecg_beats(curr_ppg_beats_inds, ecg_beats_inds, uParams.dataset_details.ppg_fs_ds, uParams.dataset_details.ecg_fs, options, ecg_exc_log);
+        if ~isempty(ecg_beats_inds)
+            [curr_ecg_beats_a_inds, ecg_exc_a_log] = align_ppg_ecg_beats(curr_ppg_beats_inds, ecg_beats_inds, uParams.dataset_details.ppg_fs_ds, uParams.dataset_details.ecg_fs, options, ecg_exc_log);
+        else  %%% CHANGE added by PC on 3-Oct-2023 for short signal duration
+            curr_ecg_beats_a_inds = ecg_beats_inds;
+            ecg_exc_a_log = true(0);
+        end
         
         % store results
         eval(['ecg_beats_a_inds.' curr_detector ' = curr_ecg_beats_a_inds;']);

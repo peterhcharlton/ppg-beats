@@ -21,9 +21,6 @@ function assess_multiple_datasets
 %   # Author
 %   Peter H. Charlton, University of Cambridge, August 2022.
 %   
-%   # Version
-%   1.1
-%   
 %   # License - GPL-3.0
 %      Copyright (c) 2023 Peter H. Charlton
 %      This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
@@ -47,7 +44,7 @@ end
 %% Retrieve results for strategies, and provide latex table of results of selected strategy across all datasets
 
 % strategy for which to output latex table of results
-selected_strategy = 'MSPTD__none';
+selected_strategy = 'qppgfast__none';
 % retrieve results for each strategy
 [strategy_res, raw_res] = retrieve_results_for_each_strategy(selected_strategy, up, options);
 % remove and rename beat detectors (raw_res)
@@ -57,7 +54,7 @@ raw_res.rel_strategies = rename_beat_detectors(raw_res.rel_strategies);
 res = collate_results_for_all_datasets(up, options);
 
 %% Print results summary
-print_results_summary(res);
+print_results_summary(res, options);
 
 %% Generate comparison figures
 %curr_strategy_set = 'comb_noAccel';
@@ -248,7 +245,7 @@ end
 
 end
 
-function print_results_summary(res)
+function print_results_summary(res, options)
 
 fprintf('\n ~~~ Performance of beat detectors in different use cases ~~~')
 all_datasets = fieldnames(res);
@@ -284,11 +281,13 @@ report_range_f1_scores(res, all_datasets, all_curr_use_case_datasets, curr_use_c
 
 fprintf('\n\n ~~~ Performance of beat detectors on different datasets ~~~')
 
-fprintf('\n Best and worst performing beat detectors:')
-curr_cat = 'noQual';
-curr_datasets = fieldnames(res);
-report_best_and_worst_beat_detectors(res, curr_cat, curr_datasets);
-report_best_and_worst_beat_detectors(res, curr_cat, curr_datasets, beat_detectors_to_exclude);
+if length(options.beat_detectors)>1
+    fprintf('\n Best and worst performing beat detectors:')
+    curr_cat = 'noQual';
+    curr_datasets = fieldnames(res);
+    report_best_and_worst_beat_detectors(res, curr_cat, curr_datasets);
+    report_best_and_worst_beat_detectors(res, curr_cat, curr_datasets, beat_detectors_to_exclude);
+end
 
 fprintf('\n\n ~~~ Acceptability (in context of heart rate monitoring) ~~~')
 
@@ -626,7 +625,8 @@ end
 % my current datasets
 do_current = 1;
 if do_current
-    up.assessment_datasets = {'wesad_meditation', 'wesad_amusement', 'wesad_baseline', 'wesad_stress'};
+    up.assessment_datasets = {'ppg_dalia_lunch_break'};
+    % up.assessment_datasets = {'aurora_sittingarmdown', 'aurora_sittingarmlap', 'aurora_sittingarmup', 'aurora_ambulatory', 'aurora_standingarmup', 'aurora_standingarmdown','aurora_walking', 'aurora_running', 'aurora_supine'};
     up.comparison_datasets = {}; %{'mimic_non_af', 'mimic_af'};
 end
 
@@ -1102,10 +1102,11 @@ options.beat_detectors = {'SWT', 'ATmax', 'SPAR', 'IMS', 'AMPD', 'MSPTD', 'ABD',
 %options.beat_detectors = {'AMPD', 'MSPTD', 'qppgfast', 'PWD', 'ERMA', 'SPAR', 'ABD', 'HeartPy'};
 options.beat_detectors = {'MSPTD', 'qppgfast'};
 options.beat_detectors = {'SPAR', 'SPAR2', 'MSPTD', 'MSPTDPC', 'PPGPulsesPC', 'qppgfast', 'qppgfastpc', 'qppgfastpcimp', 'qppgfastpcimp2', 'qppgfastpcimp3', 'wepd', 'PDAthree'}; %, 'PDAfour'}; % 'ABDtwo', 
-options.beat_detectors = {'MSPTD', 'qppgfast', 'SPAR', 'SPAR2', 'SPAR3', 'SPAR4', 'SPAR5', 'SPAR6', 'SPAR7', 'SPAR8', 'SPAR9', 'SPAR10', 'SPAR11', 'SPAR12', 'SPAR13', 'SPAR14'}; %, 'PDAfour'}; % 'ABDtwo', 
+options.beat_detectors = {'qppgfast', 'MSPTD', 'MSPTDPC1', 'MSPTDPC2', 'MSPTDPC3', 'MSPTDPC4', 'MSPTDPC5', 'MSPTDPC6', 'MSPTDPC7', 'MSPTDPC8', 'MSPTDPC9', 'MSPTDPC10', 'MSPTDPC11', 'MSPTDPC12', 'MSPTDPC13', 'MSPTDPC14'}; %, 'PDAfour'}; % 'ABDtwo', 
 
 % specify beat detectors to redo
-options.redo_selected_beat_detectors = {'SPAR5'; 'SPAR6'; 'SPAR7'; 'SPAR8'; 'SPAR9'; 'SPAR10'; 'SPAR11'; 'SPAR12'; 'SPAR13'; 'SPAR14'}; %{'qppgfast', 'qppgfastpc', 'qppgfastpcimp', 'qppgfastpcimp2', 'qppgfastpcimp3'}; %{'MSPTD'; 'MSPTDPC'; 'qppgfast'; 'qppgfastpcimp'; 'qppgfastpcimp2'; 'qppgfastpcimp3'}; % must be column vector
+options.redo_selected_beat_detectors = {'qppgfast', 'MSPTD', 'MSPTDPC1', 'MSPTDPC2', 'MSPTDPC3', 'MSPTDPC4', 'MSPTDPC5', 'MSPTDPC6', 'MSPTDPC7', 'MSPTDPC8', 'MSPTDPC9', 'MSPTDPC10', 'MSPTDPC11', 'MSPTDPC12', 'MSPTDPC13', 'MSPTDPC14'}; %{'qppgfast', 'qppgfastpc', 'qppgfastpcimp', 'qppgfastpcimp2', 'qppgfastpcimp3'}; %{'MSPTD'; 'MSPTDPC'; 'qppgfast'; 'qppgfastpcimp'; 'qppgfastpcimp2'; 'qppgfastpcimp3'}; % must be column vector
+options.redo_selected_beat_detectors = options.redo_selected_beat_detectors(:);
 
 % Specify the downsampling strategy
 options.do_downsample = 1;     % downsample PPG signals
@@ -1174,6 +1175,27 @@ switch dataset
         dataset_file = '/Users/petercharlton/Downloads/downloaded2/MIMIC_PERform_truncated_af_data.mat';
     case 'mimic_perform_truncated_non_af'
         dataset_file = '/Users/petercharlton/Downloads/downloaded2/MIMIC_PERform_truncated_non_af_data.mat';
+    case 'aurora_sample'
+        dataset_file = '/Users/petercharlton/Documents/Data/aurora_sample/conv_data/aurora_sample_data.mat';
+    case 'aurora_supine'
+        dataset_file = '/Users/petercharlton/Documents/Data/Aurora/conv_data/aurora_supine_data.mat';
+    case 'aurora_sittingarmdown'
+        dataset_file = '/Users/petercharlton/Documents/Data/Aurora/conv_data/aurora_sittingarmdown_data.mat';
+    case 'aurora_sittingarmup'
+        dataset_file = '/Users/petercharlton/Documents/Data/Aurora/conv_data/aurora_sittingarmup_data.mat';
+    case 'aurora_sittingarmlap'
+        dataset_file = '/Users/petercharlton/Documents/Data/Aurora/conv_data/aurora_sittingarmlap_data.mat';
+    case 'aurora_standingarmup'
+        dataset_file = '/Users/petercharlton/Documents/Data/Aurora/conv_data/aurora_standingarmup_data.mat';
+    case 'aurora_standingarmdown'
+        dataset_file = '/Users/petercharlton/Documents/Data/Aurora/conv_data/aurora_standingarmdown_data.mat';
+    case 'aurora_walking'
+        dataset_file = '/Users/petercharlton/Documents/Data/Aurora/conv_data/aurora_walking_data.mat';
+    case 'aurora_running'
+        dataset_file = '/Users/petercharlton/Documents/Data/Aurora/conv_data/aurora_running_data.mat';
+    case 'aurora_ambulatory'
+        dataset_file = '/Users/petercharlton/Documents/Data/Aurora/conv_data/aurora_ambulatory_data.mat';
+    
     
 end
 

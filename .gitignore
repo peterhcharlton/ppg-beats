@@ -4,5 +4,5 @@ Docs/.DS_Store
 /source/low_pass_differentiator_*Hz.mat
 /source/archive/*.*
 /source/confidential/*.*
-/source/dev/*.*
+/source/confidential_dev/*.*
 *.asv

@@ -52,9 +52,7 @@ mid_amps = calc_mid_amp_points(s.v, peaks, onsets);
 
 end
 
-function [peaks, onsets] = tidy_peaks_and_onsets(sig, peaks, onsets)
-
-orig_peaks = peaks; orig_onsets = onsets;
+function [peaks, onsets] = tidy_peaks_and_onsets(sig, peaks, onsets, do_test)
 
 % Tidy up peaks and onsets to make them conform to the following rules:
 % (i) No two points at the same time
@@ -86,7 +84,9 @@ onsets = ensure_at_least_one_extremum_between_other_type_of_extremum(sig,onsets,
 [peaks, onsets] = ensure_same_no_peaks_onsets(peaks,onsets);
 
 %% check that the peaks and onsets now satisfy the requirements
-failed_test = do_test(peaks,onsets);
+if nargin>3 & do_test
+    failed_test = do_test(peaks,onsets);
+end
 
 end
 

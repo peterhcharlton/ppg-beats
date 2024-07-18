@@ -305,7 +305,7 @@ if strcmpi(curr_beat_detector, 'jqrs')
     HRVparams.PeakDetect.SIGN_FORCE = [];
     HRVparams.PeakDetect.debug = 0;
     HRVparams.PeakDetect.windows = 15;
-    HRVparams.PeakDetect.windows = 13.99;  %%%%%%%%% CHANGED by PC from original value of 15 on 3 Oct 2023 for short signal duration
+    %HRVparams.PeakDetect.windows = 13.99;  %%%%%%%%% CHANGED by PC from original value of 15 on 3 Oct 2023 for short signal duration
     HRVparams.PeakDetect.ecgType = 'MECG';
 
     % - Detect beats
