@@ -104,6 +104,17 @@ Psychology and Behaviour_, vol. 66, pp. 368-378, 2019. DOI: [10.1016/j.trf.2019.
 **Licence:** MIT Licence
 
 
+## Fast Multi-Scale Peak and Trough Detection
+
+**Original publication:** P. H. Charlton et al., 'MSPTDfast: An Efficient Photoplethysmography Beat Detection Algorithm,' medRxiv 2024.07.18.24310627. DOI: [10.1101/2024.07.18.24310627](https://doi.org/10.1101/2024.07.18.24310627)
+
+**Description:** A refined version of MSPTD with optimisations to improve computational efficiency.
+
+**Link:** [msptdfastv1_beat_detector](../../functions/msptdfastv1_beat_detector)
+
+**Licence:** MIT Licence
+
+
 ## Peak Detection Algorithm
 
 **Original publication:** E. J. Arguello Prada and R. D. Serna Maldonado, 'A novel and
