@@ -52,7 +52,7 @@ mid_amps = calc_mid_amp_points(s.v, peaks, onsets);
 
 end
 
-function [peaks, onsets] = tidy_peaks_and_onsets(sig, peaks,onsets)
+function [peaks, onsets] = tidy_peaks_and_onsets(sig, peaks, onsets, do_test)
 
 % Tidy up peaks and onsets to make them conform to the following rules:
 % (i) No two points at the same time
@@ -60,99 +60,112 @@ function [peaks, onsets] = tidy_peaks_and_onsets(sig, peaks,onsets)
 % (iii) At least one local maximum between consecutive onsets
 % (iv) Alternates between onsets and peaks
 % (v) Starts with onset, and ends with peak
+% (vi) Same number of peaks and onsets
 
 %% (i) No two points at the same time
-
-% remove any repeated peaks (or onsets)
-peaks = unique(peaks);
-onsets = unique(onsets);
-
-% If there is a peak and onset at the same index, then remove them both
-repeated_vals = intersect(peaks,onsets);
-peaks = setxor(peaks, repeated_vals);
-onsets = setxor(onsets, repeated_vals);
-clear repeated_vals
+[peaks,onsets] = remove_repeated_peaks_and_onsets(peaks, onsets);
 
 %% (ii) At least one local minimum between consecutive peaks
-
-% If there are two peaks without a local minimum between them, then remove the lower one
-local_min = islocalmin(sig);
-finished = false;
-while ~finished
-    els_to_remove = [];
-    for peak_no = 1 : length(peaks)-1
-        rel_els = (peaks(peak_no)+1) : (peaks(peak_no+1)-1);
-        if sum(local_min(rel_els)) == 0
-            peak_vals = sig(peaks(peak_no:peak_no+1));
-            [~, el_to_remove] = min(peak_vals);
-            els_to_remove(end+1) = peak_no + el_to_remove - 1;
-        end
-    end 
-    peaks(els_to_remove) = [];
-    if isempty(els_to_remove)
-        finished = true;
-    end
-end
-clear local_min finished els_to_remove peak_no rel_els peak_vals el_to_remove
+peaks = ensure_at_least_one_extremum_between_other_type_of_extremum(sig,peaks, 'pk');
 
 %% (iii) At least one local maximum between consecutive onsets
-
-% If there are two onsets without a local maximum between them, then remove the higher one
-local_max = islocalmax(sig);
-finished = false;
-while ~finished
-    els_to_remove = [];
-    for onset_no = 1 : length(onsets)-1
-        rel_els = (onsets(onset_no)+1) : (onsets(onset_no+1)-1);
-        if sum(local_max(rel_els)) == 0
-            onset_vals = sig(onsets(onset_no:onset_no+1));
-            [~, el_to_remove] = max(onset_vals);
-            els_to_remove(end+1) = onset_no + el_to_remove - 1;
-        end
-    end 
-    onsets(els_to_remove) = [];
-    if isempty(els_to_remove)
-        finished = true;
-    end
-end
-clear local_max finished els_to_remove onset_no rel_els onset_vals el_to_remove
+onsets = ensure_at_least_one_extremum_between_other_type_of_extremum(sig,onsets, 'on');
 
 %% (iv) Alternates between onsets and peaks
-
 % If there are two consecutive peaks, then insert an onset between them
-peak_log = [true(size(peaks)); false(size(onsets))];
-[els,order] = sort([peaks;onsets]);
-peak_log = peak_log(order);
-bad_els = find(diff(peak_log)==0 & peak_log(1:end-1)); % repeated peaks
-if ~isempty(bad_els)  % if there is a repeated peak
-    new_onsets = nan(length(bad_els),1);
-    for bad_el_no = 1 : length(bad_els)   % cycle through each repeated peak
-        curr_pks = [els(bad_els(bad_el_no)),els(bad_els(bad_el_no)+1)];
-        [~,temp]=min(sig(curr_pks(1):curr_pks(2)));
-        new_onsets(bad_el_no,1) = curr_pks(1) -1 + temp;
-    end
-    onsets = sort([onsets; new_onsets]);
-end
-clear new_onsets temp curr_pks bad_el_no bad_els peak_log order els
-
+[onsets, peaks] = insert_extremum_between_other_type_of_extremum(sig, onsets, peaks, 'pk');
 % If there are two consecutive onsets, then insert a peak between them
-onset_log = [false(size(peaks)); true(size(onsets))];
-[els,order] = sort([peaks;onsets]);
-onset_log = onset_log(order);
-bad_els = find(diff(onset_log)==0 & onset_log(1:end-1)); % repeated onsets
-if ~isempty(bad_els)  % if there is a repeated peak
-    new_peaks = nan(length(bad_els),1);
-    for bad_el_no = 1 : length(bad_els)   % cycle through each repeated peak
-        curr_trs = [els(bad_els(bad_el_no)),els(bad_els(bad_el_no)+1)];
-        [~,temp]=max(sig(curr_trs(1):curr_trs(2)));
-        new_peaks(bad_el_no,1) = curr_trs(1) -1 + temp;
-    end
-    peaks = sort([peaks; new_peaks]);
-end
-clear new_peaks temp curr_trs bad_el_no bad_els onset_log order els
+[peaks, onsets] = insert_extremum_between_other_type_of_extremum(sig, peaks, onsets, 'on');
 
 %% (v) Starts with onset, and ends with peak
+[peaks, onsets] = ensure_starts_with_onset_ends_with_peak(peaks,onsets);
 
+%% (vi) same number of peaks and onsets
+[peaks, onsets] = ensure_same_no_peaks_onsets(peaks,onsets);
+
+%% check that the peaks and onsets now satisfy the requirements
+if nargin>3 & do_test
+    failed_test = do_test(peaks,onsets);
+end
+
+end
+
+function failed_test = do_test(peaks,onsets, test_types)
+
+fprintf('\n --- Doing tests ---')
+failed_test = false;
+% Check whether peaks and onsets meet the following rules:
+if nargin<3
+    test_types = {'duplicates', 'alternates', 'start_end', 'same_no'};
+end
+
+% (i) No two points at the same time (duplicates)
+if sum(contains(test_types, 'duplicates'))
+    all_extrema = [peaks;onsets];
+    [~, I] = unique(all_extrema, 'first'); % from: https://uk.mathworks.com/matlabcentral/answers/13149-finding-duplicates#answer_17970
+    x = 1:length(all_extrema);
+    x(I) = [];
+    if ~isempty(x)
+        fprintf('\n - Failed on test: there are duplicate points')
+        failed_test = true;
+    end
+end
+
+% (iv) Alternates between onsets and peaks (alternates)
+if sum(contains(test_types, 'alternates'))
+    peak_log = [true(size(peaks)); false(size(onsets))];
+    all_extrema = [peaks;onsets];
+    [~, order] = sort(all_extrema);
+    peak_log_ordered = peak_log(order);
+    if sum(abs(diff(peak_log_ordered))~=1)
+        fprintf('\n - Failed on test: does not alternate between onsets and peaks')
+        failed_test = true;
+    end
+end
+
+% (v) Starts with onset, and ends with peak (start_end)
+if sum(contains(test_types, 'start_end'))
+    if min(onsets) > min(peaks)
+        fprintf('\n - Failed on test: does not start with onset')
+        failed_test = true;
+    end
+    if max(onsets) > max(peaks)
+        fprintf('\n - Failed on test: does not end with peak')
+        failed_test = true;
+    end
+end
+
+% (vi) Same number of peaks and onsets (same_no)
+if sum(contains(test_types, 'same_no'))
+    if length(onsets) ~= length(peaks)
+        fprintf('\n - Failed on test: does not have same number of onsets and peaks')
+        failed_test = true;
+    end
+end
+
+if ~failed_test
+    fprintf(' Passed tests ---')
+else
+    fprintf(' Failed tests ---')
+end
+
+end
+
+function [peaks, onsets] = ensure_same_no_peaks_onsets(peaks,onsets)
+
+% NB: This doesn't quite ensure the same no of peaks and onsets, it only does it for a specific condition
+
+% if no peaks (or onsets) were detected, then don't output any indices for either
+if isempty(peaks)
+    onsets = [];
+end
+if isempty(onsets)
+    peaks = [];
+end
+
+end
+
+function [peaks, onsets] = ensure_starts_with_onset_ends_with_peak(peaks,onsets)
 % Make sure that the first onset is before the first peak, and the last peak is after the last onset
 finished = false;
 while ~finished
@@ -171,13 +184,88 @@ while ~finished
     end
 end
 
-% if no peaks (or onsets) were detected, then don't output any indices for either
-if isempty(peaks)
-    onsets = [];
 end
-if isempty(onsets)
-    peaks = [];
+
+function [extrema, other_extrema] = insert_extremum_between_other_type_of_extremum(sig, extrema, other_extrema, other_extrema_type)
+
+% If there are two consecutive extrema of one type (known as other extrema), then insert an extremum of the second type (known as extrema) between them
+other_extrema_log = [true(size(other_extrema)); false(size(extrema))];
+[els,order] = sort([other_extrema;extrema]);
+other_extrema_log = other_extrema_log(order);
+bad_els = find(diff(other_extrema_log)==0 & other_extrema_log(1:end-1)); % repeated other_extrema
+if ~isempty(bad_els)  % if there is a repeated other extrema
+    for bad_el_no = 1 : length(bad_els)   % cycle through each repeated other extrema
+        curr_other_extrema = [els(bad_els(bad_el_no)),els(bad_els(bad_el_no)+1)];
+        bw_to_remove = linspace(sig(curr_other_extrema(1)),sig(curr_other_extrema(2)), curr_other_extrema(2)-curr_other_extrema(1)+1 );
+        if strcmp(other_extrema_type, 'pk')
+            [~,temp]=min(sig(curr_other_extrema(1):curr_other_extrema(2)) - bw_to_remove(:));
+        else
+            [~,temp]=max(sig(curr_other_extrema(1):curr_other_extrema(2)) - bw_to_remove(:));
+        end
+        % check this hasn't just detected one of the other_extrema (which can happen with strong baseline wander)
+        if temp==1 || temp==(curr_other_extrema(2)-curr_other_extrema(1)+1)
+            % then just remove the first peak
+            other_extrema(other_extrema==curr_other_extrema(1)) = [];
+        else
+            curr_new_extrema = curr_other_extrema(1) -1 + temp;
+            extrema = sort([extrema; curr_new_extrema]);
+        end
+        
+    end
 end
+
+end
+
+function other_extrema = ensure_at_least_one_extremum_between_other_type_of_extremum(sig, other_extrema, other_extrema_type)
+
+% If there are two peaks (or onsets) without a local minimum (or maximum) between them, then remove the lower (or higher) one
+
+if strcmp(other_extrema_type, 'pk')
+    extrema = islocalmin(sig);
+else
+    extrema = islocalmax(sig);
+end
+finished = false;
+while ~finished
+    els_to_remove = [];
+    for other_extrema_no = 1 : length(other_extrema)-1
+        rel_els = (other_extrema(other_extrema_no)+1) : (other_extrema(other_extrema_no+1)-1);
+        if sum(extrema(rel_els)) == 0
+            other_extrema_vals = sig(other_extrema([other_extrema_no,other_extrema_no+1]));
+            if strcmp(other_extrema_type, 'pk')
+                [~, el_to_remove] = min(other_extrema_vals);
+            else
+                [~, el_to_remove] = max(other_extrema_vals);
+            end
+            els_to_remove(end+1) = other_extrema_no + el_to_remove - 1;
+        end
+    end
+    other_extrema(els_to_remove) = [];
+    if isempty(els_to_remove)
+        finished = true;
+    end
+end
+
+% % If there are two onsets without a local maximum between them, then remove the higher one
+% local_max = islocalmax(sig);
+% finished = false;
+% while ~finished
+%     els_to_remove = [];
+%     for onset_no = 1 : length(onsets)-1
+%         rel_els = (onsets(onset_no)+1) : (onsets(onset_no+1)-1);
+%         if sum(local_max(rel_els)) == 0
+%             onset_vals = sig(onsets([onset_no,onset_no+1]));
+%             [~, el_to_remove] = max(onset_vals);
+%             els_to_remove(end+1) = onset_no + el_to_remove - 1;
+%         end
+%     end 
+%     onsets(els_to_remove) = [];
+%     if isempty(els_to_remove)
+%         finished = true;
+%     end
+% end
+% clear local_max finished els_to_remove onset_no rel_els onset_vals el_to_remove
+
 
 end
 
@@ -190,5 +278,19 @@ for wave_no = 1 : min([length(onsets), length(peaks)])
     [~, temp] = min(abs(sig(onsets(wave_no):peaks(wave_no)) - desired_ht));
     mid_amps(wave_no,1) = temp + onsets(wave_no) - 1;
 end
+
+end
+
+function [peaks,onsets] = remove_repeated_peaks_and_onsets(peaks, onsets)
+
+% remove any repeated peaks (or onsets)
+peaks = unique(peaks);
+onsets = unique(onsets);
+
+% If there is a peak and onset at the same index, then remove them both
+repeated_vals = intersect(peaks,onsets);
+peaks = setxor(peaks, repeated_vals);
+onsets = setxor(onsets, repeated_vals);
+clear repeated_vals
 
 end

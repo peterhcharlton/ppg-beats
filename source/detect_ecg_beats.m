@@ -149,38 +149,16 @@ if length(options.beat_detectors) > 1
 
     if options.verbose, fprintf('\n - Assessing quality of beat detections in windows: '), end
 
-    % - Identify window start times
-    win_starts = 0:(options.win_durn-options.win_overlap):(((length(ecg)-1)/fs)-options.win_durn);
-    % - Create time vector
-    t = 0:(1/fs):((length(ecg)-1)/fs);
-    % - Identify times of disagreement between beat detectors
-    t_disagree_beats = t(beat_inds{2}(~beat_correct_log));
-    % - Determine quality of ECG in each window (i.e. if there was an incorrect beat detection, then deem it to be of low quality)
-    qual = false(length(ecg),1);
-    for win_no = 1 : length(win_starts)
-
-        % - identify elements corresponding to this window
-        curr_start = win_starts(win_no);
-        curr_end = curr_start+options.win_durn;
-        rel_els = t>= curr_start & t<= curr_end;
-
-        % - skip this window if any of it didn't contain a signal
-        if exist('no_signal_vector', 'var') && sum(no_signal_vector(rel_els))
-            qual(rel_els) = true;
-            continue
-        end
-
-        %  - deem this window to be of high quality if there were beats detected, and there weren't any disagreements between the beat detectors
-        curr_win_disagree_inds = t_disagree_beats >= curr_start & t_disagree_beats <= curr_end;
-        curr_win_beat_inds = t(beat_inds{2}) >= curr_start & t(beat_inds{2}) <= curr_end;
-        if sum(curr_win_disagree_inds) == 0 && sum(curr_win_beat_inds)
-            qual(rel_els) = true;
-            continue
-        end
-
-        clear curr_start curr_end rel_els curr_win_disagree_inds
+    use_bsqi = 0;
+    if ~exist('no_signal_vector', 'var')
+        no_signal_vector = false(size(ecg));
     end
-
+    if use_bsqi
+        qual = assess_quality_using_bsqi(ecg, fs, beat_inds, beat_correct_log, options, no_signal_vector);
+    else
+        qual = assess_quality_using_adjacent_beats(ecg, fs, beat_inds, beat_correct_log, options, no_signal_vector);
+    end
+    
     if options.verbose, fprintf('%.1f%% of ECG signal deemed to be of high quality', 100*mean(qual)), end
 
 end
@@ -280,7 +258,8 @@ end
 if strcmpi(curr_beat_detector, 'rpeakdetect')
 
     % - segment data into windows (because sometimes the peak detector doesn't detect beats on a long segment of ECG data, but does on shorter sub-segments)
-    win_durn = 20*fs;
+    win_durn = 20*fs;   
+    win_durn = 15*fs-2;   %%%%%%%%% CHANGED from original value of 20 by PC on 3 Oct 2023 for short signal duration
     win_overlap = 5*fs;
     win_starts = 1:(win_durn-win_overlap):(length(ecg)-win_durn);
     win_starts(end+1) = length(ecg)-win_durn;
@@ -326,10 +305,28 @@ if strcmpi(curr_beat_detector, 'jqrs')
     HRVparams.PeakDetect.SIGN_FORCE = [];
     HRVparams.PeakDetect.debug = 0;
     HRVparams.PeakDetect.windows = 15;
+    %HRVparams.PeakDetect.windows = 13.99;  %%%%%%%%% CHANGED by PC from original value of 15 on 3 Oct 2023 for short signal duration
     HRVparams.PeakDetect.ecgType = 'MECG';
 
     % - Detect beats
     beat_inds = run_qrsdet_by_seg(ecg,HRVparams);
+
+end
+
+%% R-DECO detector
+
+if strcmpi(curr_beat_detector, 'rdeco')
+
+    % - Detect beats
+    envelope_size = 300.0; % envelope size in ms, default = 300.0
+    average_heart_rate = 100.0; % average heart rate in bpm, default = 100.0
+    post_processing = 1.0; % post processing where 1.0 means yes, default = 1.0
+    ectopic_removal = 0.0; % ectopic removal where 1.0 means yes, default = 0.0
+    inverted_signal = 0.0; % inverted signal where 1.0 means yes, default = 0.0
+    parameters_check = 0.0; % parameters check in UI where 1.0 means yes, default = 0.0
+    parameters = {envelope_size,average_heart_rate,post_processing,ectopic_removal,inverted_signal};
+    [beat_inds,~,~,~] = peak_detection(parameters,ecg,fs,parameters_check);
+    beat_inds = beat_inds{1};
 
 end
 
@@ -592,5 +589,83 @@ hold off
 fprintf('Press any key for next block of data\n');
 pause
 end
+
+end
+
+function qual = assess_quality_using_bsqi(ecg, fs, beat_inds, beat_correct_log, options, no_signal_vector)
+
+% - Identify window start times
+win_starts = 0:(options.win_durn-options.win_overlap):(((length(ecg)-1)/fs)-options.win_durn);
+% - Create time vector
+t = 0:(1/fs):((length(ecg)-1)/fs);
+% - Identify times of disagreement between beat detectors
+t_disagree_beats = t(beat_inds{2}(~beat_correct_log));
+% - Determine quality of ECG in each window (i.e. if there was an incorrect beat detection, then deem it to be of low quality)
+qual = false(length(ecg),1);
+for win_no = 1 : length(win_starts)
+
+    % - identify elements corresponding to this window
+    curr_start = win_starts(win_no);
+    curr_end = curr_start+options.win_durn;
+    rel_els = t>= curr_start & t<= curr_end;
+
+    % - skip this window if any of it didn't contain a signal
+    if exist('no_signal_vector', 'var') && sum(no_signal_vector(rel_els))
+        qual(rel_els) = true;
+        continue
+    end
+
+    %  - deem this window to be of high quality if there were beats detected, and there weren't any disagreements between the beat detectors
+    curr_win_disagree_inds = t_disagree_beats >= curr_start & t_disagree_beats <= curr_end;
+    curr_win_beat_inds = t(beat_inds{2}) >= curr_start & t(beat_inds{2}) <= curr_end;
+    if sum(curr_win_disagree_inds) == 0 && sum(curr_win_beat_inds)
+        qual(rel_els) = true;
+        continue
+    end
+
+    clear curr_start curr_end rel_els curr_win_disagree_inds
+end
+
+end
+
+function qual = assess_quality_using_adjacent_beats(ecg, fs, beat_inds, beat_correct_log, options, no_signal_vector)
+
+qual = false(length(ecg),1);
+if length(beat_inds{2}) < 3 || length(beat_correct_log) ~= length(beat_inds{2})
+    warning(' Couldn''t assess ECG quality as fewer than three beats were detected')
+    return
+end
+
+% go through each beat and determine whether both it and its neighbours were correctly identified
+beat_qual = false(length(beat_inds{2}),1);
+for beat_no = 1 : length(beat_inds{2})
+    start_el = max([1, beat_no-1]);
+    end_el = min([length(beat_inds{2}), beat_no+1]);
+    rel_beat_correct_log = beat_correct_log(start_el:end_el);
+    if sum(rel_beat_correct_log) == length(rel_beat_correct_log)
+        beat_qual(beat_no) = true;
+    end
+end
+% beat_qual indicates whether a beat and its neighbour(s) were correctly identified
+
+% generate a vector of the quality of the ECG based on this (sampled at the same rate as the ECG)
+for beat_no = 1 : length(beat_inds{2})
+    if beat_no == 1
+        start_ind = 1;
+    else
+        start_ind = beat_inds{2}(beat_no-1)+1;
+    end
+    if beat_no == length(beat_inds{2})
+        end_ind = length(ecg);
+    else
+        end_ind = beat_inds{2}(beat_no+1)-1;
+    end
+    if beat_qual(beat_no)
+        qual(start_ind:end_ind) = true;
+    end
+end
+
+% account for no signal
+qual = qual & ~no_signal_vector;
 
 end
