@@ -5,8 +5,5 @@ build:
   tools:
     python: "3.11"
 
-sphinx:
-  builder: html
-
 mkdocs:
   configuration: mkdocs.yml
