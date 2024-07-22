@@ -12,3 +12,8 @@ This tutorial demonstrates the processes undertaken to design MSPTDfast (v.1), w
 - During this process a new folder will have been created called `proc_data_ppg_dalia_lunch_break`. Within this folder you will find files storing the analysis steps, including the file containing the results: the `ppg_detect_stats.mat` file. Note down the location of this file.
 - Finally, analyse the performance of the different algorithm configuration options by running the [msptdfast_cinc_analysis.m](https://raw.githubusercontent.com/peterhcharlton/ppg-beats/main/source/publication_specific_scripts/msptdfast_cinc_analysis_post_20240701.m) script.
 
+This tutorial is demonstrated in the following video:
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/MuNOddpluL0" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+https://youtu.be/MuNOddpluL0
