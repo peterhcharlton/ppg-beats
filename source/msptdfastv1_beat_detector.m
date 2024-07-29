@@ -32,9 +32,9 @@ function [peaks, onsets] = msptdfastv1_beat_detector(sig,fs)
 
 %% Specify MSPTD configuration used in MSPTDfast v.1
 
-% version: optimal selection (pre 2024-07-01)
-options.do_trs = true;
-options.do_pks = false;
+% version: optimal selection (CinC 2024)
+options.find_trs = true;
+options.find_pks = false;
 options.do_ds = true;
 options.ds_freq = 20;
 options.use_reduced_lms_scales = true;  % default 30 bpm
@@ -226,7 +226,6 @@ plaus_hr_hz = options.plaus_hr_bpm./60; % in Hz
 init_scales = 1:L;
 durn_signal = length(x)/fs;
 init_scales_fs = (L./init_scales)/durn_signal;
-%init_scales_inc_log = init_scales_fs >= plaus_hr_hz(1) & init_scales_fs <= plaus_hr_hz(2);
 if options.use_reduced_lms_scales
     init_scales_inc_log = init_scales_fs >= plaus_hr_hz(1);
 else
@@ -240,8 +239,6 @@ max_scale = find(init_scales_inc_log,1,'last');
 x = detrend(x); % this removes the best-fit straight line
 
 % - initialise LMS matrices
-% m_max = false(L,N);
-% m_min = false(L,N);
 if options.find_pks
     m_max = false(max_scale,N);
 end
@@ -441,22 +438,25 @@ function [m_max, m_min] = find_lms_using_msptd_approach(max_scale, x, options)
 
 N = length(x);
 
-m_max = false(max_scale,N);
-m_min = false(max_scale,N);
-        
-if options.find_pks && options.find_trs
+if options.find_pks
     
+    m_max = false(max_scale,N);
     m_max = find_m_max(x, N, max_scale, m_max);
 
+else
+
+    m_max = nan;  % dummy variable
+
+end
+
+if options.find_trs
+
+    m_min = false(max_scale,N);
     m_min = find_m_min(x, N, max_scale, m_min);
 
-elseif options.find_pks
-    
-    m_max = find_m_max(x, N, max_scale, m_max);
+else
 
-elseif options.find_trs
-
-    m_min = find_m_min(x, N, max_scale, m_min);
+    m_min = nan;  % dummy variable
 
 end
 
