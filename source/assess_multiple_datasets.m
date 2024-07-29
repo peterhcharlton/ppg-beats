@@ -1102,10 +1102,10 @@ options.beat_detectors = {'SWT', 'ATmax', 'SPAR', 'IMS', 'AMPD', 'MSPTD', 'ABD',
 %options.beat_detectors = {'AMPD', 'MSPTD', 'qppgfast', 'PWD', 'ERMA', 'SPAR', 'ABD', 'HeartPy'};
 options.beat_detectors = {'MSPTD', 'qppgfast'};
 options.beat_detectors = {'SPAR', 'SPAR2', 'MSPTD', 'MSPTDPC', 'PPGPulsesPC', 'qppgfast', 'qppgfastpc', 'qppgfastpcimp', 'qppgfastpcimp2', 'qppgfastpcimp3', 'wepd', 'PDAthree'}; %, 'PDAfour'}; % 'ABDtwo', 
-options.beat_detectors = {'qppgfast', 'MSPTD', 'MSPTDPC13', 'MSPTDfastv1'}; 
+options.beat_detectors = {'qppgfast', 'MSPTD', 'MSPTDPC1', 'MSPTDPC2', 'MSPTDPC3', 'MSPTDPC4', 'MSPTDPC5', 'MSPTDPC6', 'MSPTDPC7', 'MSPTDPC8', 'MSPTDPC9', 'MSPTDPC10', 'MSPTDPC11', 'MSPTDPC12', 'MSPTDPC13', 'MSPTDPC14', 'MSPTDfastv1'};
 
 % specify beat detectors to redo
-options.redo_selected_beat_detectors = {'qppgfast', 'MSPTD', 'MSPTDPC13', 'MSPTDfastv1'}; % must be column vector
+options.redo_selected_beat_detectors = {'qppgfast', 'MSPTD', 'MSPTDPC1', 'MSPTDPC2', 'MSPTDPC3', 'MSPTDPC4', 'MSPTDPC5', 'MSPTDPC6', 'MSPTDPC7', 'MSPTDPC8', 'MSPTDPC9', 'MSPTDPC10', 'MSPTDPC11', 'MSPTDPC12', 'MSPTDPC13', 'MSPTDPC14', 'MSPTDfastv1'};
 options.redo_selected_beat_detectors = options.redo_selected_beat_detectors(:);
 
 % Specify the downsampling strategy

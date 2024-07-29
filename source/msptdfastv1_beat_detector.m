@@ -1,5 +1,5 @@
 function [peaks, onsets] = msptdfastv1_beat_detector(sig,fs)
-% MSPTDFASTV1_BEAT_DETECTOR  MSPTDfast (v1) PPG beat detector.
+% MSPTDFASTV1_BEAT_DETECTOR  MSPTDfast (v1.1) PPG beat detector.
 %   MSPTDFASTV1_BEAT_DETECTOR detects beats in a photoplethysmogram (PPG) signal
 %   using a refinement of the 'Multi-Scale Peak and Trough Detection' beat detector
 %   
@@ -13,7 +13,7 @@ function [peaks, onsets] = msptdfastv1_beat_detector(sig,fs)
 %   * onsets : indices of detected pulse troughs (i.e. onsets)
 %   
 %   # Reference
-%   P. H. Charlton et al., 'MSPTDfast: An Efficient Photoplethysmography Beat Detection Algorithm,' medRxiv 2024.07.18.24310627; <https://doi.org/10.1101/2024.07.18.24310627>
+%   P. H. Charlton et al., 'MSPTDfast: An Efficient Photoplethysmography Beat Detection Algorithm,' Computing in Cardiology, 2024; <URL TBC>
 %   
 %   # Author
 %   Peter H. Charlton
@@ -22,7 +22,7 @@ function [peaks, onsets] = msptdfastv1_beat_detector(sig,fs)
 %   <https://ppg-beats.readthedocs.io/>
 %   
 %   # Version
-%   1.0
+%   1.1
 %   
 %   # License - MIT
 %      Copyright (c) 2024 Peter H. Charlton
@@ -30,11 +30,11 @@ function [peaks, onsets] = msptdfastv1_beat_detector(sig,fs)
 %      The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 %      THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-%% Specify MSPTD configuration used in MSPTDfast v.1
+%% Specify MSPTD configuration used in MSPTDfast v.1.1
 
-% version: optimal selection (CinC 2024)
+% version: optimal selection (CinC 2024 - set on 20240729 for v.1.1)
 options.find_trs = true;
-options.find_pks = false;
+options.find_pks = true;
 options.do_ds = true;
 options.ds_freq = 20;
 options.use_reduced_lms_scales = true;  % default 30 bpm

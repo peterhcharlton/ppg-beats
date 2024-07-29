@@ -1,9 +1,9 @@
 function [peaks, onsets] = msptdpc13_beat_detector(sig,fs)
 
-% version: optimal selection (pre 2024-07-01)
+% version: optimal selection (2024-07-29)
 
 options.find_trs = true;
-options.find_pks = false;
+options.find_pks = true;
 options.do_ds = true;
 options.ds_freq = 20;
 options.use_reduced_lms_scales = true;  % default 30 bpm
