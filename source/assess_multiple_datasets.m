@@ -621,9 +621,15 @@ if do_tutorial
     up.assessment_datasets = {'mimic_perform_truncated_train_all', 'mimic_perform_truncated_test_all'};
     up.comparison_datasets = {'mimic_perform_truncated_non_af', 'mimic_perform_truncated_af'};
 end
+% (datasets used to design MSPTDfast v2)
+do_msptdfastv2_design = 1;
+if do_msptdfastv2_design
+    up.assessment_datasets = {'capnobase', 'bidmc', 'mimic_train_all', 'ppg_dalia_all_activities'};
+    up.comparison_datasets = {};
+end
 
 % my current datasets
-do_current = 1;
+do_current = 0;
 if do_current
     up.assessment_datasets = {'ppg_dalia_lunch_break'};
     % up.assessment_datasets = {'aurora_sittingarmdown', 'aurora_sittingarmlap', 'aurora_sittingarmup', 'aurora_ambulatory', 'aurora_standingarmup', 'aurora_standingarmdown','aurora_walking', 'aurora_running', 'aurora_supine'};
@@ -1102,10 +1108,15 @@ options.beat_detectors = {'SWT', 'ATmax', 'SPAR', 'IMS', 'AMPD', 'MSPTD', 'ABD',
 %options.beat_detectors = {'AMPD', 'MSPTD', 'qppgfast', 'PWD', 'ERMA', 'SPAR', 'ABD', 'HeartPy'};
 options.beat_detectors = {'MSPTD', 'qppgfast'};
 options.beat_detectors = {'SPAR', 'SPAR2', 'MSPTD', 'MSPTDPC', 'PPGPulsesPC', 'qppgfast', 'qppgfastpc', 'qppgfastpcimp', 'qppgfastpcimp2', 'qppgfastpcimp3', 'wepd', 'PDAthree'}; %, 'PDAfour'}; % 'ABDtwo', 
-options.beat_detectors = {'qppgfast', 'MSPTD', 'MSPTDPC1', 'MSPTDPC2', 'MSPTDPC3', 'MSPTDPC4', 'MSPTDPC5', 'MSPTDPC6', 'MSPTDPC7', 'MSPTDPC8', 'MSPTDPC9', 'MSPTDPC10', 'MSPTDPC11', 'MSPTDPC12', 'MSPTDPC13', 'MSPTDPC14', 'MSPTDfastv1'};
+do_msptdfastv2_design = 1;
+if do_msptdfastv2_design
+    options.beat_detectors = {'MSPTDPC1', 'MSPTDPC2', 'MSPTDPC3', 'MSPTDPC4', 'MSPTDPC5', 'MSPTDPC6', 'MSPTDPC7', 'MSPTDPC8', 'MSPTDPC9', 'MSPTDPC10', 'MSPTDPC11', 'MSPTDPC12', 'MSPTDPC14', 'MSPTDPC15', 'MSPTDPC16'};
+end
 
 % specify beat detectors to redo
-options.redo_selected_beat_detectors = {'qppgfast', 'MSPTD', 'MSPTDPC1', 'MSPTDPC2', 'MSPTDPC3', 'MSPTDPC4', 'MSPTDPC5', 'MSPTDPC6', 'MSPTDPC7', 'MSPTDPC8', 'MSPTDPC9', 'MSPTDPC10', 'MSPTDPC11', 'MSPTDPC12', 'MSPTDPC13', 'MSPTDPC14', 'MSPTDfastv1'};
+if do_msptdfastv2_design
+    options.redo_selected_beat_detectors = {'MSPTDPC1', 'MSPTDPC2', 'MSPTDPC3', 'MSPTDPC4', 'MSPTDPC5', 'MSPTDPC6', 'MSPTDPC7', 'MSPTDPC8', 'MSPTDPC9', 'MSPTDPC10', 'MSPTDPC11', 'MSPTDPC12', 'MSPTDPC14', 'MSPTDPC15', 'MSPTDPC16'};
+end
 options.redo_selected_beat_detectors = options.redo_selected_beat_detectors(:);
 
 % Specify the downsampling strategy
@@ -1139,6 +1150,8 @@ switch dataset
         dataset_file = '/Users/petercharlton/Documents/Data/ppg_dalia/conv_data/ppg_dalia_table_soccer_data.mat';
     case 'ppg_dalia_cycling'
         dataset_file = '/Users/petercharlton/Documents/Data/ppg_dalia/conv_data/ppg_dalia_cycling_data.mat';
+    case 'ppg_dalia_all_activities'
+        dataset_file = '/Users/petercharlton/Documents/Data/ppg_dalia/conv_data/ppg_dalia_all_activities_data.mat';
     case 'capnobase'
     	dataset_file = '/Users/petercharlton/Documents/Data/capnobase_2021/conv_data/capnobase_data.mat';
 	case 'wesad_amusement'

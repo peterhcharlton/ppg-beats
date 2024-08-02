@@ -59,7 +59,7 @@ lag_ecg_samps = identify_lag_between_ppg_and_ecg(ppg_beats_t, ecg_beats_t, ecg_f
 
 %% calculate the aligned indices of ECG beats
 ecg_beats_a_inds = ecg_beats_inds+lag_ecg_samps;
-ecg_beats_a_inds(ecg_beats_a_inds<0) = []; % some are shifted to before time 0 due to the lag.
+ecg_beats_a_inds(ecg_beats_a_inds<=0) = []; % some are shifted to before time 0 due to the lag.
 
 %% calculate time-shifted ecg exclusion log
 if exist('ecg_exc_log', 'var')
