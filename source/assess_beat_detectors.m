@@ -75,6 +75,7 @@ uParams.analysis.redo_analysis = 1;
 assess_ppg_beat_detector_performance(uParams);
 
 %% Calculate stats and create tables
+uParams.analysis.redo_analysis = 1;
 create_stats_and_tables(uParams);
 
 end
@@ -399,8 +400,8 @@ eval(['perf_metrics = fieldnames(ppg_strategy_perf.raw.' ppg_strategy_perf.stats
 % --- Best strategies with no quality assessment
 fprintf('\n    - Rankings for strategies with no quality assessment')
 rel_strategies = contains(ppg_strategy_perf.stats.strategies, '__none');
-score_to_rank = 'mae_ibi'; %'f1_score';
-ranking_direction = 'ascend'; %'descend';
+score_to_rank = 'f1_score'; %  'mae_ibi'; %
+ranking_direction = 'descend'; % 'ascend'; 
 strategy_group_name = 'noQual';
 res = create_table_of_top_ranked_strategies(ppg_strategy_perf, rel_strategies, strategy_group_name, score_to_rank, ranking_direction, res);
 clear rel_strategies score_to_rank strategy_group_name

@@ -44,7 +44,7 @@ end
 %% Retrieve results for strategies, and provide latex table of results of selected strategy across all datasets
 
 % strategy for which to output latex table of results
-selected_strategy = 'qppgfast__none';
+selected_strategy = 'MSPTD__none';
 % retrieve results for each strategy
 [strategy_res, raw_res] = retrieve_results_for_each_strategy(selected_strategy, up, options);
 % remove and rename beat detectors (raw_res)
@@ -63,7 +63,7 @@ curr_strategy_set = 'noQual';
 create_comparison_figures(up.datasets, raw_res, res, options, up, curr_strategy_set);
 
 %% Generate results figures
-generate_results_figures(res, up);
+generate_results_figures(res, options, up);
 
 end
 
@@ -112,6 +112,14 @@ for dataset_no = 1 : length(up.datasets)
     % Load all results for this dataset
     res_file = [up.paths.processing_folder, 'ppg_detect_perf.mat'];
     load(res_file, 'ppg_strategy_perf'); clear res_file
+
+    % check whether the selected strategy exists
+    if ~sum(strcmp(fieldnames(ppg_strategy_perf.raw), selected_strategy))
+        temp = fieldnames(ppg_strategy_perf.raw);
+        new_selected_strategy = temp{1};
+        fprintf('\n Using %s as selected strategy as the specified %s wasn''t assessed on the %s dataset', new_selected_strategy, selected_strategy, curr_dataset)
+        selected_strategy = new_selected_strategy;
+    end
 
     % store total beats and total duration for this dataset
     if ~strcmp(curr_dataset, 'mimic_test_n') && ~strcmp(curr_dataset, 'mimic_test_a')
@@ -373,11 +381,11 @@ end
 
 end
 
-function generate_results_figures(res, up)
+function generate_results_figures(res, options, up)
 
 fprintf('\n\n ~~~ Making performance figures ~~~')
 curr_datasets = up.assessment_datasets;
-create_perf_box_plots(res, up, curr_datasets);
+create_perf_box_plots(res, options, up, curr_datasets);
 
 end
 
@@ -622,18 +630,20 @@ if do_tutorial
     up.comparison_datasets = {'mimic_perform_truncated_non_af', 'mimic_perform_truncated_af'};
 end
 % (datasets used to design MSPTDfast v2)
-do_msptdfastv2_design = 1;
+do_msptdfastv2_design = 0;
 if do_msptdfastv2_design
     up.assessment_datasets = {'capnobase', 'bidmc', 'mimic_train_all', 'ppg_dalia_all_activities'};
     up.comparison_datasets = {};
 end
-
-% my current datasets
-do_current = 0;
-if do_current
-    up.assessment_datasets = {'ppg_dalia_lunch_break'};
-    % up.assessment_datasets = {'aurora_sittingarmdown', 'aurora_sittingarmlap', 'aurora_sittingarmup', 'aurora_ambulatory', 'aurora_standingarmup', 'aurora_standingarmdown','aurora_walking', 'aurora_running', 'aurora_supine'};
-    up.comparison_datasets = {}; %{'mimic_non_af', 'mimic_af'};
+do_msptdfastv2_internal_validation = 0;
+if do_msptdfastv2_internal_validation
+    up.assessment_datasets = {'capnobase', 'bidmc', 'mimic_train_all', 'ppg_dalia_all_activities'};
+    up.comparison_datasets = {};
+end
+do_msptdfastv2_benchmarking = 1;
+if do_msptdfastv2_benchmarking
+    up.assessment_datasets = {'mimic_test_all', 'wesad_all_activities'};
+    up.comparison_datasets = {'mimic_B', 'mimic_W', 'mimic_test_a', 'mimic_test_n', 'mimic_non_af', 'mimic_af'};
 end
 
 % (all datasets)
@@ -647,6 +657,9 @@ up.settings.comparisons = {};
 for comparison_no = 1 : floor(length(up.comparison_datasets)/2)
     up.settings.comparisons(comparison_no, 1:2) = up.comparison_datasets(comparison_no*2-1:comparison_no*2);
 end
+
+% Plot settings
+up.do_dataset_specific_ylims = true;
 
 %% Display startup message
 display_startup_message;
@@ -673,8 +686,13 @@ fprintf('\n ~~~ Making comparison figures ~~~')
 ftsize = 22;
 all_datasets = fieldnames(raw_res); all_datasets = all_datasets(~strcmp(all_datasets, 'rel_strategies'));
 
-primary_dataset = find_primary_dataset(datasets);
-eval(['beat_detector_names = res.' primary_dataset '.noQual.num.strategy;']);
+if isempty(options.specified_plotting_order)
+    primary_dataset = find_primary_dataset(datasets);
+    eval(['beat_detector_names = res.' primary_dataset '.noQual.num.strategy;']);
+else
+    beat_detector_names = options.specified_plotting_order;
+    beat_detector_names = correct_beat_detector_names(beat_detector_names);
+end
 
 % cycle through each comparison (i.e. pair of datasets)
 no_comparisons = size(uParams.settings.comparisons,1);
@@ -767,6 +785,7 @@ for comparison_no = 1 : no_comparisons
         else
             ylim(ylims);
         end
+        
         ylabel(ylab_txt, 'FontSize', ftsize)
         
         % adjust whiskers to be 10th and 90th percentiles, inspired by: https://www.mathworks.com/matlabcentral/fileexchange/22526-box-plot-with-whiskers-plotted-at-fixed-percentiles
@@ -813,6 +832,8 @@ for comparison_no = 1 : no_comparisons
             leg_labels = {'Black', 'White'};
         elseif isequal(uParams.settings.comparisons(comparison_no,:), {'mimic_test_a','mimic_test_n'})
             leg_labels = {'Adults', 'Neonates'};
+        elseif isequal(uParams.settings.comparisons(comparison_no,:), {'mimic_a','mimic_n'})
+            leg_labels = {'Adults', 'Neonates'};
         elseif isequal(uParams.settings.comparisons(comparison_no,:), {'mimic_non_af','mimic_af'})
             leg_labels = {'Non-AF', 'AF'};
         elseif isequal(uParams.settings.comparisons(comparison_no,:), {'mimic_perform_truncated_non_af', 'mimic_perform_truncated_af'})
@@ -823,19 +844,20 @@ for comparison_no = 1 : no_comparisons
         % add significant differences
         pos = get(gca, 'Position');
         xlims = get(gca, 'XLim');
-        holm_sidak_alpha = 0.0019;
+        holm_sidak_alpha = 0.0034;
         no_sig = 0;
+        y_coord_offset = .42; %.28;
         for strategy_no = 1 :size(temp_p,2)
             if strcmp(vars{var_no}, 'f1_score') && temp_p(comparison_no,strategy_no,var_no) < holm_sidak_alpha
                 pos_x_coord = -0.01 + pos(1) + 0.975*pos(3)*((beat_detector_xticks(strategy_no)-xlims(1))/(xlims(2)-xlims(1)));
-                y_coord = .28-0.05*rem(no_sig,2);
+                y_coord = y_coord_offset-0.05*rem(no_sig,2);
                 dim = [pos_x_coord-0.05 y_coord .1 .1];
-                str = 'p<0.002';
+                str = sprintf('p<%.3f', holm_sidak_alpha);
                 annotation('textbox',dim,'String',str,'FitBoxToText','on','HorizontalAlignment','center','VerticalAlignment','bottom','FontSize', ftsize-8, 'LineStyle', 'none');
                 no_sig = no_sig + 1;
             elseif temp_p(comparison_no,strategy_no,var_no) < 0.05
                 pos_x_coord = -0.01 + pos(1) + 0.975*pos(3)*((beat_detector_xticks(strategy_no)-xlims(1))/(xlims(2)-xlims(1)));
-                y_coord = .28-0.05*rem(no_sig,2);
+                y_coord = y_coord_offset-0.05*rem(no_sig,2);
                 dim = [pos_x_coord-0.05 y_coord .1 .1];
                 str = 'p<0.05';
                 annotation('textbox',dim,'String',str,'FitBoxToText','on','HorizontalAlignment','center','VerticalAlignment','bottom','FontSize', ftsize-8, 'LineStyle', 'none');
@@ -856,6 +878,7 @@ for comparison_no = 1 : no_comparisons
         save_figure(gcf, fig_name, uParams);
         
         close all;
+        clear leg_labels
         
     end
     clear var_no curr_var
@@ -1108,20 +1131,42 @@ options.beat_detectors = {'SWT', 'ATmax', 'SPAR', 'IMS', 'AMPD', 'MSPTD', 'ABD',
 %options.beat_detectors = {'AMPD', 'MSPTD', 'qppgfast', 'PWD', 'ERMA', 'SPAR', 'ABD', 'HeartPy'};
 options.beat_detectors = {'MSPTD', 'qppgfast'};
 options.beat_detectors = {'SPAR', 'SPAR2', 'MSPTD', 'MSPTDPC', 'PPGPulsesPC', 'qppgfast', 'qppgfastpc', 'qppgfastpcimp', 'qppgfastpcimp2', 'qppgfastpcimp3', 'wepd', 'PDAthree'}; %, 'PDAfour'}; % 'ABDtwo', 
-do_msptdfastv2_design = 1;
+options.redo_selected_beat_detectors = options.beat_detectors;
+do_msptdfastv2_design = 0;
 if do_msptdfastv2_design
     options.beat_detectors = {'MSPTDPC1', 'MSPTDPC2', 'MSPTDPC3', 'MSPTDPC4', 'MSPTDPC5', 'MSPTDPC6', 'MSPTDPC7', 'MSPTDPC8', 'MSPTDPC9', 'MSPTDPC10', 'MSPTDPC11', 'MSPTDPC12', 'MSPTDPC14', 'MSPTDPC15', 'MSPTDPC16'};
+    options.redo_selected_beat_detectors = options.beat_detectors;
+    options.do_downsample = 0;
+end
+do_msptdfastv2_internal_validation = 0;
+if do_msptdfastv2_internal_validation
+    options.beat_detectors = {'MSPTD', 'MSPTDfastv2'}; % {'MSPTD', 'MSPTDfastv1', 'MSPTDfastv2', 'MSPTDfastv2b'};
+    options.redo_selected_beat_detectors = options.beat_detectors;
+    options.do_downsample = 0;
+end
+do_msptdfastv2_benchmarking = 1;
+if do_msptdfastv2_benchmarking
+    options.beat_detectors = {'MSPTDfastv2', 'MSPTD', 'MSPTDfastv1', 'AMPD', 'qppgfast', 'ABD', 'MMPDv2', 'WEPD'};
+    options.redo_selected_beat_detectors = options.beat_detectors;
+    options.specified_plotting_order = options.beat_detectors;
+    options.do_downsample = 0;
 end
 
 % specify beat detectors to redo
-if do_msptdfastv2_design
-    options.redo_selected_beat_detectors = {'MSPTDPC1', 'MSPTDPC2', 'MSPTDPC3', 'MSPTDPC4', 'MSPTDPC5', 'MSPTDPC6', 'MSPTDPC7', 'MSPTDPC8', 'MSPTDPC9', 'MSPTDPC10', 'MSPTDPC11', 'MSPTDPC12', 'MSPTDPC14', 'MSPTDPC15', 'MSPTDPC16'};
-end
 options.redo_selected_beat_detectors = options.redo_selected_beat_detectors(:);
 
 % Specify the downsampling strategy
-options.do_downsample = 1;     % downsample PPG signals
-options.downsample_freq = 100; % frequency in Hz
+if ~sum(strcmp(fieldnames(options), 'do_downsample'))
+    options.do_downsample = 1;     % downsample PPG signals
+    options.downsample_freq = 100; % frequency in Hz
+end
+
+% whether or not to specify the plotting order for beat detector algorithms
+if ~sum(strcmp(fieldnames(options), 'specified_plotting_order'))
+    options.specified_plotting_order = {};
+else
+    options.specified_plotting_order = options.specified_plotting_order(:);
+end
 
 close all
 end
@@ -1154,6 +1199,8 @@ switch dataset
         dataset_file = '/Users/petercharlton/Documents/Data/ppg_dalia/conv_data/ppg_dalia_all_activities_data.mat';
     case 'capnobase'
     	dataset_file = '/Users/petercharlton/Documents/Data/capnobase_2021/conv_data/capnobase_data.mat';
+    case 'wesad_all_activities'
+    	dataset_file = '/Users/petercharlton/Documents/Data/WESAD/conv_data/wesad_all_activities_data.mat';
 	case 'wesad_amusement'
     	dataset_file = '/Users/petercharlton/Documents/Data/WESAD/conv_data/wesad_amusement_data.mat';
 	case 'wesad_baseline'
@@ -1214,7 +1261,9 @@ end
 
 end
 
-function create_perf_box_plots(res, uParams, curr_datasets)
+function create_perf_box_plots(res, options, uParams, curr_datasets)
+
+uParams.specified_plotting_order = options.specified_plotting_order;
 
 do_no_qual = 1;
 if do_no_qual
@@ -1446,7 +1495,11 @@ function make_boxplot_figure(res, primary_dataset, curr_datasets, curr_beat_dete
 
 fprintf('\n - Making boxplot figure for: %s', rel_metric);
 
-eval(['beat_detectors = res.' primary_dataset '.noQual.num.strategy;']);
+if isempty(uParams.specified_plotting_order)
+    eval(['beat_detectors = res.' primary_dataset '.noQual.num.strategy;']);
+else
+    beat_detectors = uParams.specified_plotting_order;
+end
 beat_detectors = curr_beat_detectors;
 beat_detector_names = correct_beat_detector_names(beat_detectors);
 
@@ -1455,6 +1508,10 @@ no_y = ceil(length(datasets)/4);
 figure('Position', [20,20,800,no_y*300])
 [ylims, ylab_txt] = get_ylabel_settings(rel_metric);
 ftsize = 12;
+
+if strcmp(rel_metric, 'perc_time')
+    uParams.do_dataset_specific_ylims = false;
+end
 
 for dataset_no = 1 : length(datasets)
     
@@ -1488,7 +1545,9 @@ for dataset_no = 1 : length(datasets)
     %end
     curr_x = rem(temp_dataset_no-1, no_x)+1;
     curr_y = no_y-floor((temp_dataset_no-1)/no_x);
-    if no_y ~= 4
+    if no_y == 1
+        subplot('Position', [0.05+(0.95*(curr_x-1)/no_x), 0.08+((curr_y-1)/no_y), 0.85/no_x, 0.8/no_y])
+    elseif no_y ~= 4
         subplot('Position', [0.05+(0.95*(curr_x-1)/no_x), 0.08+((curr_y-1)/no_y), 0.85/no_x, 0.6/no_y])
     else
         subplot('Position', [0.05+(0.97*(curr_x-1)/no_x), 0.08+(0.96*(curr_y-1)/no_y), 0.87/no_x, 0.6/no_y])        
@@ -1500,11 +1559,17 @@ for dataset_no = 1 : length(datasets)
     end
     boxplot(data', beat_detector_names, 'Widths',0.8, 'MedianStyle', 'target', 'Symbol', 'r')
     set(gca, 'XTickLabelRotation', 90, 'FontSize', ftsize-2)
-    ylim(ylims)
+    
+    if ~uParams.do_dataset_specific_ylims
+        ylim(ylims)
+    end
+    
     if curr_x == 1
         ylabel(ylab_txt, 'FontSize', ftsize)
     else
-        set(gca, 'YTickLabel', [])
+        if ~uParams.do_dataset_specific_ylims
+            set(gca, 'YTickLabel', [])
+        end
     end
     set(gca,'XGrid', 'on', 'YGrid', 'on')
     box off
@@ -1839,8 +1904,8 @@ if strcmp(rel_metric, 'f1_score')
     ylims = [40,100];
     ylab_txt = 'F_1 score (%)';
 elseif strcmp(rel_metric, 'perc_time')
-    ylims = [0,0.2];
-    ylab_txt = 'Percentage time to run (%)';
+    ylims = [0,0.071];
+    ylab_txt = 'Execution time (%)';
 elseif strcmp(rel_metric, 'ppv')
     ylims = [60,100];
     ylab_txt = 'Positive predictive value (%)';
@@ -1876,8 +1941,12 @@ function title_txt = create_title_text(curr_dataset)
 switch curr_dataset
     case 'capnobase'
         title_txt = 'CapnoBase';
+    case 'ppg_dalia_all_activities'
+        title_txt = 'PPG-DaLiA (all activities)';
     case 'ppg_dalia_sitting'
         title_txt = 'PPG-DaLiA (sitting)';
+    case 'wesad_all_activities'
+        title_txt = 'WESAD (all activities)';
     case 'wesad_baseline'
         title_txt = 'WESAD (baseline)';
     case 'wesad_stress'

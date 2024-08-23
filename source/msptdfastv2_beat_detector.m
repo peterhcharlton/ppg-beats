@@ -38,7 +38,7 @@ options.find_pks = true;
 options.do_ds = true;
 options.ds_freq = 20;
 options.use_reduced_lms_scales = true;  % default 30 bpm
-options.win_len = 4;
+options.win_len = 6;
 
 %% Detect beats using MSPTD algorithm with this configuration
 [peaks, onsets] = msptdpcref_beat_detector(sig, fs, options);
